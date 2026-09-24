@@ -1,0 +1,7 @@
+import crypto from 'node:crypto';
+import { query } from './db';
+import { HttpError } from './http';
+export const limits = { publish:{max:10,seconds:3600}, allocations:{max:60,seconds:3600}, votes:{max:120,seconds:3600}, fractional:{max:12,seconds:3600} } as const;
+export type LimitKind = keyof typeof limits;
+function key(kind:LimitKind, request:Request){ const salt=process.env.RATE_LIMIT_SALT || 'dev-rate-limit-salt'; const ip=request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'; const day=new Date().toISOString().slice(0,10); return `${kind}:${crypto.createHash('sha256').update(`${salt}:${day}:${ip}`).digest('hex')}`; }
+export async function enforceLimit(kind:LimitKind, request:Request){ const l=limits[kind]; const k=key(kind,request); try{ await query('DELETE FROM write_limits WHERE window_start < now() - ($1 || \' seconds\')::interval',[String(l.seconds)]); const r=await query<{count:number}>('INSERT INTO write_limits(key,window_start,count) VALUES($1,now(),1) ON CONFLICT(key) DO UPDATE SET count=CASE WHEN write_limits.window_start < now() - ($2 || \' seconds\')::interval THEN 1 ELSE write_limits.count+1 END, window_start=CASE WHEN write_limits.window_start < now() - ($2 || \' seconds\')::interval THEN now() ELSE write_limits.window_start END RETURNING count',[k,String(l.seconds)]); if(r.rows[0].count>l.max) throw new HttpError(429,'rate limit exceeded'); }catch(e){ if(e instanceof HttpError) throw e; throw new HttpError(503,'service unavailable'); } }

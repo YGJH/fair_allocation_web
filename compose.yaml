@@ -1,0 +1,35 @@
+services:
+  web:
+    image: fair-web:local
+    build: .
+    ports: ["${WEB_BIND:-127.0.0.1}:${WEB_PORT:-3000}:3000"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set external PostgreSQL URL}
+      SOLVER_URL: http://solver:8000
+      SOLVER_TOKEN: ${SOLVER_TOKEN:?Set solver token}
+      RATE_LIMIT_SALT: ${RATE_LIMIT_SALT:?Set rate limit salt}
+    healthcheck:
+      test: ["CMD","node","-e","fetch('http://127.0.0.1:3000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    restart: unless-stopped
+  solver:
+    build: ./solver
+    environment:
+      SOLVER_TOKEN: ${SOLVER_TOKEN:?Set solver token}
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD","python","-c","import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    restart: unless-stopped
+  migrate:
+    image: fair-web:local
+    command: ["node", "scripts/migrate.mjs"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set external PostgreSQL URL}
+    profiles: ["tools"]
+    restart: "no"

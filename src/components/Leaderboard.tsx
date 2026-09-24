@@ -1,0 +1,3 @@
+import { copy, type Locale } from '../i18n/copy';
+export type LeaderRow={id:string;kind:string;nsw:string;owners:number[]};
+export function Leaderboard({locale,rows}:{locale:Locale;rows:LeaderRow[]}){const t=copy[locale];let rank=0,last='';return <section className="panel leaderboard"><div className="panel-heading"><h2>{t.leaderboard}</h2></div>{rows.length===1&&<p className="muted">{t.noEntries}</p>}<ol>{rows.map((r,i)=>{if(r.nsw!==last){rank=i+1;last=r.nsw;}return <li key={r.id}><a href={`/${locale}/allocations/${r.id}`}><span className="rank">#{rank}</span><span>{r.kind==='baseline'?t.baseline:t.visitor}</span><strong>{r.nsw}</strong><span aria-hidden="true">↗</span></a></li>;})}</ol></section>;}

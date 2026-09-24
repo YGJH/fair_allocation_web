@@ -1,0 +1,7 @@
+import { ZodError } from 'zod';
+export class HttpError extends Error { constructor(public status:number, message:string){ super(message); } }
+export function isUuid(id:string){ return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id); }
+export async function readBody(request:Request){ const text=await request.text(); if(new TextEncoder().encode(text).length>65536) throw new HttpError(413,'request body too large'); try { return text ? JSON.parse(text) : {}; } catch { throw new HttpError(400,'malformed JSON'); } }
+export function json(data:any,status=200,headers:HeadersInit={}){ return Response.json(data,{status,headers:{'Cache-Control':'no-store',...headers}}); }
+export function apiError(error:unknown){ const any=error as any; if(error instanceof HttpError) return json({error:error.message},error.status); if(error instanceof ZodError) return json({error:'invalid input'},400); if(any?.status===404) return json({error:any.message ?? 'not found'},404); if(any?.code==='ECONNREFUSED' || any?.code==='ENOTFOUND' || any?.code==='57P01') return json({error:'service unavailable'},503); if(any?.message?.includes('owner')||any?.message?.includes('values')||any?.message?.includes('rating')||any?.message?.includes('unique')) return json({error:any.message},400); console.error(any?.message ?? error); return json({error:'internal server error'},500); }
+export function requireUuid(id:string){ if(!isUuid(id)) throw new HttpError(404,'not found'); return id; }

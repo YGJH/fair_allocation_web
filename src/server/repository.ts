@@ -3,9 +3,28 @@ import { parseAllocation, parseCase, type Allocation, type CaseInput } from '../
 import { roundRobin } from '../domain/round-robin';
 import { scoreAllocation, toJsonScore, type JsonScore } from '../domain/score';
 import { query, withClient } from './db';
+import {
+  EXAMPLE_ALLOCATION_ID,
+  EXAMPLE_CASE,
+  EXAMPLE_CASE_ID,
+  EXAMPLE_OWNERS,
+  EXAMPLE_SCORE,
+  isExampleAllocation,
+  isExampleCase,
+} from '../shared/example';
 
 export type Aggregate = { count: number; mean: number | null; histogram: number[] };
 export type StoredAllocation = { id:string; caseId:string; owners:Allocation; kind:'visitor'|'baseline'; nsw:string; score:JsonScore; createdAt:string };
+
+const curatedAllocation: StoredAllocation = {
+  id: EXAMPLE_ALLOCATION_ID,
+  caseId: EXAMPLE_CASE_ID,
+  owners: EXAMPLE_OWNERS,
+  kind: 'baseline',
+  nsw: EXAMPLE_SCORE.nsw,
+  score: EXAMPLE_SCORE,
+  createdAt: '2026-01-01T00:00:00.000Z',
+};
 
 function seed(){ return Math.floor(Math.random()*0x7fffffff)||1; }
 async function insertAllocation(client:PoolClient, caseId:string, c:CaseInput, owners:Allocation, kind:'visitor'|'baseline'){
@@ -28,8 +47,16 @@ export async function createCase(c:CaseInput):Promise<{id:string;baselineId:stri
   });
 }
 export async function getCase(id:string):Promise<CaseInput|null>{
-  const r=await query<{payload:any}>('SELECT payload FROM cases WHERE id=$1',[id]);
-  return r.rowCount ? parseCase(r.rows[0].payload) : null;
+  // Curated content is immutable and should never wait for PostgreSQL to render.
+  if (isExampleCase(id)) return EXAMPLE_CASE;
+  try {
+    const r=await query<{payload:any}>('SELECT payload FROM cases WHERE id=$1',[id]);
+    if (r.rowCount) return parseCase(r.rows[0].payload);
+    return isExampleCase(id) ? EXAMPLE_CASE : null;
+  } catch (error) {
+    if (isExampleCase(id)) return EXAMPLE_CASE;
+    throw error;
+  }
 }
 export async function createAllocation(caseId:string, owners:Allocation, kind:'visitor'|'baseline'='visitor'):Promise<string>{
   return withClient(async client=>{
@@ -46,14 +73,27 @@ export async function createAllocation(caseId:string, owners:Allocation, kind:'v
   });
 }
 export async function getAllocation(id:string):Promise<StoredAllocation|null>{
-  const r=await query<any>('SELECT id, case_id as "caseId", owners, kind, nsw::text, score, created_at as "createdAt" FROM allocations WHERE id=$1',[id]);
-  if(!r.rowCount) return null;
-  const row=r.rows[0];
-  return {...row, owners: row.owners, score: row.score};
+  // The built-in allocation is trusted static content; ratings remain database-backed.
+  if (isExampleAllocation(id)) return curatedAllocation;
+  try {
+    const r=await query<any>('SELECT id, case_id as "caseId", owners, kind, nsw::text, score, created_at as "createdAt" FROM allocations WHERE id=$1',[id]);
+    if(!r.rowCount) return isExampleAllocation(id) ? curatedAllocation : null;
+    const row=r.rows[0];
+    return {...row, owners: row.owners, score: row.score};
+  } catch (error) {
+    if (isExampleAllocation(id)) return curatedAllocation;
+    throw error;
+  }
 }
 export async function listAllocations(caseId:string):Promise<StoredAllocation[]>{
-  const r=await query<any>('SELECT id, case_id as "caseId", owners, kind, nsw::text, score, created_at as "createdAt" FROM allocations WHERE case_id=$1 ORDER BY nsw DESC, created_at ASC',[caseId]);
-  return r.rows;
+  try {
+    const r=await query<any>('SELECT id, case_id as "caseId", owners, kind, nsw::text, score, created_at as "createdAt" FROM allocations WHERE case_id=$1 ORDER BY nsw DESC, created_at ASC',[caseId]);
+    if (r.rowCount) return r.rows;
+    return isExampleCase(caseId) ? [curatedAllocation] : [];
+  } catch (error) {
+    if (isExampleCase(caseId)) return [curatedAllocation];
+    throw error;
+  }
 }
 export async function addRating(id:string,value:number):Promise<Aggregate>{
   if(!Number.isInteger(value)||value<1||value>5) throw new Error('rating must be 1-5');

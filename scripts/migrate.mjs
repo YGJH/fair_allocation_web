@@ -5,7 +5,7 @@ import pg from 'pg';
 const { Pool } = pg;
 const connectionString = process.env.DATABASE_URL ?? process.env.TEST_DATABASE_URL;
 if (!connectionString) { console.error('DATABASE_URL is required'); process.exit(1); }
-const pool = new Pool({ connectionString });
+const pool = new Pool({ connectionString, connectionTimeoutMillis: 5000, query_timeout: 15000 });
 try {
   const client = await pool.connect();
   try {

@@ -1,38 +1,51 @@
-import {test,expect} from '@playwright/test';
-test.describe('bilingual learning flow',()=>{
- test.skip(!process.env.DATABASE_URL,'requires disposable PostgreSQL DATABASE_URL with migrations');
- test('first visit opens the real guided allocation', async ({page}) => {
-  await page.goto('/en');
-  await page.getByRole('link',{name:'Try the example'}).click();
-  await expect(page).toHaveURL(/\/en\/allocations\/00000000-0000-4000-8000-000000000102$/);
-  await expect(page.getByText('NSW score')).toHaveCount(0);
- });
- test('Traditional Chinese flow shares case and gates reveal', async ({page}) => {
-  await page.goto('/zh-TW/cases/new');
-  await page.getByRole('button',{name:'新增參與者'}).click();
-  await page.getByRole('button',{name:'新增物品'}).click();
-  await page.getByLabel('參與者 1 名稱').fill('A');
-  await page.getByLabel('參與者 2 名稱').fill('B');
-  await page.getByLabel('物品 1 名稱').fill('x');
-  await page.getByLabel('物品 2 名稱').fill('y');
-  await page.getByLabel('A 對 x 的估值').fill('3');
-  await page.getByLabel('A 對 y 的估值').fill('0');
-  await page.getByLabel('B 對 x 的估值').fill('0');
-  await page.getByLabel('B 對 y 的估值').fill('2');
-  await page.getByRole('button',{name:'發布案例'}).click();
-  await expect(page).toHaveURL(/\/zh-TW\/cases\/[0-9a-f-]+$/);
-  await page.getByLabel('x 的歸屬').selectOption({label:'A'});
-  await page.getByLabel('y 的歸屬').selectOption({label:'B'});
-  await page.getByRole('button',{name:'提交分配'}).click();
-  await expect(page).toHaveURL(/\/zh-TW\/allocations\/[0-9a-f-]+$/);
-  await expect(page.getByText('NSW 分數')).toHaveCount(0);
-  await page.getByLabel('公平程度').selectOption('5');
-  await page.getByRole('button',{name:'提交評分'}).click();
-  await expect(page.getByText('NSW 分數')).toBeVisible();
-  await expect(page.getByText('6',{exact:true})).toBeVisible();
-  const allocationId=page.url().split('/').pop();
-  await page.getByRole('button',{name:'English'}).click();
-  await expect(page).toHaveURL(new RegExp(`/en/allocations/${allocationId}$`));
-  await expect(page.getByText('NSW score')).toBeVisible();
- });
+import { test, expect } from '@playwright/test';
+import { EXAMPLE_ALLOCATION_ID, EXAMPLE_CASE_ID } from '../../src/shared/example';
+
+test.describe('bilingual learning flow', () => {
+  test('allocation comes before intuition and mathematical results', async ({ page }) => {
+    await page.goto('/en');
+    await page.getByRole('link', { name: 'Start allocating' }).first().click();
+    await expect(page).toHaveURL(new RegExp(`/en/cases/${EXAMPLE_CASE_ID}$`));
+    await expect(page.getByText('Nash social welfare')).toHaveCount(0);
+    await expect(page.getByText('EF1', { exact: true })).toHaveCount(0);
+
+    await page.route(`**/api/cases/${EXAMPLE_CASE_ID}/allocations`, (route) => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: EXAMPLE_ALLOCATION_ID }) }));
+    const owners = page.getByRole('combobox');
+    await owners.nth(0).selectOption('0');
+    await owners.nth(1).selectOption('1');
+    await owners.nth(2).selectOption('1');
+    await page.getByRole('button', { name: 'Continue to intuition' }).click();
+
+    await expect(page).toHaveURL(new RegExp(`/en/allocations/${EXAMPLE_ALLOCATION_ID}$`));
+    await expect(page.getByRole('radio')).toHaveCount(5);
+    await expect(page.getByText('Nash social welfare')).toHaveCount(0);
+
+    await page.route(`**/api/allocations/${EXAMPLE_ALLOCATION_ID}/ratings`, (route) => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ rating: 4, score: { utilities: ['8', '13'], nsw: '104', ef1: true, efx: true }, aggregate: { count: 1, mean: 4, histogram: [0, 0, 0, 1, 0] } }) }));
+    await page.getByRole('radio', { name: /4.*fair/i }).check();
+    await page.getByRole('button', { name: 'Submit rating' }).click();
+    await expect(page.getByText('Nash social welfare')).toBeVisible();
+    await expect(page.getByText('EF1', { exact: true })).toBeVisible();
+    await expect(page.getByText('EFX', { exact: true })).toBeVisible();
+  });
+
+  test('curated case is complete and has no case-creation navigation', async ({ page }) => {
+    await page.goto(`/zh-TW/cases/${EXAMPLE_CASE_ID}`);
+    await expect(page.getByRole('heading', { name: 'Maya × Leo' })).toBeVisible();
+    await expect(page.getByRole('table', { name: '估值' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '完成你的分配' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /建立案例|新增案例/ })).toHaveCount(0);
+    await page.getByRole('button', { name: 'English' }).click();
+    await expect(page).toHaveURL(new RegExp(`/en/cases/${EXAMPLE_CASE_ID}$`));
+  });
+
+  test('failed example rating offers an explicit local-only reveal', async ({ page }) => {
+    await page.route(`**/api/allocations/${EXAMPLE_ALLOCATION_ID}/ratings`, (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"unavailable"}' }));
+    await page.goto(`/en/allocations/${EXAMPLE_ALLOCATION_ID}`);
+    await page.getByRole('radio', { name: /3.*unsure/i }).check();
+    await page.getByRole('button', { name: 'Submit rating' }).click();
+    await expect(page.getByText('Nash social welfare')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Reveal result' }).click();
+    await expect(page.getByText('Nash social welfare')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Community responses' })).toHaveCount(0);
+  });
 });

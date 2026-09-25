@@ -1,19 +1,51 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: fair
+      POSTGRES_USER: fair
+      POSTGRES_PASSWORD: fair-local-only
+    volumes:
+      - fair-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fair -d fair"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    image: fair-web:local
+    build: .
+    command: ["node", "scripts/migrate.mjs"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://fair:fair-local-only@db:5432/fair}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   web:
     image: fair-web:local
     build: .
     ports: ["${WEB_BIND:-127.0.0.1}:${WEB_PORT:-3000}:3000"]
     environment:
-      DATABASE_URL: ${DATABASE_URL:?Set external PostgreSQL URL}
+      DATABASE_URL: ${DATABASE_URL:-postgres://fair:fair-local-only@db:5432/fair}
       SOLVER_URL: http://solver:8000
       SOLVER_TOKEN: ${SOLVER_TOKEN:?Set solver token}
       RATE_LIMIT_SALT: ${RATE_LIMIT_SALT:?Set rate limit salt}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      solver:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD","node","-e","fetch('http://127.0.0.1:3000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
       timeout: 3s
       retries: 6
     restart: unless-stopped
+
   solver:
     build: ./solver
     environment:
@@ -21,15 +53,11 @@ services:
     mem_limit: 512m
     cpus: 1.0
     healthcheck:
-      test: ["CMD","python","-c","import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=2)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=2)"]
       interval: 10s
       timeout: 3s
       retries: 6
     restart: unless-stopped
-  migrate:
-    image: fair-web:local
-    command: ["node", "scripts/migrate.mjs"]
-    environment:
-      DATABASE_URL: ${DATABASE_URL:?Set external PostgreSQL URL}
-    profiles: ["tools"]
-    restart: "no"
+
+volumes:
+  fair-db:

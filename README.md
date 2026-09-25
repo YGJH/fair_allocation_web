@@ -23,12 +23,12 @@ PostgreSQL is external and must be reachable from the web container. The host re
 ```bash
 cp .env.compose.example .env.compose
 # Set external DATABASE_URL, random SOLVER_TOKEN, and RATE_LIMIT_SALT in .env.compose; never commit it.
-docker compose --env-file .env.compose build
-docker compose --env-file .env.compose run --rm migrate
-docker compose --env-file .env.compose up -d --wait
+sudo docker compose --env-file .env.compose build
+sudo docker compose --env-file .env.compose run --rm migrate
+sudo docker compose --env-file .env.compose up -d --wait
 # Point a host reverse proxy with HTTPS at 127.0.0.1:3000.
-docker compose --env-file .env.compose ps
-docker compose --env-file .env.compose logs -f web solver
+sudo docker compose --env-file .env.compose ps
+sudo docker compose --env-file .env.compose logs -f web solver
 ```
 
 Only the web port is published (`WEB_BIND`, `WEB_PORT`); the solver has no host port and receives only `SOLVER_TOKEN`. Solver timeouts return an unavailable comparison while cases, ratings, and leaderboards continue. Ratings are anonymous convenience feedback, not representative research or a durable one-person-one-vote system.

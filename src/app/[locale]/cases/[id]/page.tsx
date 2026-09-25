@@ -1,12 +1,69 @@
-import { getCase, listAllocations } from '../../../../server/repository';
+import { getCase } from '../../../../server/repository';
 import { AllocationEditor } from '../../../../components/AllocationEditor';
-import { Leaderboard } from '../../../../components/Leaderboard';
 import { ShareCase } from '../../../../components/ShareCase';
+import { PageState } from '../../../../components/PageState';
 import { isLocale } from '../../../../i18n/locale';
 import { copy } from '../../../../i18n/copy';
-export default async function CasePage({params}:{params:Promise<{locale:string;id:string}>}){
- const {locale,id}=await params;const l=isLocale(locale)?locale:'en';const t=copy[l];const c=await getCase(id);
- if(!c)return <main id="main-content" className="container empty-page"><h1>{t.notFound}</h1><a className="button button-primary" href={`/${l}`}>{t.backHome}</a></main>;
- const allocations=await listAllocations(id);
- return <main id="main-content" className="container case-page"><div className="page-heading"><p className="eyebrow">{t.shareCase} / {c.agents.length} {t.people} · {c.items.length} {t.goods}</p><h1>{t.shareCase}</h1><p>{t.immutableHint}</p><ShareCase locale={l} caseId={id}/></div><div className="case-layout"><div><section className="panel"><div className="panel-heading"><h2>{t.valuations}</h2><p>{t.valueHint}</p></div><div className="matrix-scroll" role="region" aria-label={t.valuations} tabIndex={0}><table><caption>{t.valuations}</caption><thead><tr><th scope="col">{t.people} / {t.goods}</th>{c.items.map((it,j)=><th scope="col" key={j}>{it}</th>)}</tr></thead><tbody>{c.agents.map((a,i)=><tr key={i}><th scope="row">{a}</th>{c.values[i].map((v,j)=><td key={j}>{v}</td>)}</tr>)}</tbody></table></div></section><AllocationEditor locale={l} caseId={id} caseData={c}/></div><Leaderboard locale={l} rows={allocations.map(a=>({id:a.id,kind:a.kind,nsw:a.nsw,owners:a.owners}))}/></div></main>;
+import { isExampleCase } from '../../../../shared/example';
+
+export default async function CasePage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+  const { locale, id } = await params;
+  const l = isLocale(locale) ? locale : 'en';
+  const t = copy[l];
+
+  try {
+    const c = await getCase(id);
+    if (!c) return <PageState kind="not-found" locale={l} />;
+    const title = isExampleCase(id) ? t.caseTitle : c.agents.join(' & ');
+
+    return (
+      <main id="main-content" className="container case-page">
+        <nav className="breadcrumb" aria-label={l === 'en' ? 'Breadcrumb' : '麵包屑導覽'}>
+          <a href={`/${l}`}>{t.backHome}</a>
+        </nav>
+
+        <header className="case-hero">
+          <div>
+            <p className="eyebrow">{t.caseEyebrow}</p>
+            <h1>{title}</h1>
+            <p className="case-lead">{t.caseIntro}</p>
+            <div className="case-meta" aria-label={`${c.agents.length} ${t.people}, ${c.items.length} ${t.goods}`}>
+              <span><strong>{c.agents.length}</strong> {t.people}</span>
+              <span><strong>{c.items.length}</strong> {t.goods}</span>
+            </div>
+          </div>
+          <aside className="case-scenario" aria-labelledby="scenario-title">
+            <p className="eyebrow" id="scenario-title">{t.scenario}</p>
+            <div className="case-scene" aria-label={t.scenarioDetail}>
+              <div className="scene-person scene-person--maya"><span>M</span><strong>{c.agents[0]}</strong></div>
+              <div className="scene-orbit" aria-hidden="true" />
+              <div className="scene-items">
+                {c.items.map((item, index) => <span className={`scene-item scene-item--${index + 1}`} key={item}>{item}</span>)}
+              </div>
+              <div className="scene-person scene-person--leo"><span>L</span><strong>{c.agents[1]}</strong></div>
+            </div>
+            <ShareCase locale={l} caseId={id} />
+          </aside>
+        </header>
+
+        <div className="case-layout" data-reveal>
+          <section className="panel matrix-panel" aria-labelledby="valuations-title">
+            <div className="panel-heading">
+              <div><h2 id="valuations-title">{t.valuations}</h2></div>
+            </div>
+            <div className="matrix-scroll" role="region" aria-label={t.valuations} tabIndex={0}>
+              <table>
+                <caption>{t.valuations}</caption>
+                <thead><tr><th scope="col">{t.people} / {t.goods}</th>{c.items.map((item) => <th scope="col" key={item}>{item}</th>)}</tr></thead>
+                <tbody>{c.agents.map((agent, i) => <tr key={agent}><th scope="row">{agent}</th>{c.values[i].map((value, j) => <td key={c.items[j]}>{value}</td>)}</tr>)}</tbody>
+              </table>
+            </div>
+          </section>
+          <AllocationEditor locale={l} caseId={id} caseData={c} />
+        </div>
+      </main>
+    );
+  } catch {
+    return <PageState kind="unavailable" locale={l} retryHref={`/${l}/cases/${id}`} />;
+  }
 }

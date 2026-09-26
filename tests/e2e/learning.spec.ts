@@ -10,10 +10,12 @@ test.describe('bilingual learning flow', () => {
     await expect(page.getByText('EF1', { exact: true })).toHaveCount(0);
 
     await page.route(`**/api/cases/${EXAMPLE_CASE_ID}/allocations`, (route) => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: EXAMPLE_ALLOCATION_ID }) }));
-    const owners = page.getByRole('combobox');
-    await owners.nth(0).selectOption('0');
-    await owners.nth(1).selectOption('1');
-    await owners.nth(2).selectOption('1');
+    await page.getByRole('button', { name: /^Sketchbook\./ }).click();
+    await page.getByRole('button', { name: 'Place here: Maya' }).click();
+    await page.getByRole('button', { name: /^Lantern\./ }).click();
+    await page.getByRole('button', { name: 'Place here: Leo' }).click();
+    await page.getByRole('button', { name: /^Notebook\./ }).click();
+    await page.getByRole('button', { name: 'Place here: Leo' }).click();
     await page.getByRole('button', { name: 'Continue to intuition' }).click();
 
     await expect(page).toHaveURL(new RegExp(`/en/allocations/${EXAMPLE_ALLOCATION_ID}$`));
@@ -32,7 +34,7 @@ test.describe('bilingual learning flow', () => {
     await page.goto(`/zh-TW/cases/${EXAMPLE_CASE_ID}`);
     await expect(page.getByRole('heading', { name: 'Maya × Leo' })).toBeVisible();
     await expect(page.getByRole('table', { name: '估值' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '完成你的分配' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '拉動物品來分配' })).toBeVisible();
     await expect(page.getByRole('link', { name: /建立案例|新增案例/ })).toHaveCount(0);
     await page.getByRole('button', { name: 'English' }).click();
     await expect(page).toHaveURL(new RegExp(`/en/cases/${EXAMPLE_CASE_ID}$`));

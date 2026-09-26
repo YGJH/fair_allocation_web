@@ -9,16 +9,12 @@ export default async function LocalePage({ params }: { params: Promise<{ locale:
   const t = copy[l];
 
   return <HomeExperience
-    locale={l}
     allocationHref={`/${l}/cases/${EXAMPLE_CASE_ID}`}
     copy={{
-      kicker: t.heroEyebrow,
       title: t.heroTitle,
-      intro: t.heroIntro,
       primary: t.tryExample,
+      scrollCue: t.scrollCue,
       stageLabel: t.homeStageLabel,
-      stageCaption: t.homeStageCaption,
-      steps: [t.stepOne, t.stepTwo, t.stepThree],
     }}
   />;
 }

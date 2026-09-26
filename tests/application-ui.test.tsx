@@ -22,6 +22,14 @@ test('allocation requires every item and reports progress', () => {
   expect(screen.getByText(/every item has an owner/i)).toBeTruthy();
 });
 
+test('items can be assigned with the visible tap interaction', () => {
+  render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);
+  fireEvent.click(screen.getByRole('button', { name: /^x\./i }));
+  fireEvent.click(screen.getByRole('button', { name: 'Place here: A' }));
+  expect((screen.getByLabelText('x owner') as HTMLSelectElement).value).toBe('0');
+  expect(screen.getByRole('button', { name: /^x\./i }).closest('.agent-drop-zone')?.textContent).toMatch(/A/);
+});
+
 test('failed allocation submission keeps every assignment', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
   render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);

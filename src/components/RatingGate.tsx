@@ -7,6 +7,7 @@ import type { JsonScore } from '../domain/score';
 import { copy, type Locale } from '../i18n/copy';
 import { ScoreExplanation } from './ScoreExplanation';
 import { FractionalComparison } from './FractionalComparison';
+import { isExampleCase } from '../shared/example';
 
 type Result = {
   score: JsonScore;
@@ -109,6 +110,7 @@ export function RatingGate({
       : []),
   }));
   const targetCaseId = caseId ?? result?.caseId;
+  const showWalkthrough = Boolean(targetCaseId && isExampleCase(targetCaseId));
 
   return (
     <section className="judgment">
@@ -148,8 +150,8 @@ export function RatingGate({
 
           {result && (
             <section className="panel results-panel" aria-labelledby="results-title">
-              <div className="panel-heading"><div><p className="flow-step">03 / 03</p><h2 id="results-title">{t.resultsTitle}</h2></div></div>
-              <ScoreExplanation locale={locale} score={result.score} caseData={caseData} />
+              <div className="panel-heading"><div><p className="flow-step">03 / 03</p><h2 id="results-title">{showWalkthrough ? t.walkthroughTitle : t.resultsTitle}</h2></div></div>
+              <ScoreExplanation locale={locale} score={result.score} caseData={caseData} owners={owners} animated={showWalkthrough} />
             </section>
           )}
         </div>

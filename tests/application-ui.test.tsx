@@ -22,6 +22,17 @@ test('allocation requires every item and reports progress', () => {
   expect(screen.getByText(/every item has an owner/i)).toBeTruthy();
 });
 
+test('envy graph updates its direction, gap, and emotion with the allocation', () => {
+  render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);
+  expect(screen.getAllByText('Move an item to start the comparison.').length).toBeGreaterThan(0);
+
+  fireEvent.change(screen.getByLabelText('x owner'), { target: { value: '1' } });
+
+  expect(screen.getByText('A envies B by 3.')).toBeTruthy();
+  expect(screen.getByLabelText(/A\. Own value: 0\. Very envious, Gap 3/)).toBeTruthy();
+  expect(screen.getByLabelText(/B\. Own value: 0\. Content/)).toBeTruthy();
+});
+
 test('items can be assigned with the visible tap interaction', () => {
   render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);
   fireEvent.click(screen.getByRole('button', { name: /^x\./i }));

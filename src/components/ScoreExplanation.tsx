@@ -1,9 +1,15 @@
 import type { JsonScore } from '../domain/score';
 import type { CaseInput } from '../domain/model';
 import { copy, type Locale } from '../i18n/copy';
+import { FairnessWalkthrough } from './FairnessWalkthrough';
 
-export function ScoreExplanation({ locale, score, caseData }: { locale: Locale; score: JsonScore; caseData: CaseInput }) {
+export function ScoreExplanation({ locale, score, caseData, owners, animated = false }: { locale: Locale; score: JsonScore; caseData: CaseInput; owners: number[]; animated?: boolean }) {
   const t = copy[locale];
+
+  if (animated) {
+    return <div className="results-block results-block--walkthrough"><FairnessWalkthrough locale={locale} score={score} caseData={caseData} owners={owners} /></div>;
+  }
+
   const criteria = [
     { key: 'ef1', name: t.ef1, definition: t.ef1Definition, passes: score.ef1, failure: score.ef1Failure },
     { key: 'efx', name: t.efx, definition: t.efxDefinition, passes: score.efx, failure: score.efxFailure },

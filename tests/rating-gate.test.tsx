@@ -55,7 +55,17 @@ test('the curated example offers an explicit local reveal after a failed vote', 
   const reveal = await screen.findByRole('button', { name: /reveal result/i });
   expect(screen.queryByText('104')).toBeNull();
   fireEvent.click(reveal);
-  expect(await screen.findByText('104')).toBeTruthy();
+  expect(await screen.findByRole('heading', { name: 'Watch the fairness tests work' })).toBeTruthy();
+  expect(screen.queryByText('104')).toBeNull();
+  expect(screen.queryByRole('heading', { name: 'Bundle value' })).toBeNull();
+  fireEvent.click(screen.getByRole('tab', { name: /NSW/ }));
+  expect(screen.getByLabelText('8 × 13 = 104')).toBeTruthy();
+  expect(screen.getByText('104')).toBeTruthy();
+  expect(screen.getByRole('link', { name: /Identical values: Same list, different split/ }).getAttribute('href')).toBe('/en/cases/00000000-0000-4000-8000-000000000201');
+  expect(screen.getByRole('link', { name: /Non-identical values: Opposite priorities/ }).getAttribute('href')).toBe('/en/cases/00000000-0000-4000-8000-000000000301');
+  expect(screen.getByRole('link', { name: /Challenge: The shared favorites/ }).getAttribute('href')).toBe('/en/cases/00000000-0000-4000-8000-000000000401');
+  fireEvent.click(screen.getByRole('tab', { name: 'EFX' }));
+  expect(screen.getByText(/EFX tests every item/)).toBeTruthy();
   expect(screen.queryByRole('heading', { name: /community responses/i })).toBeNull();
   expect(localStorage.getItem(`fair-rated-local:${EXAMPLE_ALLOCATION_ID}`)).toBe('1');
 });

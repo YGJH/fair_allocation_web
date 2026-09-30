@@ -3,6 +3,7 @@
 import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import type { CaseInput } from '../domain/model';
 import { copy, type Locale } from '../i18n/copy';
+import { EnvyGraph } from './EnvyGraph';
 
 type DragSession = {
   element: HTMLButtonElement;
@@ -182,6 +183,8 @@ export function AllocationEditor({ locale, caseId, caseData }: { locale: Locale;
           })}
         </div>
       </div>
+
+      <EnvyGraph locale={locale} caseData={caseData} owners={owners} />
 
       <div className="sr-only">
         {caseData.items.map((item, i) => {

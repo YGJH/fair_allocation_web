@@ -5,9 +5,11 @@ import { scoreAllocation, toJsonScore, type JsonScore } from '../domain/score';
 import { query, withClient } from './db';
 import {
   CURATED_CASES,
+  SURVEY_CASES,
   getCuratedAllocation as findCuratedAllocation,
   getCuratedCase as findCuratedCase,
 } from '../shared/example';
+import type { SurveySummary } from '../shared/survey';
 
 export type Aggregate = { count: number; mean: number | null; histogram: number[] };
 export type StoredAllocation = { id:string; caseId:string; owners:Allocation; kind:'visitor'|'baseline'; nsw:string; score:JsonScore; createdAt:string };
@@ -101,6 +103,46 @@ export async function getAggregate(id:string):Promise<Aggregate>{
   const histogram=[0,0,0,0,0]; let total=0,sum=0;
   for(const row of r.rows){ const count=Number(row.count); histogram[row.value-1]=count; total+=count; sum+=row.value*count; }
   return {count:total,mean:total?sum/total:null,histogram};
+}
+
+const surveyAllocationIds = SURVEY_CASES.map((entry) => entry.allocationId);
+
+export async function getSurveyResults(sessionId:string):Promise<SurveySummary>{
+  const [aggregateRows, responseRows] = await Promise.all([
+    query<{allocationId:string;total:string;fair:string}>(
+      'SELECT allocation_id::text AS "allocationId", count(*)::text AS total, count(*) FILTER (WHERE verdict)::text AS fair FROM survey_responses WHERE allocation_id = ANY($1::uuid[]) GROUP BY allocation_id',
+      [surveyAllocationIds],
+    ),
+    query<{allocationId:string;verdict:boolean}>(
+      'SELECT allocation_id::text AS "allocationId", verdict FROM survey_responses WHERE session_id=$1 AND allocation_id = ANY($2::uuid[])',
+      [sessionId, surveyAllocationIds],
+    ),
+  ]);
+  const aggregates = new Map(aggregateRows.rows.map((row) => [row.allocationId, row]));
+  const responses = new Map(responseRows.rows.map((row) => [row.allocationId, row.verdict]));
+  const questions = surveyAllocationIds.map((allocationId) => {
+    const row = aggregates.get(allocationId);
+    const total = Number(row?.total ?? 0);
+    const fair = Number(row?.fair ?? 0);
+    return {
+      allocationId,
+      total,
+      fair,
+      unfair: total - fair,
+      fairPercent: total ? Math.round(fair / total * 100) : null,
+      userVerdict: responses.get(allocationId) ?? null,
+    };
+  });
+  return { answered: questions.filter((question) => question.userVerdict !== null).length, totalQuestions: questions.length, questions };
+}
+
+export async function recordSurveyResponse(sessionId:string,allocationId:string,verdict:boolean):Promise<SurveySummary>{
+  if (!surveyAllocationIds.includes(allocationId)) throw Object.assign(new Error('survey question not found'), { status: 404 });
+  await query(
+    'INSERT INTO survey_responses(session_id,allocation_id,verdict) VALUES($1,$2,$3) ON CONFLICT(session_id,allocation_id) DO UPDATE SET verdict=EXCLUDED.verdict,updated_at=now()',
+    [sessionId, allocationId, verdict],
+  );
+  return getSurveyResults(sessionId);
 }
 export async function getFractional(id:string){
   const r=await query<{fractional_status:string|null;fractional_value:string|null;fractional_started_at:Date|null}>('SELECT fractional_status,fractional_value,fractional_started_at FROM cases WHERE id=$1',[id]);

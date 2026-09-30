@@ -13,7 +13,7 @@ afterEach(() => {
 
 test('allocation requires every item and reports progress', () => {
   render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);
-  const submit = screen.getByRole('button', { name: /continue to intuition/i }) as HTMLButtonElement;
+  const submit = screen.getByRole('button', { name: /view the result/i }) as HTMLButtonElement;
   expect(submit.disabled).toBe(true);
   expect(screen.getByText(/assign every item/i)).toBeTruthy();
   fireEvent.change(screen.getByLabelText('x owner'), { target: { value: '0' } });
@@ -46,7 +46,7 @@ test('failed allocation submission keeps every assignment', async () => {
   render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);
   fireEvent.change(screen.getByLabelText('x owner'), { target: { value: '0' } });
   fireEvent.change(screen.getByLabelText('y owner'), { target: { value: '1' } });
-  fireEvent.click(screen.getByRole('button', { name: /continue to intuition/i }));
+  fireEvent.click(screen.getByRole('button', { name: /view the result/i }));
   expect((await screen.findByRole('alert')).textContent).toMatch(/retry/i);
   expect((screen.getByLabelText('x owner') as HTMLSelectElement).value).toBe('0');
   expect((screen.getByLabelText('y owner') as HTMLSelectElement).value).toBe('1');

@@ -1,72 +1,218 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { AllocationField } from './AllocationField';
+import { useEffect, useState, type CSSProperties } from 'react';
+import type { Allocation, CaseInput } from '../domain/model';
+import { copy, type Locale } from '../i18n/copy';
+import type { SurveyQuestionKey, SurveySummary } from '../shared/survey';
 
-type Props = {
-  allocationHref: string;
-  copy: {
-    title: string;
-    primary: string;
-    scrollCue: string;
-    stageLabel: string;
-  };
+type Question = {
+  key: SurveyQuestionKey;
+  allocationId: string;
+  caseData: CaseInput;
+  owners: Allocation;
 };
 
-export function HomeExperience({ allocationHref, copy }: Props) {
-  const root = useRef<HTMLElement>(null);
+type Props = {
+  locale: Locale;
+  allocationHref: string;
+  questions: Question[];
+};
+
+const SESSION_KEY = 'fairness-survey-session';
+
+function isSessionId(value: string | null): value is string {
+  return Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value));
+}
+
+export function HomeExperience({ locale, allocationHref, questions }: Props) {
+  const t = copy[locale];
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [summary, setSummary] = useState<SurveySummary | null>(null);
+  const [sessionId, setSessionId] = useState('');
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const node = root.current;
-    if (!node) return;
-
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (reducedMotion.matches) return;
-
-    gsap.registerPlugin(ScrollTrigger);
-    node.dataset.scrollReady = 'true';
-    node.style.setProperty('--home-progress', '0');
-
-    const trigger = ScrollTrigger.create({
-      trigger: node,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: true,
-      invalidateOnRefresh: true,
-      onUpdate: ({ progress }) => node.style.setProperty('--home-progress', progress.toFixed(4)),
-    });
-
-    return () => {
-      trigger.kill();
-      delete node.dataset.scrollReady;
-      node.style.removeProperty('--home-progress');
-    };
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (!isSessionId(stored)) return;
+    setSessionId(stored);
+    let active = true;
+    void fetch(`/api/survey?sessionId=${encodeURIComponent(stored)}`)
+      .then((response) => {
+        if (!response.ok) throw new Error();
+        return response.json() as Promise<SurveySummary>;
+      })
+      .then((data) => {
+        if (!active) return;
+        setSummary(data);
+        const next = data.questions.findIndex((question) => question.userVerdict === null);
+        if (next >= 0) setQuestionIndex(next);
+      })
+      .catch(() => {
+        // A previous session is optional; the current question remains fully usable.
+      });
+    return () => { active = false; };
   }, []);
 
+  function ensureSession() {
+    if (sessionId) return sessionId;
+    const next = crypto.randomUUID();
+    localStorage.setItem(SESSION_KEY, next);
+    setSessionId(next);
+    return next;
+  }
+
+  async function answer(verdict: boolean) {
+    if (pending) return;
+    setPending(true);
+    setError('');
+    try {
+      const response = await fetch('/api/survey', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: ensureSession(),
+          allocationId: questions[questionIndex].allocationId,
+          verdict,
+        }),
+      });
+      if (!response.ok) throw new Error();
+      const data = await response.json() as SurveySummary;
+      setSummary(data);
+      const next = data.questions.findIndex((question) => question.userVerdict === null);
+      if (next >= 0) setQuestionIndex(next);
+    } catch {
+      setError(t.surveyError);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const complete = summary?.answered === questions.length;
+  const current = questions[questionIndex];
+  const currentCopy = current ? {
+    identical: { category: t.identicalValues, title: t.identicalCaseTitle, detail: t.identicalCaseDetail },
+    nonIdentical: { category: t.nonIdenticalValues, title: t.nonIdenticalCaseTitle, detail: t.nonIdenticalCaseDetail },
+    challenge: { category: t.challengeCase, title: t.challengeCaseTitle, detail: t.challengeCaseDetail },
+  }[current.key] : null;
+  const fairAnswers = summary?.questions.filter((question) => question.userVerdict === true).length ?? 0;
+
   return (
-    <main id="main-content" className="home-main">
-      <section ref={root} className="home-scroll" aria-labelledby="home-title">
-        <div className="home-scroll__sticky">
-          <div className="home-scroll__heading">
-            <h1 id="home-title" className="sr-only">{copy.title}</h1>
-            <span className="home-scroll__cue">{copy.scrollCue}</span>
+    <main id="main-content" className="home-main home-survey">
+      <section className="survey-shell" aria-labelledby="home-title">
+        <header className="survey-intro">
+          <div>
+            <p className="survey-kicker">{t.surveyEyebrow}</p>
+            <h1 id="home-title">{t.surveyTitle}</h1>
           </div>
+          <p>{t.surveyIntro}</p>
+        </header>
 
-          <div className="home-stage" role="img" aria-label={copy.stageLabel}>
-            <AllocationField />
-            <div className="stage-orbit" aria-hidden="true" />
-            <div className="stage-route" aria-hidden="true" />
-            <div className="stage-person stage-person--maya" aria-hidden="true"><strong>Maya</strong></div>
-            <div className="stage-person stage-person--leo" aria-hidden="true"><strong>Leo</strong></div>
-            <span className="stage-object stage-object--one" aria-hidden="true"><i /></span>
-            <span className="stage-object stage-object--two" aria-hidden="true"><i /></span>
-            <span className="stage-object stage-object--three" aria-hidden="true"><i /></span>
-          </div>
+        <div className={complete ? 'survey-workspace is-complete' : 'survey-workspace'}>
+          {!complete && current && currentCopy ? (
+            <div className="survey-question" key={current.allocationId}>
+              <div className="survey-question__topline">
+                <span>{t.surveyProgress.replace('{current}', String(questionIndex + 1)).replace('{total}', String(questions.length))}</span>
+                <div className="survey-progress" aria-hidden="true">
+                  {questions.map((question, index) => <i className={index <= questionIndex ? 'is-active' : ''} key={question.allocationId} />)}
+                </div>
+              </div>
 
-          <div className="home-scroll__progress" aria-hidden="true"><span /><span /><span /></div>
-          <a className="button button-primary home-scroll__cta" href={allocationHref}>{copy.primary}</a>
+              <div className="survey-question__layout">
+                <div className="survey-prompt">
+                  <p className="survey-category">{currentCopy.category}</p>
+                  <h2>{currentCopy.title}</h2>
+                  <p>{currentCopy.detail}</p>
+                  <div className="survey-value-key" aria-label={t.surveyValueHint}>
+                    {current.caseData.agents.map((agent, index) => <span key={agent}><i data-person={index} />{agent}</span>)}
+                  </div>
+                </div>
+
+                <div className="fixed-allocation" role="group" aria-label={`${currentCopy.title}. ${t.surveyQuestion}`}>
+                  <div className="fixed-allocation__route" aria-hidden="true" />
+                  {current.caseData.agents.map((agent, personIndex) => {
+                    const items = current.caseData.items
+                      .map((item, itemIndex) => ({ item, itemIndex }))
+                      .filter(({ itemIndex }) => current.owners[itemIndex] === personIndex);
+                    return (
+                      <section className="fixed-bundle" data-person={personIndex} key={agent} aria-labelledby={`survey-person-${questionIndex}-${personIndex}`}>
+                        <header>
+                          <span aria-hidden="true">{agent.slice(0, 1)}</span>
+                          <h3 id={`survey-person-${questionIndex}-${personIndex}`}>{agent}</h3>
+                        </header>
+                        <ul>
+                          {items.map(({ item, itemIndex }, order) => (
+                            <li key={item} style={{ '--survey-item-order': order } as CSSProperties}>
+                              <strong>{item}</strong>
+                              <span aria-label={`${current.caseData.agents.map((name, valueIndex) => `${name} ${current.caseData.values[valueIndex][itemIndex]}`).join(', ')}`}>
+                                {current.caseData.values.map((row, valueIndex) => <i data-person={valueIndex} key={current.caseData.agents[valueIndex]}>{row[itemIndex]}</i>)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="survey-decision" aria-live="polite">
+                <div>
+                  <h2>{t.surveyQuestion}</h2>
+                  <p>{t.surveyDecisionHint}</p>
+                </div>
+                <div className="survey-decision__buttons">
+                  <button type="button" className="survey-choice survey-choice--unfair" disabled={pending} onClick={() => answer(false)}>
+                    <span aria-hidden="true">×</span>{t.unfairChoice}
+                  </button>
+                  <button type="button" className="survey-choice survey-choice--fair" disabled={pending} onClick={() => answer(true)}>
+                    <span aria-hidden="true">✓</span>{t.fairChoice}
+                  </button>
+                </div>
+              </div>
+              {pending && <p className="survey-status" role="status">{t.surveySaving}</p>}
+              {error && <p className="survey-status" role="alert">{error}</p>}
+            </div>
+          ) : summary ? (
+            <div className="survey-results" aria-live="polite">
+              <header className="survey-results__header">
+                <div>
+                  <p className="survey-kicker">{t.surveyComplete}</p>
+                  <h2>{t.surveyResultsTitle}</h2>
+                </div>
+                <p className="survey-personal-score"><strong>{fairAnswers}</strong><span>/ {questions.length}<br />{t.surveyFairCount}</span></p>
+              </header>
+
+              <div className="survey-results__list">
+                {summary.questions.map((result, index) => {
+                  const question = questions[index];
+                  const title = {
+                    identical: t.identicalCaseTitle,
+                    nonIdentical: t.nonIdenticalCaseTitle,
+                    challenge: t.challengeCaseTitle,
+                  }[question.key];
+                  return (
+                    <article className="survey-result-row" key={result.allocationId}>
+                      <div className="survey-result-row__answer">
+                        <span>{index + 1}</span>
+                        <div><h3>{title}</h3><p>{t.yourAnswer}: <strong>{result.userVerdict ? t.fairChoice : t.unfairChoice}</strong></p></div>
+                      </div>
+                      <div className="survey-result-row__community">
+                        <div><span>{t.communityFair}</span><strong>{result.fairPercent ?? 0}%</strong></div>
+                        <span className="survey-result-bar" aria-hidden="true"><i style={{ width: `${result.fairPercent ?? 0}%` }} /></span>
+                        <small>{result.total} {t.surveyResponses}</small>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              <footer className="survey-results__footer">
+                <p>{t.surveyResultsIntro}</p>
+                <a className="button button-primary" href={allocationHref}>{t.tryExample}</a>
+              </footer>
+            </div>
+          ) : null}
         </div>
       </section>
     </main>

@@ -1,12 +1,7 @@
 import { getAllocation, getCase } from '../../../../server/repository';
-import { RatingGate } from '../../../../components/RatingGate';
+import { AllocationResults } from '../../../../components/AllocationResults';
 import { PageState } from '../../../../components/PageState';
 import { isLocale } from '../../../../i18n/locale';
-import {
-  EXAMPLE_CASE_ID,
-  EXAMPLE_SCORE,
-  isExampleAllocation,
-} from '../../../../shared/example';
 
 export default async function AllocationPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
@@ -19,13 +14,12 @@ export default async function AllocationPage({ params }: { params: Promise<{ loc
 
     return (
       <main id="main-content" className="container">
-        <RatingGate
+        <AllocationResults
           locale={l}
-          allocationId={id}
           caseId={allocation.caseId}
           caseData={c}
           owners={allocation.owners}
-          fallbackResult={isExampleAllocation(id) ? { score: EXAMPLE_SCORE, caseId: EXAMPLE_CASE_ID } : undefined}
+          score={allocation.score}
         />
       </main>
     );

@@ -1,4 +1,5 @@
 import type { Allocation, CaseInput } from '../domain/model';
+import type { SurveyQuestionKey } from './survey';
 import { scoreAllocation, toJsonScore, type JsonScore } from '../domain/score';
 
 export type CuratedCaseKey = 'first' | 'identical' | 'nonIdentical' | 'challenge';
@@ -70,7 +71,8 @@ export const CURATED_CASES: CuratedCaseDefinition[] = [
   ),
 ];
 
-export const PRACTICE_CASES = CURATED_CASES.filter((entry) => entry.key !== 'first');
+export const PRACTICE_CASES = CURATED_CASES.filter((entry) => entry.key !== 'first') as Array<CuratedCaseDefinition & { key: SurveyQuestionKey }>;
+export const SURVEY_CASES = PRACTICE_CASES;
 
 export function getCuratedCase(id: string) {
   return CURATED_CASES.find((entry) => entry.id === id) ?? null;

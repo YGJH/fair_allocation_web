@@ -1,17 +1,17 @@
-FROM node:20-bookworm-slim AS deps
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
-FROM node:20-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
-FROM node:20-bookworm-slim AS proddeps
+FROM node:22-bookworm-slim AS proddeps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
-FROM node:20-bookworm-slim AS solverdeps
+FROM node:22-bookworm-slim AS solverdeps
 WORKDIR /app
 RUN apt-get update \
   && apt-get install --no-install-recommends -y python3 python3-venv \
@@ -21,7 +21,7 @@ RUN python3 -m venv /opt/solver-venv \
   && /opt/solver-venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # The web runtime and private solver share one deployable application image.
-FROM node:20-bookworm-slim AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 PATH="/opt/solver-venv/bin:${PATH}"
 RUN apt-get update \

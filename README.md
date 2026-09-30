@@ -46,7 +46,7 @@ curl --fail http://127.0.0.1:3000/api/health/ready
 
 ## Local development
 
-Node 20+ is required for the Next.js app. PostgreSQL is required for creating cases, allocations, ratings, and readiness checks. The built-in example can render without a database, but it is not a complete application run.
+Node 22+ is required for the Next.js app. PostgreSQL is required for creating cases, allocations, ratings, and readiness checks. The built-in example can render without a database, but it is not a complete application run.
 
 ```bash
 npm ci

@@ -2,9 +2,9 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: fair
-      POSTGRES_USER: fair
-      POSTGRES_PASSWORD: fair-local-only
+      POSTGRES_DB: ${POSTGRES_DB:-fair}
+      POSTGRES_USER: ${POSTGRES_USER:-fair}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set PostgreSQL password}
     volumes:
       - fair-db:/var/lib/postgresql/data
     healthcheck:
@@ -15,22 +15,20 @@ services:
     restart: unless-stopped
 
   migrate:
-    image: fair-web:local
-    build: .
+    image: ${APP_IMAGE:?Set APP_IMAGE in .env.compose}
     command: ["node", "scripts/migrate.mjs"]
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgres://fair:fair-local-only@db:5432/fair}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
     depends_on:
       db:
         condition: service_healthy
     restart: "no"
 
   web:
-    image: fair-web:local
-    build: .
+    image: ${APP_IMAGE:?Set APP_IMAGE in .env.compose}
     ports: ["${WEB_BIND:-127.0.0.1}:${WEB_PORT:-3000}:3000"]
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgres://fair:fair-local-only@db:5432/fair}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
       SOLVER_URL: http://solver:8000
       SOLVER_TOKEN: ${SOLVER_TOKEN:?Set solver token}
       RATE_LIMIT_SALT: ${RATE_LIMIT_SALT:?Set rate limit salt}
@@ -47,7 +45,8 @@ services:
     restart: unless-stopped
 
   solver:
-    build: ./solver
+    image: ${APP_IMAGE:?Set APP_IMAGE in .env.compose}
+    command: ["uvicorn", "app:app", "--app-dir", "/app/solver", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
     environment:
       SOLVER_TOKEN: ${SOLVER_TOKEN:?Set solver token}
     mem_limit: 512m

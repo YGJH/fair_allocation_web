@@ -1,205 +1,63 @@
 # Fair allocation learning site
 
-Bilingual (`en`, `zh-TW`) Next.js site for creating immutable fair-division cases, submitting allocations, rating before reveal, viewing trusted EF1/EFX/NSW scores, and optionally comparing with a private fractional NSW estimator.
+Bilingual (`en`, `zh-TW`) Next.js site for creating fair-division cases, submitting allocations, rating before reveal, and comparing an optional fractional NSW estimate.
 
-## Development
+## CI and images
 
-Prerequisites: Node 20+, Python 3.11+, PostgreSQL for integration tests, Docker for production smoke tests.
+GitHub Actions runs the Node and solver test suites, builds the production application image, and starts it with `compose.yml` for a PostgreSQL-backed smoke test. Successful pushes to `main` publish the validated image to GitHub Container Registry (GHCR):
 
-```bash
-npm install
-npm test
-npm run build
-cd solver && python -m pip install -r requirements.txt && python -m pytest -q
-npx playwright test
+```text
+ghcr.io/<owner>/<repository>:latest
+ghcr.io/<owner>/<repository>:sha-<commit>
 ```
 
-Set `.env.example` variables locally. Run `DATABASE_URL=... node scripts/migrate.mjs` before serving against a database. Public writes use a server-side `RATE_LIMIT_SALT`; never expose database credentials to the browser.
+The deployment uses two images:
 
-## Compose deployment
+- `postgres:16-alpine` for PostgreSQL.
+- One GHCR application image, shared by the `web`, `solver`, and one-off `migrate` containers.
 
-PostgreSQL is external and must be reachable from the web container. The host reverse proxy terminates HTTPS and forwards to the web port; Compose does not include the database or TLS proxy.
+The solver has no published host port. It runs as a separate container so that it can be health-checked and resource-limited independently from the web app while still using the same application image.
+
+## Server deployment
+
+Prerequisites: Docker Engine and Docker Compose plugin. No Node.js or Python installation is needed on the server.
 
 ```bash
 cp .env.compose.example .env.compose
-# Set external DATABASE_URL, random SOLVER_TOKEN, and RATE_LIMIT_SALT in .env.compose; never commit it.
-sudo docker compose --env-file .env.compose build
-sudo docker compose --env-file .env.compose run --rm migrate
-sudo docker compose --env-file .env.compose up -d --wait
-# Point a host reverse proxy with HTTPS at 127.0.0.1:3000.
-sudo docker compose --env-file .env.compose ps
-sudo docker compose --env-file .env.compose logs -f web solver
+# Edit APP_IMAGE, POSTGRES_PASSWORD, DATABASE_URL, SOLVER_TOKEN, and RATE_LIMIT_SALT.
+# DATABASE_URL must use the same credentials as the PostgreSQL container in compose.yml.
+docker login ghcr.io
+docker compose --env-file .env.compose pull
+docker compose --env-file .env.compose run --rm migrate
+docker compose --env-file .env.compose up -d --wait
+docker compose --env-file .env.compose ps
 ```
 
-Only the web port is published (`WEB_BIND`, `WEB_PORT`); the solver has no host port and receives only `SOLVER_TOKEN`. Solver timeouts return an unavailable comparison while cases, ratings, and leaderboards continue. Ratings are anonymous convenience feedback, not representative research or a durable one-person-one-vote system.
+For a private GHCR package, authenticate with a GitHub token that has `read:packages`. Pin `APP_IMAGE` to a `sha-<commit>` tag in production instead of `latest`.
 
+Only the web port is published, defaulting to `127.0.0.1:3000`. Point an HTTPS reverse proxy to that address. Check the deployment with:
 
+```bash
+curl --fail http://127.0.0.1:3000/api/health/live
+curl --fail http://127.0.0.1:3000/api/health/ready
+```
 
- Yes. You need PostgreSQL for the app to fully work.
+`SOLVER_TOKEN` and `RATE_LIMIT_SALT` must be long, random secrets and must not be committed. The PostgreSQL data is stored in the `fair-db` Docker volume.
 
- Run locally for development
+## Local development
 
- ### 1. Install dependencies
+Node 20+ is required for the Next.js app. PostgreSQL is required for creating cases, allocations, ratings, and readiness checks. The built-in example can render without a database, but it is not a complete application run.
 
- ```bash
-   npm install
- ```
+```bash
+npm ci
+npm test
+npm run build
+cd solver && uv run --isolated --with-requirements requirements.txt pytest -q
+```
 
- ### 2. Start PostgreSQL
+Copy `.env.example` to `.env.local`, set `DATABASE_URL`, `SOLVER_URL`, `SOLVER_TOKEN`, and `RATE_LIMIT_SALT`, then run migrations before serving against PostgreSQL:
 
- Example with Docker:
-
- ```bash
-   docker run --rm --name fair-local \
-     -e POSTGRES_PASSWORD=test \
-     -e POSTGRES_DB=fair \
-     -p 5433:5432 \
-     -d postgres:16
- ```
-
- Your local DB URL will be:
-
- ```bash
-   postgres://postgres:test@localhost:5433/fair
- ```
-
- ### 3. Create .env.local
-
- ```bash
-   cp .env.example .env.local
- ```
-
- Edit .env.local:
-
- ```env
-   DATABASE_URL=postgres://postgres:test@localhost:5433/fair
-   TEST_DATABASE_URL=postgres://postgres:test@localhost:5433/fair
-   SOLVER_URL=http://localhost:8000
-   SOLVER_TOKEN=dev-token
-   RATE_LIMIT_SALT=dev-random-salt
- ```
-
- ### 4. Run migrations
-
- PowerShell:
-
- ```powershell
-   $env:DATABASE_URL="postgres://postgres:test@localhost:5433/fair"
-   node scripts/migrate.mjs
- ```
-
- Bash:
-
- ```bash
-   DATABASE_URL=postgres://postgres:test@localhost:5433/fair node scripts/migrate.mjs
- ```
-
- ### 5. Optional: run solver locally
-
- ```bash
-   cd solver
-   python -m pip install -r requirements.txt
-   $env:SOLVER_TOKEN="dev-token"   # PowerShell
-   python -m uvicorn app:app --host 127.0.0.1 --port 8000
- ```
-
- Or bash:
-
- ```bash
-   cd solver
-   python -m pip install -r requirements.txt
-   SOLVER_TOKEN=dev-token python -m uvicorn app:app --host 127.0.0.1 --port 8000
- ```
-
- ### 6. Start Next.js
-
- In another terminal:
-
- ```bash
-   npm run dev
- ```
-
- Open:
-
- ```text
-   http://localhost:3000/en
-   http://localhost:3000/zh-TW
- ```
-
- ────────────────────────────────────────────────────────────────────────────────
-
- Run tests
-
- ```bash
-   npm test
-   npm run build
-   cd solver && python -m pytest -q
- ```
-
- For browser tests:
-
- ```bash
-   npx playwright install
-   npx playwright test
- ```
-
- ────────────────────────────────────────────────────────────────────────────────
-
- Deploy with Docker Compose
-
- This project expects external PostgreSQL. Compose runs only:
-
- - web
- - solver
- - one-off migrate
-
- ### 1. Prepare env file
-
- ```bash
-   cp .env.compose.example .env.compose
- ```
-
- Edit .env.compose:
-
- ```env
-   DATABASE_URL=postgres://user:password@host:5432/database
-   SOLVER_TOKEN=your-long-random-token
-   RATE_LIMIT_SALT=your-long-random-salt
-   WEB_BIND=127.0.0.1
-   WEB_PORT=3000
- ```
-
- Use WEB_BIND=0.0.0.0 only if you intentionally expose it directly.
-
- ### 2. Build images
-
- ```bash
-   docker compose --env-file .env.compose build
- ```
-
- ### 3. Run migrations
-
- ```bash
-   docker compose --env-file .env.compose run --rm migrate
- ```
-
- ### 4. Start services
-
- ```bash
-   docker compose --env-file .env.compose up -d --wait
- ```
-
- ### 5. Check status/logs
-
- ```bash
-   docker compose --env-file .env.compose ps
-   docker compose --env-file .env.compose logs -f web solver
- ```
-
- Then point your HTTPS reverse proxy to:
-
- ```text
-   127.0.0.1:3000
- ```
-
- The solver is private inside Compose and should not expose a public port.
+```bash
+DATABASE_URL=postgres://user:password@host:5432/database node scripts/migrate.mjs
+npm run dev
+```

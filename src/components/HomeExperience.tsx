@@ -19,6 +19,7 @@ type Props = {
 };
 
 const SESSION_KEY = 'fairness-survey-session';
+const ITEM_COLORS = ['#45d2ad', '#86b7ff', '#ffb85a', '#c9a7ff', '#ff8f7b'];
 
 function isSessionId(value: string | null): value is string {
   return Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value));
@@ -93,9 +94,23 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
   const currentCopy = current ? {
     identical: { category: t.identicalValues, title: t.identicalCaseTitle, detail: t.identicalCaseDetail },
     nonIdentical: { category: t.nonIdenticalValues, title: t.nonIdenticalCaseTitle, detail: t.nonIdenticalCaseDetail },
+    optimalTension: { category: t.optimalTensionValues, title: t.optimalTensionTitle, detail: t.optimalTensionDetail },
+    equalButMovable: { category: t.equalButMovableValues, title: t.equalButMovableTitle, detail: t.equalButMovableDetail },
     challenge: { category: t.challengeCase, title: t.challengeCaseTitle, detail: t.challengeCaseDetail },
   }[current.key] : null;
   const fairAnswers = summary?.questions.filter((question) => question.userVerdict === true).length ?? 0;
+  const utilityBundles = current ? current.caseData.agents.map((agent, personIndex) => {
+    const items = current.caseData.items
+      .map((item, itemIndex) => ({
+        item,
+        itemIndex,
+        contribution: current.caseData.values[personIndex][itemIndex],
+      }))
+      .filter(({ itemIndex }) => current.owners[itemIndex] === personIndex);
+    const utility = items.reduce((total, { contribution }) => total + contribution, 0);
+    return { agent, items, utility };
+  }) : [];
+  const maxUtility = Math.max(1, ...utilityBundles.map(({ utility }) => utility));
 
   return (
     <main id="main-content" className="home-main home-survey">
@@ -123,37 +138,87 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
                   <p className="survey-category">{currentCopy.category}</p>
                   <h2>{currentCopy.title}</h2>
                   <p>{currentCopy.detail}</p>
-                  <div className="survey-value-key" aria-label={t.surveyValueHint}>
-                    {current.caseData.agents.map((agent, index) => <span key={agent}><i data-person={index} />{agent}</span>)}
+                  <div className="survey-valuations">
+                    <header>
+                      <strong>{t.surveyValuationTitle}</strong>
+                      <span>{t.surveyValuationHint}</span>
+                    </header>
+                    <table aria-label={t.surveyValuationTitle}>
+                      <thead>
+                        <tr>
+                          <th scope="col">{t.goods}</th>
+                          {current.caseData.agents.map((agent) => <th scope="col" key={agent}>{agent}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {current.caseData.items.map((item, itemIndex) => (
+                          <tr key={item}>
+                            <th scope="row">
+                              <i style={{ '--survey-item-color': ITEM_COLORS[itemIndex % ITEM_COLORS.length] } as CSSProperties} />
+                              <span>{item}<small>{t.surveyAllocatedTo.replace('{agent}', current.caseData.agents[current.owners[itemIndex]])}</small></span>
+                            </th>
+                            {current.caseData.agents.map((agent, personIndex) => (
+                              <td className={current.owners[itemIndex] === personIndex ? 'is-owner' : undefined} key={agent}>
+                                {current.caseData.values[personIndex][itemIndex]}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
-                <div className="fixed-allocation" role="group" aria-label={`${currentCopy.title}. ${t.surveyQuestion}`}>
-                  <div className="fixed-allocation__route" aria-hidden="true" />
-                  {current.caseData.agents.map((agent, personIndex) => {
-                    const items = current.caseData.items
-                      .map((item, itemIndex) => ({ item, itemIndex }))
-                      .filter(({ itemIndex }) => current.owners[itemIndex] === personIndex);
-                    return (
-                      <section className="fixed-bundle" data-person={personIndex} key={agent} aria-labelledby={`survey-person-${questionIndex}-${personIndex}`}>
-                        <header>
-                          <span aria-hidden="true">{agent.slice(0, 1)}</span>
-                          <h3 id={`survey-person-${questionIndex}-${personIndex}`}>{agent}</h3>
-                        </header>
-                        <ul>
-                          {items.map(({ item, itemIndex }, order) => (
-                            <li key={item} style={{ '--survey-item-order': order } as CSSProperties}>
-                              <strong>{item}</strong>
-                              <span aria-label={`${current.caseData.agents.map((name, valueIndex) => `${name} ${current.caseData.values[valueIndex][itemIndex]}`).join(', ')}`}>
-                                {current.caseData.values.map((row, valueIndex) => <i data-person={valueIndex} key={current.caseData.agents[valueIndex]}>{row[itemIndex]}</i>)}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </section>
-                    );
-                  })}
-                </div>
+                <figure className="survey-utility" aria-labelledby={`survey-utility-title-${questionIndex}`}>
+                  <figcaption>
+                    <strong id={`survey-utility-title-${questionIndex}`}>{t.surveyUtilityTitle}</strong>
+                    <span>{t.surveyUtilityHint}</span>
+                  </figcaption>
+                  <div
+                    className="survey-utility__chart"
+                    role="img"
+                    aria-label={utilityBundles.map(({ agent, utility, items }) => `${agent}: ${utility}. ${t.surveyUtilityBreakdown}: ${items.map(({ item, contribution }) => `${item} +${contribution}`).join(', ')}`).join('. ')}
+                  >
+                    {utilityBundles.map(({ agent, utility, items }) => (
+                      <div
+                        className="survey-utility__column"
+                        key={agent}
+                        style={{ '--survey-utility-height': `${utility / maxUtility * 100}%` } as CSSProperties}
+                      >
+                        <div className="survey-utility__meter" aria-hidden="true">
+                          <div className="survey-utility__stack">
+                            {items.map(({ item, itemIndex, contribution }) => (
+                              <i
+                                className={contribution === 0 ? 'survey-utility__segment is-zero' : 'survey-utility__segment'}
+                                key={itemIndex}
+                                style={{
+                                  '--survey-item-color': ITEM_COLORS[itemIndex % ITEM_COLORS.length],
+                                  '--survey-item-share': utility > 0 ? contribution / utility : 0,
+                                } as CSSProperties}
+                              >
+                                {contribution / maxUtility >= .12 && <span>{item}<b>+{contribution}</b></span>}
+                              </i>
+                            ))}
+                          </div>
+                          <strong className="survey-utility__total">{utility}</strong>
+                        </div>
+                        <h3>{agent}</h3>
+                        <div className="survey-utility__breakdown">
+                          <span>{t.surveyUtilityBreakdown}</span>
+                          <ul>
+                            {items.map(({ item, itemIndex, contribution }) => (
+                              <li key={itemIndex}>
+                                <i style={{ '--survey-item-color': ITEM_COLORS[itemIndex % ITEM_COLORS.length] } as CSSProperties} />
+                                <span>{item}</span>
+                                <strong>+{contribution}</strong>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </figure>
               </div>
 
               <div className="survey-decision" aria-live="polite">
@@ -189,13 +254,18 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
                   const title = {
                     identical: t.identicalCaseTitle,
                     nonIdentical: t.nonIdenticalCaseTitle,
+                    optimalTension: t.optimalTensionTitle,
+                    equalButMovable: t.equalButMovableTitle,
                     challenge: t.challengeCaseTitle,
                   }[question.key];
                   return (
                     <article className="survey-result-row" key={result.allocationId}>
                       <div className="survey-result-row__answer">
                         <span>{index + 1}</span>
-                        <div><h3>{title}</h3><p>{t.yourAnswer}: <strong>{result.userVerdict ? t.fairChoice : t.unfairChoice}</strong></p></div>
+                        <div>
+                          <h3>{title}</h3>
+                          <p>{t.yourAnswer}: <strong>{result.userVerdict ? t.fairChoice : t.unfairChoice}</strong></p>
+                        </div>
                       </div>
                       <div className="survey-result-row__community">
                         <div><span>{t.communityFair}</span><strong>{result.fairPercent ?? 0}%</strong></div>

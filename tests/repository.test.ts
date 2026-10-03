@@ -1,5 +1,5 @@
 import {expect,test} from 'vitest';
-import {createCase,getCase,listAllocations,addRating,getAggregate,createAllocation,getSurveyResults,recordSurveyResponse} from '../src/server/repository';
+import {createCase,getCase,listAllocations,addRating,getAggregate,createAllocation,getAllocationStanding,getSurveyResults,recordSurveyResponse} from '../src/server/repository';
 import {parseCase} from '../src/domain/model';
 import { SURVEY_CASES } from '../src/shared/example';
 const run = process.env.TEST_DATABASE_URL ? test : test.skip;
@@ -17,6 +17,15 @@ run('unknown ids and invalid allocations do not create dangling allocations', as
  await expect(createAllocation(id,[1])).rejects.toThrow();
  expect((await listAllocations(id)).length).toBe(before);
 });
+run('NSW standing compares only visitor allocations from the same case', async()=>{
+ const c=parseCase({agents:['A','B'],items:['x','y'],values:[[3,0],[0,2]]});
+ const {id}=await createCase(c);
+ const high=await createAllocation(id,[0,1]);
+ expect(await getAllocationStanding(high)).toEqual({rank:1,total:1,tied:1,beatPercent:null});
+ const low=await createAllocation(id,[1,0]);
+ expect(await getAllocationStanding(high)).toEqual({rank:1,total:2,tied:1,beatPercent:100});
+ expect(await getAllocationStanding(low)).toEqual({rank:2,total:2,tied:1,beatPercent:0});
+});
 run('survey responses are stored once per browser session and return ordered statistics', async()=>{
  const sessionId=crypto.randomUUID();
  const first=SURVEY_CASES[0].allocationId;
@@ -24,7 +33,7 @@ run('survey responses are stored once per browser session and return ordered sta
  await recordSurveyResponse(sessionId,first,false);
  const summary=await getSurveyResults(sessionId);
  expect(summary.answered).toBe(1);
- expect(summary.totalQuestions).toBe(3);
+ expect(summary.totalQuestions).toBe(5);
  expect(summary.questions.map(question=>question.allocationId)).toEqual(SURVEY_CASES.map(entry=>entry.allocationId));
  expect(summary.questions[0].userVerdict).toBe(false);
  expect(summary.questions[0].total).toBeGreaterThan(0);

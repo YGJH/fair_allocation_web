@@ -1,4 +1,4 @@
-import { getAllocation, getCase } from '../../../../server/repository';
+import { getAllocation, getAllocationStanding, getCase } from '../../../../server/repository';
 import { AllocationResults } from '../../../../components/AllocationResults';
 import { PageState } from '../../../../components/PageState';
 import { isLocale } from '../../../../i18n/locale';
@@ -9,7 +9,12 @@ export default async function AllocationPage({ params }: { params: Promise<{ loc
 
   try {
     const allocation = await getAllocation(id);
-    const c = allocation ? await getCase(allocation.caseId) : null;
+    const [c, standing] = allocation
+      ? await Promise.all([
+          getCase(allocation.caseId),
+          allocation.kind === 'visitor' ? getAllocationStanding(id) : Promise.resolve(null),
+        ])
+      : [null, null];
     if (!allocation || !c) return <PageState kind="not-found" locale={l} />;
 
     return (
@@ -20,6 +25,7 @@ export default async function AllocationPage({ params }: { params: Promise<{ loc
           caseData={c}
           owners={allocation.owners}
           score={allocation.score}
+          standing={standing}
         />
       </main>
     );

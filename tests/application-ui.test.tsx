@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
 import { AllocationEditor } from '../src/components/AllocationEditor';
 import { Leaderboard } from '../src/components/Leaderboard';
+import { NextCases } from '../src/components/NextCases';
 
 const sample = { agents: ['A', 'B'], items: ['x', 'y'], values: [[3, 0], [0, 2]] };
 
@@ -55,4 +56,16 @@ test('failed allocation submission keeps every assignment', async () => {
 test('leaderboard rows link to their rating-first detail', () => {
   render(<Leaderboard locale="zh-TW" rows={[{ id: 'a', kind: 'visitor', nsw: '10', owners: [0] }]} />);
   expect(screen.getByRole('link', { name: /精確 NSW 10/ }).getAttribute('href')).toBe('/zh-TW/allocations/a');
+});
+
+test('next cases provide one recommendation without implying a required sequence', () => {
+  render(<NextCases locale="zh-TW" />);
+
+  expect(screen.getByText('建議下一題')).toBeTruthy();
+  expect(screen.getByRole('link', { name: /建議下一題.*100 比 1/ })).toBeTruthy();
+  expect(screen.getByText('換你自己分分看')).toBeTruthy();
+  expect(screen.getByRole('link', { name: /換你自己分分看.*只差一點/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000501');
+  expect(screen.getByRole('link', { name: /換你自己分分看.*10 比 10/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000601');
+  expect(screen.getAllByRole('link', { name: /開始這題/ })).toHaveLength(5);
+  expect(document.querySelector('.practice-track__step')).toBeNull();
 });

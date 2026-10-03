@@ -1,13 +1,15 @@
 import type { JsonScore } from '../domain/score';
 import type { CaseInput } from '../domain/model';
 import { copy, type Locale } from '../i18n/copy';
+import type { AllocationStanding } from '../server/repository';
 import { FairnessWalkthrough } from './FairnessWalkthrough';
 
-export function ScoreExplanation({ locale, score, caseData, owners, animated = false }: { locale: Locale; score: JsonScore; caseData: CaseInput; owners: number[]; animated?: boolean }) {
+export function ScoreExplanation({ locale, score, caseData, owners, standing = null, animated = false }: { locale: Locale; score: JsonScore; caseData: CaseInput; owners: number[]; standing?: AllocationStanding | null; animated?: boolean }) {
   const t = copy[locale];
+  const standingPanel = standing ? <NswStanding locale={locale} standing={standing} /> : null;
 
   if (animated) {
-    return <div className="results-block results-block--walkthrough"><FairnessWalkthrough locale={locale} score={score} caseData={caseData} owners={owners} /></div>;
+    return <div className="results-block results-block--walkthrough">{standingPanel}<FairnessWalkthrough locale={locale} score={score} caseData={caseData} owners={owners} /></div>;
   }
 
   const criteria = [
@@ -24,6 +26,8 @@ export function ScoreExplanation({ locale, score, caseData, owners, animated = f
         </div>
         <p>{t.nswExplanation}</p>
       </div>
+
+      {standingPanel}
 
       <div className="utility-section">
         <h3>{t.bundleValue}</h3>
@@ -53,5 +57,32 @@ export function ScoreExplanation({ locale, score, caseData, owners, animated = f
       </div>
       <details className="definition-details"><summary>{t.moreDetail}</summary><p>{t.positiveConvention}</p></details>
     </div>
+  );
+}
+
+function NswStanding({ locale, standing }: { locale: Locale; standing: AllocationStanding }) {
+  const t = copy[locale];
+  const hasPeers = standing.beatPercent !== null;
+  const tiedPeers = Math.max(0, standing.tied - 1);
+  const headline = hasPeers
+    ? t.beatsAllocations.replace('{percent}', String(standing.beatPercent))
+    : t.firstCompetitionEntry;
+
+  return (
+    <section className="nsw-standing" aria-labelledby="nsw-standing-title">
+      <div className="nsw-standing__score">
+        <p id="nsw-standing-title">{t.nswPr}</p>
+        <p><strong>{hasPeers ? standing.beatPercent : '—'}</strong>{hasPeers && <span>%</span>}</p>
+      </div>
+      <div className="nsw-standing__summary">
+        <h3>{headline}</h3>
+        <p>{hasPeers ? t.competitionSample : t.firstCompetitionDetail}</p>
+        {hasPeers && <span className="nsw-standing__track" aria-hidden="true"><i style={{ width: `${standing.beatPercent}%` }} /></span>}
+      </div>
+      <dl className="nsw-standing__meta">
+        <div><dt>{t.competitionRank}</dt><dd>#{standing.rank} / {standing.total}</dd></div>
+        {tiedPeers > 0 && <div><dt>{t.sameScore}</dt><dd>{t.tiedAllocations.replace('{count}', String(tiedPeers))}</dd></div>}
+      </dl>
+    </section>
   );
 }

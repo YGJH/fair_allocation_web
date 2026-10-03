@@ -2,6 +2,8 @@ import type { Allocation, CaseInput } from '../domain/model';
 import type { JsonScore } from '../domain/score';
 import { copy, type Locale } from '../i18n/copy';
 import { isExampleCase } from '../shared/example';
+import type { AllocationStanding } from '../server/repository';
+import { NextCases } from './NextCases';
 import { ScoreExplanation } from './ScoreExplanation';
 
 export function AllocationResults({
@@ -10,12 +12,14 @@ export function AllocationResults({
   caseData,
   owners,
   score,
+  standing = null,
 }: {
   locale: Locale;
   caseId: string;
   caseData: CaseInput;
   owners: Allocation;
   score: JsonScore;
+  standing?: AllocationStanding | null;
 }) {
   const t = copy[locale];
   const animated = isExampleCase(caseId);
@@ -66,9 +70,11 @@ export function AllocationResults({
           <div className="panel-heading">
             <h2 id="results-title">{animated ? t.walkthroughTitle : t.resultsTitle}</h2>
           </div>
-          <ScoreExplanation locale={locale} score={score} caseData={caseData} owners={owners} animated={animated} />
+          <ScoreExplanation locale={locale} score={score} caseData={caseData} owners={owners} standing={standing} animated={animated} />
         </section>
       </div>
+
+      {animated && <div className="allocation-results__next"><NextCases locale={locale} /></div>}
     </section>
   );
 }

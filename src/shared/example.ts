@@ -2,7 +2,7 @@ import type { Allocation, CaseInput } from '../domain/model';
 import type { SurveyQuestionKey } from './survey';
 import { scoreAllocation, toJsonScore, type JsonScore } from '../domain/score';
 
-export type CuratedCaseKey = 'first' | 'identical' | 'nonIdentical' | 'challenge';
+export type CuratedCaseKey = 'first' | SurveyQuestionKey;
 export type CuratedCaseDefinition = {
   key: CuratedCaseKey;
   id: string;
@@ -53,10 +53,10 @@ export const CURATED_CASES: CuratedCaseDefinition[] = [
     '00000000-0000-4000-8000-000000000302',
     {
       agents: ['Nia', 'Omar'],
-      items: ['Camera', 'Map', 'Blanket'],
-      values: [[9, 3, 2], [2, 8, 6]],
+      items: ['Rare painting', 'Record collection', 'Bus ticket'],
+      values: [[60, 40, 0], [100, 1, 1]],
     },
-    [0, 1, 1],
+    [0, 0, 1],
   ),
   curated(
     'challenge',
@@ -69,10 +69,41 @@ export const CURATED_CASES: CuratedCaseDefinition[] = [
     },
     [0, 1, 1, 0],
   ),
+  curated(
+    'optimalTension',
+    '00000000-0000-4000-8000-000000000501',
+    '00000000-0000-4000-8000-000000000502',
+    {
+      agents: ['Lina', 'Max'],
+      items: ['Concert ticket', 'Art book', 'Coffee voucher'],
+      values: [[4, 8, 1], [2, 10, 8]],
+    },
+    [0, 0, 1],
+  ),
+  curated(
+    'equalButMovable',
+    '00000000-0000-4000-8000-000000000601',
+    '00000000-0000-4000-8000-000000000602',
+    {
+      agents: ['Sora', 'Teo'],
+      items: ['Camera', 'Headphones', 'Board game'],
+      values: [[10, 10, 10], [10, 5, 5]],
+    },
+    [0, 1, 1],
+  ),
 ];
 
-export const PRACTICE_CASES = CURATED_CASES.filter((entry) => entry.key !== 'first') as Array<CuratedCaseDefinition & { key: SurveyQuestionKey }>;
-export const SURVEY_CASES = PRACTICE_CASES;
+export const PRACTICE_CASES = ['identical', 'nonIdentical', 'challenge'].map(
+  (key) => CURATED_CASES.find((entry) => entry.key === key)!,
+) as Array<CuratedCaseDefinition & { key: 'nonIdentical' | 'identical' | 'challenge' }>;
+
+export const SURVEY_CASES = ['nonIdentical', 'optimalTension', 'equalButMovable', 'identical', 'challenge'].map(
+  (key) => CURATED_CASES.find((entry) => entry.key === key)!,
+) as Array<CuratedCaseDefinition & { key: SurveyQuestionKey }>;
+
+export const FOLLOW_UP_CHALLENGE_CASES = ['optimalTension', 'equalButMovable'].map(
+  (key) => CURATED_CASES.find((entry) => entry.key === key)!,
+) as Array<CuratedCaseDefinition & { key: 'optimalTension' | 'equalButMovable' }>;
 
 export function getCuratedCase(id: string) {
   return CURATED_CASES.find((entry) => entry.id === id) ?? null;

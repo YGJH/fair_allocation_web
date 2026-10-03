@@ -12,6 +12,7 @@ import {
 import type { SurveySummary } from '../shared/survey';
 
 export type Aggregate = { count: number; mean: number | null; histogram: number[] };
+export type AllocationStanding = { rank: number; total: number; tied: number; beatPercent: number | null };
 export type StoredAllocation = { id:string; caseId:string; owners:Allocation; kind:'visitor'|'baseline'; nsw:string; score:JsonScore; createdAt:string };
 
 const curatedAllocations: StoredAllocation[] = CURATED_CASES.map((entry) => ({
@@ -84,6 +85,30 @@ export async function listAllocations(caseId:string):Promise<StoredAllocation[]>
     if (curatedAllocation) return [curatedAllocation];
     throw error;
   }
+}
+export async function getAllocationStanding(id:string):Promise<AllocationStanding|null>{
+  const r=await query<{total:string;higher:string;tied:string;lower:string}>(
+    `SELECT count(*)::text AS total,
+      count(*) FILTER (WHERE peer.nsw > target.nsw)::text AS higher,
+      count(*) FILTER (WHERE peer.nsw = target.nsw)::text AS tied,
+      count(*) FILTER (WHERE peer.nsw < target.nsw)::text AS lower
+    FROM allocations target
+    JOIN allocations peer ON peer.case_id=target.case_id AND peer.kind='visitor'
+    WHERE target.id=$1 AND target.kind='visitor'
+    GROUP BY target.nsw`,
+    [id],
+  );
+  if (!r.rowCount) return null;
+  const total=Number(r.rows[0].total);
+  const higher=Number(r.rows[0].higher);
+  const tied=Number(r.rows[0].tied);
+  const lower=Number(r.rows[0].lower);
+  return {
+    rank:higher+1,
+    total,
+    tied,
+    beatPercent:total>1 ? Math.round(lower/(total-1)*100) : null,
+  };
 }
 export async function addRating(id:string,value:number):Promise<Aggregate>{
   if(!Number.isInteger(value)||value<1||value>5) throw new Error('rating must be 1-5');

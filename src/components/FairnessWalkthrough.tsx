@@ -4,7 +4,6 @@ import { useState, type CSSProperties } from 'react';
 import type { CaseInput } from '../domain/model';
 import type { JsonScore } from '../domain/score';
 import { copy, type Locale } from '../i18n/copy';
-import { NextCases } from './NextCases';
 
 type Step = 'ef1' | 'efx' | 'nsw';
 type Pair = { viewer: number; other: number; ownValue: number; otherValue: number; otherItems: number[] };
@@ -102,7 +101,7 @@ export function FairnessWalkthrough({
       <div id="fairness-demo-panel" className={`fairness-demo fairness-demo--${step}`} role="tabpanel" key={`${step}-${run}`}>
         {step === 'ef1' && ef1Pair && <RemovalDemo kind="ef1" pair={ef1Pair} locale={locale} score={score} caseData={caseData} />}
         {step === 'efx' && efxPair && <RemovalDemo kind="efx" pair={efxPair} locale={locale} score={score} caseData={caseData} />}
-        {step === 'nsw' && <><NswDemo locale={locale} score={score} caseData={caseData} /><NextCases locale={locale} /></>}
+        {step === 'nsw' && <NswDemo locale={locale} score={score} caseData={caseData} />}
       </div>
 
       <div className="fairness-walkthrough__actions">

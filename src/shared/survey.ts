@@ -1,4 +1,4 @@
-export type SurveyQuestionKey = 'identical' | 'nonIdentical' | 'challenge';
+export type SurveyQuestionKey = 'nonIdentical' | 'optimalTension' | 'equalButMovable' | 'identical' | 'challenge';
 
 export type SurveyQuestionResult = {
   allocationId: string;

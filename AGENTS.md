@@ -17,3 +17,25 @@ Issues and specs live in GitHub Issues (`gh`). See `docs/agents/issue-tracker.md
 ### Domain docs
 
 Single-context (`GLOSSARY.md` + `docs/adr/`). See `docs/agents/domain.md`.
+
+### Skill directories
+
+Skills are installed with the `skills` CLI and tracked in `skills-lock.json`. `.agents/skills/` serves Antigravity, Gemini CLI and Copilot; `.claude/skills/` is a copy for Claude Code. Do not edit one copy by hand — change both through `npx skills add|update|remove`.
+
+## Commands
+
+- `npm test` — Vitest unit and component tests (`tests/*.test.ts(x)`).
+- `npm run test:e2e` — Playwright (`tests/e2e/`).
+- `npm run build` — production build; run it before calling a change done.
+- `cd solver && uv run --isolated --with-requirements requirements.txt pytest -q` — solver tests.
+- `node scripts/migrate.mjs` — apply `db/*.sql` to `DATABASE_URL`.
+
+## Layout
+
+- `src/app/` — Next.js routes: `[locale]/` pages (`en`, `zh-TW`) and `api/`.
+- `src/domain/` — pure fair-division logic (model, round-robin, scoring). No I/O.
+- `src/server/` — PostgreSQL access, HTTP helpers, rate limits.
+- `src/i18n/` — all user-facing copy; every string needs both locales.
+- `solver/` — Python service for the fractional NSW estimate, run as its own container.
+- `db/` — numbered SQL migrations; add a new file, never edit an applied one.
+- `docs/specs/`, `docs/story/` — specs and the narrative script.

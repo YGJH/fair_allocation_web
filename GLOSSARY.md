@@ -1,4 +1,4 @@
-# Domain Glossary: Fair Allocation & The Art of Scales (均天下)
+ Domain Glossary: Fair Allocation & The Art of Scales (均天下)
 
 This glossary defines canonical terms used across the codebase, tests, specifications, and narrative scripts. Agents and developers must use these terms consistently without inventing conflicting synonyms.
 

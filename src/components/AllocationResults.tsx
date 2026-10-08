@@ -1,6 +1,7 @@
 import type { Allocation, CaseInput } from '../domain/model';
 import type { JsonScore } from '../domain/score';
 import { copy, type Locale } from '../i18n/copy';
+import { displayItemName } from '../i18n/labels';
 import { isExampleCase } from '../shared/example';
 import type { AllocationStanding } from '../server/repository';
 import { NextCases } from './NextCases';
@@ -26,7 +27,7 @@ export function AllocationResults({
   const groups = caseData.agents.map((name, personIndex) => ({
     name,
     items: caseData.items.flatMap((item, itemIndex) => owners[itemIndex] === personIndex
-      ? [{ name: item, value: caseData.values[personIndex][itemIndex] }]
+      ? [{ name: displayItemName(locale, item, itemIndex), value: caseData.values[personIndex][itemIndex] }]
       : []),
   }));
 

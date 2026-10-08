@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import LocalePage from '../src/app/[locale]/page';
 import { EXAMPLE_CASE_ID, SURVEY_CASES } from '../src/shared/example';
@@ -16,16 +16,15 @@ for (const locale of ['en', 'zh-TW'] as const) {
 
     expect(screen.getByRole('heading', { name: locale === 'en' ? 'What feels fair to you?' : '你覺得怎樣才公平？' })).toBeTruthy();
     expect(screen.getByText(locale === 'en' ? 'Question 1 of 5' : '第 1 題，共 5 題')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: locale === 'en' ? '100 to 1' : '100 比 1' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: locale === 'en' ? '100 to 1' : '一個 100 分，一個 1 分' })).toBeTruthy();
     expect(screen.getByRole('img', { name: locale === 'en'
-      ? /Nia: 100\. Items in this bar: Rare painting \+60, Record collection \+40\. Omar: 1\. Items in this bar: Bus ticket \+1/
-      : /Nia: 100\. 柱內物品: Rare painting \+60, Record collection \+40\. Omar: 1\. 柱內物品: Bus ticket \+1/ })).toBeTruthy();
+      ? /Alice: 100\. Included items: Item 1 \+60, Item 2 \+40\. Bob: 1\. Included items: Item 3 \+1/
+      : /Alice: 100\. 包含的物品: 物品 1 \+60, 物品 2 \+40\. Bob: 1\. 包含的物品: 物品 3 \+1/ })).toBeTruthy();
     expect(document.querySelectorAll('.survey-utility__segment')).toHaveLength(3);
-    const matrix = screen.getByRole('table', { name: locale === 'en' ? 'Every value, side by side' : '雙方對所有物品的估值' });
-    expect(within(matrix).getByRole('row', { name: /Rare painting.*60.*100/ })).toBeTruthy();
-    expect(within(matrix).getByRole('row', { name: /Record collection.*40.*1/ })).toBeTruthy();
-    expect(within(matrix).getByRole('row', { name: /Bus ticket.*0.*1/ })).toBeTruthy();
-    expect(matrix.querySelectorAll('td.is-owner')).toHaveLength(3);
+    const itemList = screen.getByRole('list', { name: locale === 'en' ? 'How each person scores the items' : '每個人會給物品幾分' });
+    expect(itemList.querySelectorAll('.survey-item-row')).toHaveLength(3);
+    expect(itemList.textContent).toContain(locale === 'en' ? 'Item 1' : '物品 1');
+    expect(screen.queryByRole('table')).toBeNull();
     expect(screen.getByRole('button', { name: locale === 'en' ? /Unfair/ : /不公平/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: locale === 'en' ? 'Fair' : '公平' })).toBeTruthy();
     expect(screen.queryByRole('link', { name: locale === 'en' ? 'Make your own allocation' : '開始自己分配' })).toBeNull();
@@ -57,16 +56,20 @@ test('five saved answers reveal personal and community statistics', async () => 
 
   render(await LocalePage({ params: Promise.resolve({ locale: 'en' }) }));
   fireEvent.click(screen.getByRole('button', { name: 'Fair' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Next question' }));
   await screen.findByRole('heading', { name: 'The close call' });
   fireEvent.click(screen.getByRole('button', { name: 'Unfair' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Next question' }));
   await screen.findByRole('heading', { name: '10 and 10' });
   fireEvent.click(screen.getByRole('button', { name: 'Fair' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Next question' }));
   await screen.findByRole('heading', { name: 'Same list, different split' });
   fireEvent.click(screen.getByRole('button', { name: 'Fair' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Next question' }));
   await screen.findByRole('heading', { name: 'The shared favorites' });
   fireEvent.click(screen.getByRole('button', { name: 'Unfair' }));
 
-  expect(await screen.findByRole('heading', { name: 'Your fairness pulse' })).toBeTruthy();
+  expect(await screen.findByRole('heading', { name: 'Your answers' })).toBeTruthy();
   expect(document.querySelector('.survey-personal-score')?.textContent).toContain('3');
   expect(screen.getByText('70%')).toBeTruthy();
   expect(screen.getByText('27%')).toBeTruthy();

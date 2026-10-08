@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from 'react';
 import type { CaseInput } from '../domain/model';
 import type { JsonScore } from '../domain/score';
 import { copy, type Locale } from '../i18n/copy';
+import { displayItemName } from '../i18n/labels';
 
 type Step = 'ef1' | 'efx' | 'nsw';
 type Pair = { viewer: number; other: number; ownValue: number; otherValue: number; otherItems: number[] };
@@ -69,6 +70,10 @@ export function FairnessWalkthrough({
     setRun((value) => value + 1);
   }
 
+  function previous() {
+    if (activeIndex > 0) selectStep(steps[activeIndex - 1]);
+  }
+
   function next() {
     if (activeIndex < steps.length - 1) selectStep(steps[activeIndex + 1]);
     else setRun((value) => value + 1);
@@ -106,9 +111,12 @@ export function FairnessWalkthrough({
 
       <div className="fairness-walkthrough__actions">
         <p aria-live="polite">{step === 'ef1' ? t.ef1Definition : step === 'efx' ? t.efxDefinition : t.nswExplanation}</p>
-        <button className="button button-secondary" type="button" onClick={next}>
-          {activeIndex < steps.length - 1 ? t.nextConcept : t.playAgain}
-        </button>
+        <div>
+          <button className="button button-secondary" type="button" disabled={activeIndex === 0} onClick={previous}>{t.previousConcept}</button>
+          <button className="button button-secondary" type="button" onClick={next}>
+            {activeIndex < steps.length - 1 ? t.nextConcept : t.playAgain}
+          </button>
+        </div>
       </div>
     </section>
   );
@@ -168,7 +176,7 @@ function RemovalDemo({
           <div className="removal-items">
             {pair.otherItems.map((item) => (
               <span className={rows.some((row) => row.item === item) ? 'is-tested' : ''} key={caseData.items[item]}>
-                {itemName(caseData.items[item])}<b>{caseData.values[pair.viewer][item]}</b>
+                {itemName(displayItemName(locale, caseData.items[item], item))}<b>{caseData.values[pair.viewer][item]}</b>
               </span>
             ))}
           </div>
@@ -180,7 +188,7 @@ function RemovalDemo({
           const works = pair.ownValue >= row.remaining;
           return (
             <div className={works ? 'removal-check is-pass' : 'removal-check is-fail'} style={{ '--check-order': index } as CSSProperties} key={row.item}>
-              <span className="removal-check__item">{t.removeItem} <strong>{caseData.items[row.item]}</strong></span>
+              <span className="removal-check__item">{t.removeItem} <strong>{displayItemName(locale, caseData.items[row.item], row.item)}</strong></span>
               <span className="removal-check__math">{pair.otherValue} − {row.value} = <strong>{row.remaining}</strong></span>
               <span className="removal-check__result">{pair.ownValue} {works ? '≥' : '<'} {row.remaining} <b aria-label={works ? t.removalWorks : t.removalFails}>{works ? '✓' : '×'}</b></span>
             </div>

@@ -58,7 +58,7 @@ export async function createAllocation(caseId:string, owners:Allocation, kind:'v
     try{
       const r=await client.query<{payload:any}>('SELECT payload FROM cases WHERE id=$1',[caseId]);
       if(!r.rowCount) throw Object.assign(new Error('case not found'),{status:404});
-      const c=parseCase(r.rows[0].payload);
+      const c=findCuratedCase(caseId)?.caseData ?? parseCase(r.rows[0].payload);
       const parsed=parseAllocation(c, owners);
       const id=await insertAllocation(client,caseId,c,parsed,kind);
       await client.query('COMMIT');

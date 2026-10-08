@@ -1,6 +1,7 @@
 import type { JsonScore } from '../domain/score';
 import type { CaseInput } from '../domain/model';
 import { copy, type Locale } from '../i18n/copy';
+import { displayItemName } from '../i18n/labels';
 import type { AllocationStanding } from '../server/repository';
 import { FairnessWalkthrough } from './FairnessWalkthrough';
 
@@ -49,7 +50,7 @@ export function ScoreExplanation({ locale, score, caseData, owners, standing = n
             {criterion.failure && (
               <p className="witness">
                 {t.witness}: {caseData.agents[criterion.failure.i]} → {caseData.agents[criterion.failure.j]}
-                {'item' in criterion.failure ? ` · ${caseData.items[criterion.failure.item]}` : ''}
+                {'item' in criterion.failure ? ` · ${displayItemName(locale, caseData.items[criterion.failure.item], criterion.failure.item)}` : ''}
               </p>
             )}
           </article>

@@ -16,8 +16,8 @@ export const EXAMPLE_CASE_ID = '00000000-0000-4000-8000-000000000101';
 export const EXAMPLE_ALLOCATION_ID = '00000000-0000-4000-8000-000000000102';
 
 export const EXAMPLE_CASE: CaseInput = {
-  agents: ['Maya', 'Leo'],
-  items: ['Sketchbook', 'Lantern', 'Notebook'],
+  agents: ['Alice', 'Bob'],
+  items: ['1', '2', '3'],
   values: [[8, 5, 2], [2, 6, 7]],
 };
 
@@ -41,8 +41,8 @@ export const CURATED_CASES: CuratedCaseDefinition[] = [
     '00000000-0000-4000-8000-000000000201',
     '00000000-0000-4000-8000-000000000202',
     {
-      agents: ['Ari', 'Bo'],
-      items: ['Tea set', 'Houseplant', 'Speaker'],
+      agents: ['Alice', 'Bob'],
+      items: ['1', '2', '3'],
       values: [[7, 4, 2], [7, 4, 2]],
     },
     [0, 1, 1],
@@ -52,8 +52,8 @@ export const CURATED_CASES: CuratedCaseDefinition[] = [
     '00000000-0000-4000-8000-000000000301',
     '00000000-0000-4000-8000-000000000302',
     {
-      agents: ['Nia', 'Omar'],
-      items: ['Rare painting', 'Record collection', 'Bus ticket'],
+      agents: ['Alice', 'Bob'],
+      items: ['1', '2', '3'],
       values: [[60, 40, 0], [100, 1, 1]],
     },
     [0, 0, 1],
@@ -63,8 +63,8 @@ export const CURATED_CASES: CuratedCaseDefinition[] = [
     '00000000-0000-4000-8000-000000000401',
     '00000000-0000-4000-8000-000000000402',
     {
-      agents: ['Iris', 'Kai'],
-      items: ['Telescope', 'Keyboard', 'Tent', 'Cook set'],
+      agents: ['Alice', 'Bob'],
+      items: ['1', '2', '3', '4'],
       values: [[12, 9, 2, 1], [11, 10, 8, 1]],
     },
     [0, 1, 1, 0],
@@ -74,8 +74,8 @@ export const CURATED_CASES: CuratedCaseDefinition[] = [
     '00000000-0000-4000-8000-000000000501',
     '00000000-0000-4000-8000-000000000502',
     {
-      agents: ['Lina', 'Max'],
-      items: ['Concert ticket', 'Art book', 'Coffee voucher'],
+      agents: ['Alice', 'Bob'],
+      items: ['1', '2', '3'],
       values: [[4, 8, 1], [2, 10, 8]],
     },
     [0, 0, 1],
@@ -85,8 +85,8 @@ export const CURATED_CASES: CuratedCaseDefinition[] = [
     '00000000-0000-4000-8000-000000000601',
     '00000000-0000-4000-8000-000000000602',
     {
-      agents: ['Sora', 'Teo'],
-      items: ['Camera', 'Headphones', 'Board game'],
+      agents: ['Alice', 'Bob'],
+      items: ['1', '2', '3'],
       values: [[10, 10, 10], [10, 5, 5]],
     },
     [0, 1, 1],

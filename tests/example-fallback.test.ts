@@ -11,7 +11,7 @@ beforeEach(() => query.mockReset());
 
 test('curated pages resolve even before the seed rows are available', async () => {
   query.mockResolvedValue({ rowCount: 0, rows: [] });
-  expect(await getCase(EXAMPLE_CASE_ID)).toMatchObject({ agents: ['Maya', 'Leo'] });
+  expect(await getCase(EXAMPLE_CASE_ID)).toMatchObject({ agents: ['Alice', 'Bob'], items: ['1', '2', '3'] });
   expect(await getAllocation(EXAMPLE_ALLOCATION_ID)).toMatchObject({ nsw: EXAMPLE_SCORE.nsw, owners: [0, 1, 1] });
   expect(await listAllocations(EXAMPLE_CASE_ID)).toHaveLength(1);
 });

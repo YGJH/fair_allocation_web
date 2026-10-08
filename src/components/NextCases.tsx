@@ -15,8 +15,11 @@ export function NextCases({ locale }: { locale: Locale }) {
     equalButMovable: { category: t.equalButMovableValues, title: t.equalButMovableTitle, detail: t.equalButMovableDetail },
   };
   const recommended = PRACTICE_CASES.find((entry) => entry.key === 'nonIdentical') ?? PRACTICE_CASES[0];
-  const alternatives = PRACTICE_CASES.filter((entry) => entry.id !== recommended.id);
-  const recommendedText = labels[recommended.key];
+  const entries = [
+    { entry: recommended, text: labels[recommended.key], label: t.recommendedCase },
+    ...PRACTICE_CASES.filter((entry) => entry.id !== recommended.id).map((entry) => ({ entry, text: labels[entry.key], label: t.otherCases })),
+    ...FOLLOW_UP_CHALLENGE_CASES.map((entry) => ({ entry, text: challengeLabels[entry.key], label: t.followUpChallenges })),
+  ];
 
   return (
     <section className="practice-cases" aria-labelledby="practice-cases-title">
@@ -25,63 +28,21 @@ export function NextCases({ locale }: { locale: Locale }) {
         <p>{t.practiceIntro}</p>
       </header>
 
-      <a
-        className="practice-featured"
-        href={`/${locale}/cases/${recommended.id}`}
-        aria-label={`${t.recommendedCase}. ${recommendedText.category}: ${recommendedText.title}. ${t.startCase}`}
-      >
-        <span className="practice-featured__label">{t.recommendedCase}</span>
-        <div>
-          <span className="practice-case__category">{recommendedText.category}</span>
-          <h5>{recommendedText.title}</h5>
-          <p>{recommendedText.detail}</p>
-        </div>
-        <strong>{t.startCase}</strong>
-      </a>
-
-      <div className="practice-alternatives">
-        <p>{t.otherCases}</p>
-        <ul>
-          {alternatives.map((entry) => {
-            const text = labels[entry.key];
-            return (
-              <li key={entry.id}>
-                <a href={`/${locale}/cases/${entry.id}`} aria-label={`${text.category}: ${text.title}. ${t.startCase}`}>
-                  <div>
-                    <span className="practice-case__category">{text.category}</span>
-                    <h5>{text.title}</h5>
-                  </div>
-                  <span className="practice-case__action">{t.startCase}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      <div className="practice-challenges">
-        <header>
-          <h5>{t.followUpChallenges}</h5>
-          <p>{t.followUpChallengesIntro}</p>
-        </header>
-        <ul>
-          {FOLLOW_UP_CHALLENGE_CASES.map((entry) => {
-            const text = challengeLabels[entry.key];
-            return (
-              <li key={entry.id}>
-                <a href={`/${locale}/cases/${entry.id}`} aria-label={`${t.followUpChallenges}. ${text.title}. ${t.startCase}`}>
-                  <div>
-                    <span className="practice-case__category">{text.category}</span>
-                    <h5>{text.title}</h5>
-                    <p>{text.detail}</p>
-                  </div>
-                  <span className="practice-case__action">{t.startCase}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      <ol className="practice-list">
+        {entries.map(({ entry, text, label }, index) => (
+          <li key={entry.id}>
+            <a href={`/${locale}/cases/${entry.id}`} aria-label={`${label}. ${text.category}: ${text.title}. ${t.startCase}`}>
+              <span className="practice-list__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+              <div className="practice-list__copy">
+                <span>{index === 0 ? t.recommendedCase : text.category}</span>
+                <h5>{text.title}</h5>
+                <p>{text.detail}</p>
+              </div>
+              <strong>{t.startCase}</strong>
+            </a>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }

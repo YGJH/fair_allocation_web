@@ -3,6 +3,7 @@
 import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import type { CaseInput } from '../domain/model';
 import { copy, type Locale } from '../i18n/copy';
+import { displayItemName } from '../i18n/labels';
 import { EnvyGraph } from './EnvyGraph';
 
 type DragSession = {
@@ -73,6 +74,7 @@ export function AllocationEditor({ locale, caseId, caseData }: { locale: Locale;
 
   function renderItem(itemIndex: number) {
     const item = caseData.items[itemIndex];
+    const label = displayItemName(locale, item, itemIndex);
     const owner = owners[itemIndex];
     const values = caseData.agents.map((agent, personIndex) => `${agent} ${caseData.values[personIndex][itemIndex]}`).join(', ');
     const ownerLabel = owner >= 0 ? caseData.agents[owner] : t.itemDock;
@@ -82,7 +84,7 @@ export function AllocationEditor({ locale, caseId, caseData }: { locale: Locale;
         type="button"
         key={item}
         aria-pressed={selectedItem === itemIndex}
-        aria-label={`${item}. ${values}. ${ownerLabel}`}
+        aria-label={`${label}. ${values}. ${ownerLabel}`}
         disabled={pending}
         onClick={() => {
           if (suppressClick.current) {
@@ -96,10 +98,10 @@ export function AllocationEditor({ locale, caseId, caseData }: { locale: Locale;
         onPointerUp={(event) => finishDrag(event, true)}
         onPointerCancel={(event) => finishDrag(event, false)}
       >
-        <span className="allocation-token__name">{item}</span>
+        <span className="allocation-token__name">{label}</span>
         <span className="allocation-token__values" aria-hidden="true">
           {caseData.values.map((row, personIndex) => (
-            <span key={caseData.agents[personIndex]} data-person={personIndex}>{row[itemIndex]}</span>
+            <span key={caseData.agents[personIndex]} data-person={personIndex}><small>{caseData.agents[personIndex]}</small>{row[itemIndex]}</span>
           ))}
         </span>
       </button>
@@ -138,6 +140,11 @@ export function AllocationEditor({ locale, caseId, caseData }: { locale: Locale;
           style={{ '--allocation-progress': `${owners.length ? assigned / owners.length * 100 : 0}%` } as CSSProperties}
         ><strong>{assigned}</strong><span>/ {caseData.items.length}</span></div>
       </div>
+
+      <aside className="allocation-task" aria-labelledby="allocation-task-title">
+        <span aria-hidden="true">1</span>
+        <div><strong id="allocation-task-title">{t.allocationTaskTitle}</strong><p>{t.allocationTaskDetail}</p></div>
+      </aside>
 
       {error && <p role="alert">{error}</p>}
 
@@ -189,9 +196,10 @@ export function AllocationEditor({ locale, caseId, caseData }: { locale: Locale;
       <div className="sr-only">
         {caseData.items.map((item, i) => {
           const inputId = `owner-${i}`;
+          const label = displayItemName(locale, item, i);
           return (
             <div key={item}>
-              <label htmlFor={inputId}>{locale === 'zh-TW' ? `${item} 的歸屬` : `${item} owner`}</label>
+              <label htmlFor={inputId}>{locale === 'zh-TW' ? `${label} 的歸屬` : `${label} owner`}</label>
               <select
                 id={inputId}
                 value={owners[i]}

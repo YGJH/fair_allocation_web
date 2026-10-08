@@ -16,7 +16,7 @@ test('an allocation reveals its mathematical result immediately without a fairne
   render(<AllocationResults locale="en" caseId={EXAMPLE_CASE_ID} caseData={EXAMPLE_CASE} owners={EXAMPLE_OWNERS} score={EXAMPLE_SCORE} />);
 
   expect(screen.getByRole('heading', { name: 'Your allocation, measured' })).toBeTruthy();
-  expect(screen.getByRole('heading', { name: 'Watch the fairness tests work' })).toBeTruthy();
+  expect(screen.getByRole('heading', { name: 'See how the three checks work' })).toBeTruthy();
   expect(screen.queryAllByRole('radio')).toHaveLength(0);
   expect(screen.queryByRole('button', { name: /submit rating/i })).toBeNull();
   expect(fetchSpy).not.toHaveBeenCalled();

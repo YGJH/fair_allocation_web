@@ -4,7 +4,7 @@ import { scoreAllocation, toJsonScore } from '../src/domain/score';
 import { CURATED_CASES, EXAMPLE_CASE_ID, EXAMPLE_ALLOCATION_ID, PRACTICE_CASES } from '../src/shared/example';
 import { getCase, getAllocation } from '../src/server/repository';
 
-const sample = {agents:['Maya','Leo'],items:['Sketchbook','Lantern','Notebook'],values:[[8,5,2],[2,6,7]]};
+const sample = {agents:['Alice','Bob'],items:['1','2','3'],values:[[8,5,2],[2,6,7]]};
 test('first example has a trusted reproducible baseline', () => {
  expect(roundRobin(sample,1)).toEqual([0,1,1]);
  expect(toJsonScore(scoreAllocation(sample,[0,1,1]))).toEqual({utilities:['8','13'],nsw:'104',ef1:true,efx:true});

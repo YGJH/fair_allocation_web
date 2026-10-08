@@ -31,25 +31,32 @@ test('home asks five utility-chart questions before showing statistics', async (
   await expect(page.getByRole('heading', { name: 'What feels fair to you?' })).toBeVisible();
   await expect(page.getByText('Question 1 of 5')).toBeVisible();
   await expect(page.getByRole('heading', { name: '100 to 1' })).toBeVisible();
-  await expect(page.getByRole('img', { name: /Nia: 100.*Rare painting \+60.*Record collection \+40.*Omar: 1.*Bus ticket \+1/ })).toBeVisible();
+  await expect(page.getByRole('img', { name: /Alice: 100.*Item 1 \+60.*Item 2 \+40.*Bob: 1.*Item 3 \+1/ })).toBeVisible();
   await expect(page.locator('.survey-utility__segment')).toHaveCount(3);
-  const matrix = page.getByRole('table', { name: 'Every value, side by side' });
-  await expect(matrix.getByRole('row', { name: /Rare painting.*60.*100/ })).toBeVisible();
-  await expect(matrix.getByRole('row', { name: /Record collection.*40.*1/ })).toBeVisible();
-  await expect(matrix.getByRole('row', { name: /Bus ticket.*0.*1/ })).toBeVisible();
+  const barBottoms = await page.locator('.survey-utility__stack').evaluateAll((bars) => bars.map((bar) => bar.getBoundingClientRect().bottom));
+  expect(barBottoms).toHaveLength(2);
+  expect(Math.abs(barBottoms[0] - barBottoms[1])).toBeLessThan(0.01);
+  await expect(page.locator('.survey-utility__scale--zero')).toHaveText('0');
+  await expect(page.locator('.survey-utility__scale--max')).toHaveText('100');
+  await expect(page.getByRole('list', { name: 'How each person scores the items' }).getByRole('listitem')).toHaveCount(3);
+  await expect(page.getByRole('table')).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Make your own allocation' })).toHaveCount(0);
 
   await page.getByRole('button', { name: /Fair$/ }).click();
+  await page.getByRole('button', { name: 'Next question' }).click();
   await expect(page.getByRole('heading', { name: 'The close call' })).toBeVisible();
   await page.getByRole('button', { name: /Unfair$/ }).click();
+  await page.getByRole('button', { name: 'Next question' }).click();
   await expect(page.getByRole('heading', { name: '10 and 10' })).toBeVisible();
   await page.getByRole('button', { name: /Fair$/ }).click();
+  await page.getByRole('button', { name: 'Next question' }).click();
   await expect(page.getByRole('heading', { name: 'Same list, different split' })).toBeVisible();
   await page.getByRole('button', { name: /Fair$/ }).click();
+  await page.getByRole('button', { name: 'Next question' }).click();
   await expect(page.getByRole('heading', { name: 'The shared favorites' })).toBeVisible();
   await page.getByRole('button', { name: /Unfair$/ }).click();
 
-  await expect(page.getByRole('heading', { name: 'Your fairness pulse' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your answers' })).toBeVisible();
   await expect(page.getByText('70%')).toBeVisible();
   await expect(page.getByText('27%')).toBeVisible();
   await expect(page.getByText('67%')).toBeVisible();
@@ -63,7 +70,7 @@ test('reduced motion and no-JS retain a complete first question', async ({ brows
   const page = await reduced.newPage();
   await page.goto('/zh-TW');
   await expect(page.getByRole('heading', { name: '你覺得怎樣才公平？' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '100 比 1' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '一個 100 分，一個 1 分' })).toBeVisible();
   await expect(page.getByRole('button', { name: /公平$/ }).last()).toBeVisible();
   expect(await page.locator('body').evaluate((el) => el.scrollWidth)).toBeLessThanOrEqual(390);
   await reduced.close();

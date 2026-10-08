@@ -44,10 +44,9 @@ export function MotionSystem() {
       const caseScenario = document.querySelector<HTMLElement>('.case-scenario');
       if (caseHero && caseScenario) {
         gsap.fromTo(caseScenario,
-          { y: 28, rotate: -2.2 },
+          { y: 28 },
           {
             y: -42,
-            rotate: 1.2,
             ease: 'none',
             scrollTrigger: { trigger: caseHero, start: 'top top+=78', end: 'bottom top+=120', scrub: 0.8 },
           },
@@ -62,7 +61,6 @@ export function MotionSystem() {
           gsap.to(item, {
             x: index % 2 ? 44 : -38,
             y: index === 1 ? -52 : 38,
-            rotate: index % 2 ? 9 : -8,
             ease: 'none',
             scrollTrigger: { trigger: caseHero, start: 'top top+=78', end: 'bottom top+=120', scrub: 0.65 },
           });

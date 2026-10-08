@@ -3,6 +3,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import type { Allocation, CaseInput } from '../domain/model';
 import { copy, type Locale } from '../i18n/copy';
+import { displayItemName } from '../i18n/labels';
 import type { SurveyQuestionKey, SurveySummary } from '../shared/survey';
 
 type Question = {
@@ -80,8 +81,6 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
       if (!response.ok) throw new Error();
       const data = await response.json() as SurveySummary;
       setSummary(data);
-      const next = data.questions.findIndex((question) => question.userVerdict === null);
-      if (next >= 0) setQuestionIndex(next);
     } catch {
       setError(t.surveyError);
     } finally {
@@ -102,7 +101,7 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
   const utilityBundles = current ? current.caseData.agents.map((agent, personIndex) => {
     const items = current.caseData.items
       .map((item, itemIndex) => ({
-        item,
+        item: displayItemName(locale, item, itemIndex),
         itemIndex,
         contribution: current.caseData.values[personIndex][itemIndex],
       }))
@@ -111,6 +110,13 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
     return { agent, items, utility };
   }) : [];
   const maxUtility = Math.max(1, ...utilityBundles.map(({ utility }) => utility));
+  const currentResult = summary?.questions[questionIndex];
+  const currentAnswer = currentResult?.userVerdict ?? null;
+
+  function moveQuestion(direction: -1 | 1) {
+    setQuestionIndex((index) => Math.max(0, Math.min(questions.length - 1, index + direction)));
+    setError('');
+  }
 
   return (
     <main id="main-content" className="home-main home-survey">
@@ -129,43 +135,46 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
               <div className="survey-question__topline">
                 <span>{t.surveyProgress.replace('{current}', String(questionIndex + 1)).replace('{total}', String(questions.length))}</span>
                 <div className="survey-progress" aria-hidden="true">
-                  {questions.map((question, index) => <i className={index <= questionIndex ? 'is-active' : ''} key={question.allocationId} />)}
+                  {questions.map((question, index) => {
+                    const answered = summary?.questions[index]?.userVerdict !== null && summary?.questions[index]?.userVerdict !== undefined;
+                    return <i className={`${answered ? 'is-complete ' : ''}${index === questionIndex ? 'is-current' : ''}`.trim()} key={question.allocationId} />;
+                  })}
                 </div>
               </div>
 
               <div className="survey-question__layout">
                 <div className="survey-prompt">
+                  <aside className="survey-task" aria-labelledby={`survey-task-title-${questionIndex}`}>
+                    <strong id={`survey-task-title-${questionIndex}`}>{t.surveyTaskTitle}</strong>
+                    <p>{t.surveyTaskDetail}</p>
+                  </aside>
                   <p className="survey-category">{currentCopy.category}</p>
                   <h2>{currentCopy.title}</h2>
                   <p>{currentCopy.detail}</p>
                   <div className="survey-valuations">
                     <header>
                       <strong>{t.surveyValuationTitle}</strong>
-                      <span>{t.surveyValuationHint}</span>
+                      <span>{t.surveyPreferenceNote}</span>
                     </header>
-                    <table aria-label={t.surveyValuationTitle}>
-                      <thead>
-                        <tr>
-                          <th scope="col">{t.goods}</th>
-                          {current.caseData.agents.map((agent) => <th scope="col" key={agent}>{agent}</th>)}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {current.caseData.items.map((item, itemIndex) => (
-                          <tr key={item}>
-                            <th scope="row">
-                              <i style={{ '--survey-item-color': ITEM_COLORS[itemIndex % ITEM_COLORS.length] } as CSSProperties} />
-                              <span>{item}<small>{t.surveyAllocatedTo.replace('{agent}', current.caseData.agents[current.owners[itemIndex]])}</small></span>
-                            </th>
+                    <div className="survey-valuations__list" role="list" aria-label={t.surveyValuationTitle}>
+                      {current.caseData.items.map((item, itemIndex) => (
+                        <article className="survey-item-row" role="listitem" key={item}>
+                          <div>
+                            <i style={{ '--survey-item-color': ITEM_COLORS[itemIndex % ITEM_COLORS.length] } as CSSProperties} />
+                            <strong>{displayItemName(locale, item, itemIndex)}</strong>
+                            <small>{t.surveyAllocatedTo.replace('{agent}', current.caseData.agents[current.owners[itemIndex]])}</small>
+                          </div>
+                          <dl>
                             {current.caseData.agents.map((agent, personIndex) => (
-                              <td className={current.owners[itemIndex] === personIndex ? 'is-owner' : undefined} key={agent}>
-                                {current.caseData.values[personIndex][itemIndex]}
-                              </td>
+                              <div className={current.owners[itemIndex] === personIndex ? 'is-owner' : undefined} key={agent}>
+                                <dt>{agent}</dt>
+                                <dd>{current.caseData.values[personIndex][itemIndex]}</dd>
+                              </div>
                             ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                          </dl>
+                        </article>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -179,31 +188,43 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
                     role="img"
                     aria-label={utilityBundles.map(({ agent, utility, items }) => `${agent}: ${utility}. ${t.surveyUtilityBreakdown}: ${items.map(({ item, contribution }) => `${item} +${contribution}`).join(', ')}`).join('. ')}
                   >
-                    {utilityBundles.map(({ agent, utility, items }) => (
-                      <div
-                        className="survey-utility__column"
-                        key={agent}
-                        style={{ '--survey-utility-height': `${utility / maxUtility * 100}%` } as CSSProperties}
-                      >
-                        <div className="survey-utility__meter" aria-hidden="true">
-                          <div className="survey-utility__stack">
-                            {items.map(({ item, itemIndex, contribution }) => (
-                              <i
-                                className={contribution === 0 ? 'survey-utility__segment is-zero' : 'survey-utility__segment'}
-                                key={itemIndex}
-                                style={{
-                                  '--survey-item-color': ITEM_COLORS[itemIndex % ITEM_COLORS.length],
-                                  '--survey-item-share': utility > 0 ? contribution / utility : 0,
-                                } as CSSProperties}
-                              >
-                                {contribution / maxUtility >= .12 && <span>{item}<b>+{contribution}</b></span>}
-                              </i>
-                            ))}
+                    <div className="survey-utility__plot" aria-hidden="true">
+                      <span className="survey-utility__scale survey-utility__scale--max">{maxUtility}</span>
+                      <span className="survey-utility__scale survey-utility__scale--zero">0</span>
+                      <div className="survey-utility__columns">
+                        {utilityBundles.map(({ agent, utility, items }) => (
+                          <div
+                            className="survey-utility__column"
+                            key={agent}
+                            style={{ '--survey-utility-height': `${utility / maxUtility * 100}%` } as CSSProperties}
+                          >
+                            <div className="survey-utility__meter">
+                              <div className="survey-utility__stack">
+                                {items.map(({ item, itemIndex, contribution }) => (
+                                  <i
+                                    className={contribution === 0 ? 'survey-utility__segment is-zero' : 'survey-utility__segment'}
+                                    key={itemIndex}
+                                    style={{
+                                      '--survey-item-color': ITEM_COLORS[itemIndex % ITEM_COLORS.length],
+                                      '--survey-item-share': utility > 0 ? contribution / utility : 0,
+                                    } as CSSProperties}
+                                  >
+                                    {contribution / maxUtility >= .12 && <span>{item}<b>+{contribution}</b></span>}
+                                  </i>
+                                ))}
+                              </div>
+                              <strong className="survey-utility__total">{utility}</strong>
+                            </div>
                           </div>
-                          <strong className="survey-utility__total">{utility}</strong>
-                        </div>
-                        <h3>{agent}</h3>
-                        <div className="survey-utility__breakdown">
+                        ))}
+                      </div>
+                    </div>
+                    <div className="survey-utility__labels">
+                      {utilityBundles.map(({ agent }) => <h3 key={agent}>{agent}</h3>)}
+                    </div>
+                    <div className="survey-utility__breakdowns">
+                      {utilityBundles.map(({ agent, items }) => (
+                        <div className="survey-utility__breakdown" key={agent}>
                           <span>{t.surveyUtilityBreakdown}</span>
                           <ul>
                             {items.map(({ item, itemIndex, contribution }) => (
@@ -215,8 +236,8 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
                             ))}
                           </ul>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </figure>
               </div>
@@ -227,16 +248,21 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
                   <p>{t.surveyDecisionHint}</p>
                 </div>
                 <div className="survey-decision__buttons">
-                  <button type="button" className="survey-choice survey-choice--unfair" disabled={pending} onClick={() => answer(false)}>
+                  <button type="button" aria-pressed={currentAnswer === false} className={`survey-choice survey-choice--unfair${currentAnswer === false ? ' is-selected' : ''}`} disabled={pending} onClick={() => answer(false)}>
                     <span aria-hidden="true">×</span>{t.unfairChoice}
                   </button>
-                  <button type="button" className="survey-choice survey-choice--fair" disabled={pending} onClick={() => answer(true)}>
+                  <button type="button" aria-pressed={currentAnswer === true} className={`survey-choice survey-choice--fair${currentAnswer === true ? ' is-selected' : ''}`} disabled={pending} onClick={() => answer(true)}>
                     <span aria-hidden="true">✓</span>{t.fairChoice}
                   </button>
                 </div>
               </div>
               {pending && <p className="survey-status" role="status">{t.surveySaving}</p>}
+              {!pending && currentAnswer !== null && <p className="survey-status survey-status--saved" role="status">✓ {t.responseSaved}</p>}
               {error && <p className="survey-status" role="alert">{error}</p>}
+              <nav className="survey-question__nav" aria-label={t.surveyProgress.replace('{current}', String(questionIndex + 1)).replace('{total}', String(questions.length))}>
+                <button type="button" className="button button-secondary" disabled={questionIndex === 0 || pending} onClick={() => moveQuestion(-1)}>{t.previousQuestion}</button>
+                <button type="button" className="button button-primary" disabled={currentAnswer === null || questionIndex === questions.length - 1 || pending} onClick={() => moveQuestion(1)}>{questionIndex === questions.length - 1 ? t.finishSurvey : t.nextQuestion}</button>
+              </nav>
             </div>
           ) : summary ? (
             <div className="survey-results" aria-live="polite">

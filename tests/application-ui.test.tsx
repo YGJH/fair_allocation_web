@@ -61,11 +61,10 @@ test('leaderboard rows link to their rating-first detail', () => {
 test('next cases provide one recommendation without implying a required sequence', () => {
   render(<NextCases locale="zh-TW" />);
 
-  expect(screen.getByText('建議下一題')).toBeTruthy();
-  expect(screen.getByRole('link', { name: /建議下一題.*100 比 1/ })).toBeTruthy();
-  expect(screen.getByText('換你自己分分看')).toBeTruthy();
-  expect(screen.getByRole('link', { name: /換你自己分分看.*只差一點/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000501');
-  expect(screen.getByRole('link', { name: /換你自己分分看.*10 比 10/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000601');
-  expect(screen.getAllByRole('link', { name: /開始這題/ })).toHaveLength(5);
-  expect(document.querySelector('.practice-track__step')).toBeNull();
+  expect(screen.getByText('推薦先做')).toBeTruthy();
+  expect(screen.getByRole('link', { name: /推薦先做.*一個 100 分，一個 1 分/ })).toBeTruthy();
+  expect(screen.getByRole('link', { name: /換你來分.*12 分和 8 分，怎麼看？/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000501');
+  expect(screen.getByRole('link', { name: /換你來分.*都是 10 分，就公平嗎？/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000601');
+  expect(screen.getAllByRole('link', { name: /開始作答/ })).toHaveLength(5);
+  expect(document.querySelectorAll('.practice-list > li')).toHaveLength(5);
 });

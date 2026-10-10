@@ -1,5 +1,7 @@
 # 0002: Valuation Matrices, Auto-Dossier, and Historical Vernacular Tone
 
+> **Status**: partially superseded. Points 1 (100-point matrices) and 2 (automated dossier) stand, except the Act II calibration note. Point 3 (silver slider in Act III) is superseded by ADR-0005. Point 4 (tone) is amended by ADR-0004: plain modern Chinese with period forms of address.
+
 We adopt a 100-point normalized integer valuation framework, automated clue notebooks, and a classical court-drama tone (*Ming-Qing gongan* style) for *The Art of Scales*:
 
 1. **Normalized 100-Point Valuation Matrices**: Each agent's preferences across a case sum to 100, allowing players to calculate and compare utility and envy rapidly without mental friction. Act II's matrix is strictly calibrated so feudal inheritance allocations fulfill EF1 while dramatically violating EFX.

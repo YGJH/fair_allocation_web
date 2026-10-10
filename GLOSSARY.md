@@ -1,4 +1,4 @@
- Domain Glossary: Fair Allocation & The Art of Scales (均天下)
+# Domain Glossary: Fair Allocation & The Art of Settled Shares (定分止爭錄)
 
 This glossary defines canonical terms used across the codebase, tests, specifications, and narrative scripts. Agents and developers must use these terms consistently without inventing conflicting synonyms.
 
@@ -10,10 +10,14 @@ This glossary defines canonical terms used across the codebase, tests, specifica
 The assumption that an agent's total utility for a bundle of items equals the arithmetic sum of their individual valuations for each item in that bundle. Valuations in this system are non-negative integers ($v_i(g) \ge 0$).
 
 ### Indivisible Goods (不可分割物品)
-Physical or legal goods that cannot be divided or cut into fractional pieces without destroying their fundamental utility (e.g., an antique mirror, a family plaque, a military tally). Contrast with *Divisible Goods*.
+Physical or legal goods that cannot be divided or cut into fractional pieces without destroying their fundamental utility (e.g., a loom workshop with its weaving licence, an imperial writ of authority). Contrast with *Divisible Goods*.
 
 ### Divisible Goods (可分割物品)
-Goods that can be continuously partitioned and shared across multiple agents by arbitrary proportions (e.g., imperial silver bullion, grain reserves).
+Goods that can be partitioned and shared across multiple agents by proportion (e.g., paddy fields, silver, raw silk). In the narrative campaign every divisible good is split in tenths (成).
+
+### Proportionality (得其分 / 比例公平)
+An allocation in which every agent values their own bundle at no less than $1/n$ of everything ($v_i(A_i) \ge v_i(M)/n$). With two agents it coincides with envy-freeness; with three or more it does not.
+_Avoid_: fair share (ambiguous), equal split.
 
 ### Envy (嫉妒)
 A situation where an agent $i$ perceives that the bundle assigned to another agent $j$ holds greater total subjective value to $i$ than $i$'s own assigned bundle ($v_i(A_j) > v_i(A_i)$).
@@ -28,50 +32,129 @@ A fundamental relaxation of envy-freeness for indivisible goods. An allocation i
 A stricter standard than EF1. An allocation is EFX if for every pair of agents $i, j$ and for *every* item $g \in A_j$ for which $i$ has positive value ($v_i(g) > 0$), removing $g$ eliminates $i$'s envy ($v_i(A_i) \ge v_i(A_j \setminus \{g\})$). The universal existence of EFX allocations remains one of the premier open problems in fair division.
 
 ### Nash Social Welfare / NSW (納許社會福利)
-The geometric mean—or equivalently, the exact product—of all agents' utilities:
+The exact product of all agents' utilities:
 $$\text{NSW} = \prod_{i=1}^{n} v_i(A_i)$$
-NSW balances overall efficiency with fairness because any allocation leaving an essential stakeholder with zero utility collapses the entire product to zero (*The Peril of Zero Utility*).
+NSW balances overall efficiency with fairness because any allocation leaving a party with zero utility collapses the entire product to zero (*Zero Product*). In narrative dialogue it is called the *Harmony Score*.
+
+### Zero Product (零乘積)
+An allocation in which at least one agent's utility is zero, so NSW is zero regardless of what the others receive.
+_Avoid_: zero-collapse, zero-utility crash.
 
 ### Fractional NSW (可分割版本 NSW 上界)
-The theoretical optimal NSW obtained when items are relaxed to be continuously divisible across agents. Computed via convex optimization (SciPy solver), serving as a benchmark upper bound.
+The theoretical optimal NSW obtained when items are relaxed to be continuously divisible across agents. Computed via convex optimization (SciPy solver), serving as a benchmark upper bound in sandbox mode. Not used by the narrative campaign.
+
+### Compensation (找補)
+Offsetting the advantage of whoever receives an indivisible good by shifting shares of divisible goods to the other agents.
+_Avoid_: side payment, silver reconciliation.
+
+### Cut-and-Choose (我分你選)
+The two-agent procedure in which one agent partitions the goods into two bundles and the other picks first. It guarantees proportionality to both without anyone revealing their valuations.
+
+### Round-Robin (輪流揀選)
+The procedure in which agents take turns picking their most-valued remaining item in a fixed order until none remain. It always yields an EF1 allocation, and the picking order determines who benefits.
+_Avoid_: draft, picking sequence.
 
 ### Rate-Before-Reveal (先評價、後揭曉)
-The pedagogical mechanism requiring the user/player to commit their intuitive fairness judgment (1–5 rating) before any mathematical indicators (EF1, EFX, NSW, ranking) are exposed.
+The pedagogical mechanism requiring the player to commit their intuitive fairness judgment (1–5 rating) on their *Initial Verdict* before any mathematical indicator is exposed.
 
 ---
 
 ## 2. Narrative & World Concepts (歷史劇情與玩法術語)
 
 ### The Art of Settled Shares / 定分止爭錄
-The overarching narrative adventure campaign educating players on fair allocation through historical point-and-click dilemmas. Named after *The Book of Lord Shang* (《商君書·定分》: "名分定，則私利行不苟；定分止爭，天下自治").
+The narrative adventure campaign teaching fair allocation through three connected cases in the Wanli reign of the Ming dynasty (1574–1581). Named after *The Book of Lord Shang* (《商君書·定分》: "名分定，則私利行不苟；定分止爭，天下自治").
 
-### Judicial Magistrate / Imperial Arbitrator (算學提刑官)
-The protagonist role assumed by the player, tasked with resolving disputes through mathematical insight, forensic investigation, and ethical balance.
+### Cheng Heng (程衡，字秉均)
+The fictional protagonist played by the player throughout all three acts: an abacus-trained *jinshi* from a Huizhou merchant family who rises from Prefectural Judge to Supervising Secretary.
+_Avoid_: 算學提刑官, Judicial Magistrate, Imperial Arbitrator.
 
-### Act I: Song Guild Partition (第一幕：大宋紹聖二年 · 汴京彩帛行師徒析產案)
-The introductory scenario set in a Northern Song trade guild. Grounded in *The Clear and Bright Collection of Court Decisions* (《名公書判清明集》卷五〈戶婚門 · 分產〉). Focuses on two merchant brothers disputing heirloom goods, teaching subjective valuations, Envy, and EF1.
+### Prefectural Judge (府推官)
+Cheng Heng's office in Acts I and II (rank 7a): the official of a prefecture who retries cases appealed from its counties. Addressed as 「大人」 in dialogue.
 
-### Act II: Ming Clan Inheritance Trial (第二幕：明嘉靖三十五年 · 松江府染坊宗祧鬮分案)
-The intermediate scenario set in a Ming dynasty prefectural yamen. Grounded in authentic *Huizhou Division Deeds* (《徽州分產鬮書》), Hai Rui's verdicts (《海忠介公判詞》), and *The Great Ming Code* (《大明律·戶律·田宅》). Focuses on three clan heirs fighting over clan estates and watermills, teaching EFX and its potential non-existence.
+### Supervising Secretary (戶科給事中)
+Cheng Heng's office in Act III (rank 7b): a low-ranking official of the Office of Scrutiny for Revenue who inspects edicts before they are issued and may send them back.
 
-### Act III: Imperial Council Strategic Compromise (第三幕：明萬曆四年深秋 · 乾清深宮「九邊軍國大計案」)
-The climactic scenario set in the midnight war council of the Forbidden City. Grounded in *History of Ming* (《明史·神宗本紀一》, 《明史·張居正傳》, 《明史·戚繼光傳》). Focuses on balancing the actual historical triumvirate—Emperor Shenzong, Grand Secretary Zhang Juzheng, Frontier Commander Qi Jiguang, and Chief Eunuch Feng Bao—teaching Nash Social Welfare, zero-collapse, and fractional bullion compensation.
+### Send-Back (封駁 / 退回)
+A Supervising Secretary's refusal to issue an edict he judges improper. In dialogue it is always phrased as "退回"; the three-stage path of an edict is "擬稿 (票擬) → 批准 (批紅) → 檢查 (六科)".
 
-### Ritual Scales / Allocation Workbench (權衡天平 / 分配案台)
-The visual interactive interface where players place contested 3D tokens and assets onto individual stakeholder trays to draft allocations.
+### Master Zhou (周先生)
+Cheng Heng's private secretary, present in all three acts, whose lines serve as the in-fiction system prompts explaining each concept and the next action to the player.
+_Avoid_: 師爺.
+
+### The Three Camps (三家)
+The parties of Act III. Dialogue calls them 文官, 邊軍, and 宮裡; documentation and tables call them 外朝, 薊鎮, and 內廷. They are led respectively by Zhang Juzheng, Qi Jiguang, and Feng Bao.
+
+### Act I: Yiwu Brothers' Partition (第一幕：萬曆三年春 · 義烏陳氏兄弟析產案)
+Two brothers divide three divisible goods after a county ruling that halved everything. Teaches subjective valuation, Proportionality, and Cut-and-Choose.
+
+### Act II: Hangzhou Loom Workshop Partition (第二幕：萬曆八年冬 · 杭州裴氏機房鬮分案)
+Three heirs divide three divisible goods and one indivisible workshop under pressure from the land survey and the imperial weaving office. Teaches Envy, the Envy Graph, Compensation, and the Harmony Score.
+
+### Act III: Wenhua Hall Audience (第三幕：萬曆九年冬 · 文華殿歲計召對)
+The Three Camps contest six indivisible Writs with nothing left to compensate with. Teaches that EF may not exist, EF1, EFX, Zero Product, and Round-Robin.
+
+### Writ (敕書)
+One of the six indivisible grants of authority contested in Act III (符, 鹽, 糧, 火, 市, 織). Each can be held by exactly one camp.
+_Avoid_: seal, token, 印信.
+
+### Proposal (定分條陳)
+The allocation of the six Writs that Cheng Heng submits to the emperor in Act III. The emperor, not the player, decides; the ending follows from the Proposal's properties.
+
+### Allocation Workbench (分配案台)
+The interactive interface where the player assigns goods to each party: sliders in tenths for Divisible Goods and drag-and-drop for Indivisible Goods.
+_Avoid_: ritual scales.
+
+### Initial Verdict (初判)
+The first allocation the player commits in an act, made without any mathematical indicator visible and rated under Rate-Before-Reveal.
+
+### Revision (改判 / 改擬)
+The single optional re-allocation allowed after the Case Scroll Debrief, made with the unlocked Tools visible. The result, revised or not, is the *Final Verdict*.
+
+### Final Verdict (定讞)
+The allocation that is graded in the Performance Ledger and that determines endings.
 
 ### Case Scroll Debrief (斷案卷宗)
-The post-verdict reveal screen presenting the mathematical verification report, envy graph, and historical consequences of the ruling.
+The post-verdict reveal presenting the act's indicators and the aggrieved party's reaction.
 
-### Historical Endings (歷史結局矩陣)
-The four branching narrative epilogues derived from cumulative player arbitration traits:
-1. **Benevolent Prime Minister (萬民太和 · 盛世良相)**: Prioritizes NSW maximization and broad societal harmony.
-2. **Strict Legalist (鐵面無私 · 孤高法家)**: Prioritizes absolute EF1/EFX compliance and zero envy.
-3. **Cunning Autocrat (權衡偏重 · 梟雄帝業)**: Favors utilitarian concentration of power to dominant factions.
-4. **Reclusive Scholar (洞見乾坤 · 算學宗師)**: Recognizes the mathematical limits of indivisible goods and retires to author seminal treatises.
+### Tools (工具)
+The three indicators unlocked act by act and shown only during Revision and Master Challenges: the *Share Gauge*, the *Envy Graph*, and the *Remove-One Test*.
+
+### Share Gauge (分秤)
+The tool unlocked in Act I showing, for each party, what fraction of everything they believe they received.
+
+### Envy Graph (妒線)
+The tool unlocked in Act II drawing a red line from each party to every party they envy.
+
+### Harmony Score (和氣值)
+The in-fiction name for NSW, introduced in Act II.
+
+### Remove-One Test (去一物)
+The tool unlocked in Act III letting the player remove items one at a time from an envied bundle to see whether envy ends; it is how EF1 ("過得去") and EFX ("穩") are demonstrated.
+
+### Performance Ledger (考成簿)
+The in-fiction scoring record. Each act's Final Verdict receives one Grade and may earn a Master Seal.
+
+### Grade (考語)
+One of three ratings per act, in ascending order: 不稱職, 平常, 稱職. Thresholds per act are defined in the master script.
 
 ### Master Challenge (巧解挑戰)
-The optional pedagogical puzzle unlocked after viewing the Case Scroll Debrief, prompting the player to discover an allocation satisfying the highest formal fairness criteria (EF1 or EFX) without blocking narrative progression.
+The optional puzzle after each act's Final Verdict asking for the act's best allocation. It does not block progression.
 
-### Fractional Silver Slider (國庫白銀滑桿)
-The continuous interactive control in Act III enabling arbitrary fractional division of state treasury silver bullion, demonstrating real-time Nash Social Welfare curve optimization.
+### Master Seal (「巧」字印)
+The mark earned by solving an act's Master Challenge. All three unlock the hidden ending.
+
+### Most Aggrieved Party (最不平者)
+In Act III, the camp with the largest envy gap under the Final Verdict; ties go to the camp with lower utility. It selects which grievance ending plays.
+
+### National Ending (國運結局)
+One of five outcomes determined solely by the Act III Final Verdict:
+1. **鼎足而立**: EFX holds.
+2. **江陵之怨**: the Most Aggrieved Party is 外朝.
+3. **薊門之怨**: the Most Aggrieved Party is 薊鎮.
+4. **大璫之怨**: the Most Aggrieved Party is 內廷.
+5. **留中不發**: Zero Product.
+
+Endings 2–4 each have a mild variant (EF1 holds) and a severe variant (EF1 fails).
+
+### Hidden Ending (定分宗師)
+The epilogue appended after any National Ending when all three Master Seals are held.

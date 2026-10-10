@@ -1,5 +1,7 @@
 # 0001: Three-Act Narrative Progression and Pedagogical Constraints
 
+> **Status**: partially superseded. The three-act structure and non-blocking Master Challenges stand. The settings are superseded by ADR-0004; the per-act asset designs and the "any verdict shapes an alignment" model are superseded by ADR-0005.
+
 To teach indivisible fair allocation through historical immersion without blocking players on rigid puzzles, we adopt a three-act progression (Song Guild, Ming Yamen, Imperial Palace) paired with a free-verdict progression model:
 
 1. **Free Initial Verdict with Optional Mastery**: Any committed allocation advances the narrative and shapes the player's historical ending alignment; post-verdict debriefs unlock optional "Magistrate's Master Challenge" puzzles for players who wish to discover the optimal EF1/EFX frontier.

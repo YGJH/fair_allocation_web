@@ -1,5 +1,7 @@
 # 0003: Titling as 《定分止爭錄》 and Canonical Historical Citations
 
+> **Status**: partially superseded. The title and the commitment to historical grounding stand. The three per-act anchors below are superseded by ADR-0004; current citations live in the master script.
+
 To elevate educational authority and narrative immersion beyond generic interactive games, the project is officially titled **《定分止爭錄》（The Art of Settled Shares）**, derived from *The Book of Lord Shang* (《商君書·定分》: "名分定，則私利行不苟；定分止爭，天下自治").
 
 All three scenario acts are strictly anchored in authentic historical jurisprudence and court archives:

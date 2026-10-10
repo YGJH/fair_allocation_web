@@ -1,116 +1,153 @@
 # Specification: The Art of Settled Shares (定分止爭錄) — 3D Narrative Fair Division Adventure
 
+> **Revision 2 (2026-10-10)**: aligned with the second edition of `docs/story/master-script.zh-TW.md`, ADR-0004 and ADR-0005. The master script is the source of truth for dialogue, matrices, thresholds, and ending text; this spec states what the software must do. Terms follow `GLOSSARY.md`.
+
 ## Problem Statement
 
 When learning algorithmic game theory and microeconomic fair allocation, students and general audiences face steep conceptual hurdles:
 
-1. **Abstract Formulations**: Formal mathematical criteria—such as Envy-Freeness up to One Item (EF1), Envy-Freeness up to any positively-valued Item (EFX), and Nash Social Welfare (NSW)—are traditionally presented as dry algebraic inequalities or abstract matrices, obscuring the human intuition of fairness and jealousy.
-2. **Disconnect from Subjective Value**: Learners struggle to internalize that "fairness" depends heavily on asymmetric subjective valuations, where identical physical objects hold radically disparate value to different individuals.
-3. **Lack of Consequence & Immersion**: Static calculators and toy tables fail to convey the tension of real-world mediation—where misallocations spark strikes, clan feuds, or political collapse—nor do they illustrate why finding optimal indivisible allocations is NP-hard while computing a single candidate allocation is trivial.
+1. **Abstract Formulations**: Formal criteria—Proportionality, Envy-Freeness, EF1, EFX, and Nash Social Welfare (NSW)—are traditionally presented as dry inequalities or abstract matrices, obscuring the human intuition of fairness and jealousy.
+2. **Disconnect from Subjective Value**: Learners struggle to internalize that "fairness" depends on asymmetric subjective valuations, where identical objects hold radically different value to different people.
+3. **Lack of Consequence & Immersion**: Static calculators fail to convey the tension of real mediation, and do not show why dividing things that cannot be cut is fundamentally harder than dividing things that can.
 
 ## Solution
 
-A 3D "Point & Click" historical narrative adventure (*The Art of Settled Shares* / 《定分止爭錄》, derived from *The Book of Lord Shang* 《商君書·定分》) set in historical China across three escalating tiers of social and institutional conflict grounded in authentic archival jurisprudence:
+A 3D "Point & Click" historical narrative adventure set entirely in the Wanli reign of the Ming dynasty (1574–1581). The player is one person throughout—Cheng Heng, a fictional abacus-trained official—and the three cases form a single causal chain that carries him from a provincial courtroom to the emperor's audience hall.
 
-1. **Act I (Song Dynasty Bianjing Guild / 大宋紹聖二年 · 汴京彩帛行師徒析產案)**: Anchored in *The Clear and Bright Collection of Court Decisions* (《名公書判清明集》) and *The Eastern Capital: A Dream of Splendor* (《東京夢華錄》). Resolves a merchant guild partnership dispute over indivisible heirloom merchandise, introducing subjective valuations, Envy, and EF1.
-2. **Act II (Ming Dynasty Prefectural Yamen / 明嘉靖三十五年 · 松江府染坊宗祧鬮分案)**: Anchored in authentic *Huizhou Division Deeds* (《徽州千年契約文書·析產鬮書》), Hai Rui's verdicts (《海忠介公判詞》), and *The Great Ming Code* (《大明律》). Presides as magistrate over an aristocratic clan inheritance feud, introducing EFX and the reality that EFX allocations may fail to exist.
-3. **Act III (Ming Imperial War Council / 明萬曆四年深秋 · 乾清深宮「九邊軍國大計案」)**: Anchored in *History of Ming* (《明史·神宗本紀一》, 《明史·張居正傳》, 《明史·戚繼光傳》). Advises Emperor Shenzong in balancing Grand Secretary Zhang Juzheng, Frontier Commander Qi Jiguang, and Chief Eunuch Feng Bao with border military tallies, salt monopoly revenue, and treasury silver bullion, illustrating Nash Social Welfare (NSW), the peril of zero utility product, and fractional bullion compensation (Fractional NSW).
+| Act | Setting | Player's office | Parties | Goods | Concepts |
+| :--- | :--- | :--- | :---: | :--- | :--- |
+| I | Yiwu, 1575 | Prefectural Judge | 2 | 3 divisible | Subjective valuation, Proportionality, Cut-and-Choose |
+| II | Hangzhou, 1580 | Prefectural Judge | 3 | 3 divisible + 1 indivisible | Envy, Envy Graph, Compensation, Harmony Score (NSW) |
+| III | Beijing, 1581 | Supervising Secretary | 3 | 6 indivisible Writs | EF may not exist, EF1, EFX, Zero Product, Round-Robin |
 
-Players investigate the 3D diorama scene to uncover hidden stakeholder valuations, place indivisible tokens onto ancient ritual scales, commit an intuitive ruling before any formula is unveiled (rate-before-reveal), receive an in-depth scroll debrief on their allocation's mathematical properties, and steer the empire toward one of four distinct historical endings.
+Difficulty climbs from divisible to indivisible. Acts I and II are tutorials with wide success regions; Act III is the capstone, where no envy-free allocation exists and only 31 of 729 allocations are EFX.
+
+In every act the player investigates the scene to collect valuations, commits an Initial Verdict by intuition, rates it before any indicator is revealed, reads the Case Scroll Debrief, may make one Revision with the unlocked Tools, and receives a Grade in the Performance Ledger. The Act III Final Verdict alone selects one of five National Endings.
 
 ---
 
 ## User Stories
 
-1. As a player, I want to explore a 3D isometric historical scene using point-and-click navigation, so that I feel immersed in the environment of each dispute.
-2. As a player, I want to inspect contested physical objects in the 3D space, so that I can learn their historical context and understand their tangible indivisibility.
-3. As a player, I want to interrogate disputing stakeholders and read ledger clues, so that I can uncover each party's private subjective valuations for the items.
-4. As a player, I want to see an organized valuation dossier that records discovered preference scores, so that I can reason about trade-offs before assigning goods.
-5. As a player, I want an intuitive ritual scale/workbench interface where I can drag and drop items to assign them to specific agents, so that making allocations feels tangible and deliberate.
-6. As a player, I want to observe immediate emotional micro-reactions (facial portraits, animated sentiment cues) from stakeholders as I place items on the scales, so that I can perceive interpersonal tension dynamically.
-7. As a player, I want the system to conceal all formal mathematical metrics (EF1, EFX, NSW, envy graphs) during my drafting phase, so that my initial allocation reflects pure human intuition and moral judgment.
-8. As a player, I want to submit my draft allocation as an official verdict/ruling, so that my decision feels consequential and binding.
-9. As a player, I want to rate how fair my own ruling feels (on a 1-to-5 scale) before seeing any mathematical verification, so that I can benchmark my ethical intuition against formal theory.
-10. As a player, I want a "Case Scroll Debrief" (斷案卷宗) revealed after submission, so that I can see the exact breakdown of agent utilities, envy pairs, EF1/EFX compliance, and NSW score.
-11. As a player, I want clear, natural-language explanations when EF1 or EFX fails (e.g., "Agent B envies Agent A; removing Mirror leaves envy intact"), so that I understand why my intuitive ruling fell short of formal fairness.
-12. As a player in Act I, I want to discover how removing a single item cures envy (EF1), so that I understand the fundamental relaxation of envy-freeness in indivisible goods.
-13. As a player in Act II, I want to experiment with allocations where EF1 holds but EFX fails, so that I can grasp the stricter standard of removing any positively valued item.
-14. As a player in Act II, I want to experience cases where no valid EFX allocation exists, so that I recognize the theoretical limits and open problems of indivisible fair division.
-15. As a player in Act III, I want to see a live Nash Social Welfare multiplier meter, so that I can understand how welfare is measured as the product of all parties' utilities.
-16. As a player in Act III, I want to witness a dramatic crisis warning if any faction receives zero utility, so that I realize why NSW mathematically prohibits leaving any essential party completely empty-handed.
-17. As a player in Act III, I want to allocate divisible silver bullion alongside indivisible authority tokens, so that I can explore how fractional allocations provide an optimal theoretical benchmark.
-18. As a player, I want my cumulative arbitration tendencies (egalitarian, envy-minimizing, welfare-maximizing, or autocratic) tracked across all three acts, so that my journey culminates in a personalized epilogue.
-19. As a player, I want to unlock one of four historical endings (Benevolent Prime Minister, Strict Legalist, Cunning Autocrat, or Reclusive Scholar), so that my philosophical approach to fairness is rewarded with narrative closure.
-20. As a player, I want to toggle seamlessly between Traditional Chinese (繁體中文) and English (en) without losing my investigation progress, so that I can experience the story in my preferred language.
-21. As a player who relies on keyboard navigation or reduced motion, I want full keyboard accessibility on all interactive elements and respect for system motion settings, so that the experience is universally accessible.
-22. As an educator/evaluator, I want to view a post-game summary comparing the player's intuitive fairness ratings with mathematically optimal outcomes, so that I can lead classroom discussions on intuition versus formal proofs.
+### Exploration and investigation
+
+1. As a player, I want to explore a 3D isometric historical scene using point-and-click navigation, so that I feel immersed in each dispute.
+2. As a player, I want to inspect contested objects in the scene, so that I understand which can be cut and which cannot.
+3. As a player, I want to question each party, so that I uncover their private valuations.
+4. As a player, I want a dossier that records every valuation I have heard, so that I can reason about trade-offs without taking notes.
+5. As a player, I want Master Zhou to tell me in plain language what to look at, what the rule is, and what to do next, so that I never need outside knowledge to proceed.
+
+### Allocation
+
+6. As a player, I want to split each divisible good in tenths with a slider, so that sharing a good feels different from handing over an object.
+7. As a player, I want to drag each indivisible good to exactly one party, so that its indivisibility is tangible.
+8. As a player, I want to see parties react (expression, speech bubble) as I allocate, so that I sense tension before I see numbers.
+9. As a player, I want every mathematical indicator hidden while I make my Initial Verdict, so that it reflects my intuition.
+10. As a player, I want to rate how fair my Initial Verdict feels (1–5) before the reveal, so that I can compare intuition with theory.
+
+### Reveal, revision, and scoring
+
+11. As a player, I want a Case Scroll Debrief after committing, so that I see each party's share, who envies whom, and the act's criteria.
+12. As a player, I want the aggrieved party to object in character, so that a failed criterion reads as a human reaction, not an error message.
+13. As a player, I want one Revision with the unlocked Tools visible, so that I can act on what I just learned.
+14. As a player, I want my Final Verdict graded 不稱職, 平常, or 稱職 in the Performance Ledger, so that I know how well I did.
+15. As a player, I want an optional Master Challenge per act that awards a Master Seal, so that I can pursue the best allocation without being blocked.
+
+### Act-specific learning
+
+16. As a player in Act I, I want to see that halving everything gives each brother 50 while giving each what he values gives each 70, so that I learn fairness is not equal pieces.
+17. As a player in Act I, I want to play the divider in Cut-and-Choose, so that I see a procedure guarantee fairness without a judge.
+18. As a player in Act II, I want to see an allocation where everyone has at least a third yet someone still envies, so that I learn Proportionality is not envy-freeness.
+19. As a player in Act II, I want to find that giving the workshop to the wrong heir cannot be repaired by any split of the divisible goods, so that I learn where the indivisible good must go.
+20. As a player in Act II, I want to remove envy by shifting shares of a divisible good, so that I learn Compensation.
+21. As a player in Act II, I want to compare allocations by their Harmony Score, so that I meet NSW as a way to rank envy-free options.
+22. As a player in Act III, I want a three-step explanation of how an edict is drafted, approved, and inspected, so that I understand why my character can send one back.
+23. As a player in Act III, I want to see both rejected edicts produce a Zero Product, so that I understand why they were sent back.
+24. As a player in Act III, I want a Round-Robin button that fills the Workbench in rank order, so that I have a starting point and can see that picking order matters.
+25. As a player in Act III, I want to remove Writs one at a time from an envied bundle, so that I discover the difference between EF1 and EFX by hand.
+26. As a player in Act III, I want NSW hidden until the Master Challenge, so that the Revision is solved by reasoning about envy rather than by climbing a number.
+
+### Endings
+
+27. As a player, I want the National Ending to follow from my Act III Final Verdict, so that my allocation visibly changes history.
+28. As a player, I want each grievance ending to name the camp I shortchanged and to differ in severity depending on whether EF1 holds, so that the consequence matches the degree of unfairness.
+29. As a player, I want short epilogue vignettes for the Act I and Act II families that reflect my Grades there, so that earlier cases still matter.
+30. As a player, I want an overall seal summarising my three Grades and a hidden ending for holding all three Master Seals, so that mastery is recognised.
+
+### Access
+
+31. As a player, I want to switch between Traditional Chinese and English without losing progress.
+32. As a player who relies on keyboard navigation or reduced motion, I want every interaction reachable by keyboard and system motion settings respected.
+33. As an educator, I want a final page listing each act's intuitive rating beside its actual Grade, so that I can lead a discussion on intuition versus formal criteria.
 
 ---
 
 ## Implementation Decisions
 
-### Architectural Seams & Modularity
+### Scenario data
 
-1. **Pure Scoring Domain Seam (`src/domain/score.ts`)**:
-   - The narrative acts strictly feed into the existing, battle-tested `scoreAllocation(caseData, allocation)` pure domain function.
-   - All scenario goods, agents, and valuation matrices are represented using standard `CaseInput` schemas. No custom scoring math or hardcoded formulas are embedded inside UI components.
+1. **Divisible goods as unit items.** Each divisible good is ten identical unit items. Per-unit values are integers in all three acts (the matrices are multiples of 10 for divisible goods), so scenarios remain plain `CaseInput` and pass through `scoreAllocation` in `src/domain/score.ts` unchanged. Utilities stay on the 100-point scale.
+2. **Scenario definitions carry more than a matrix.** Each act declares which goods are divisible, its Grade thresholds, its Master Challenge target, and any scripted demonstration allocations. These live with the scenarios, not in UI components.
+3. **Matrices and thresholds come from the master script.** No value is restated in this spec.
 
-2. **Scenario & Narrative Engine Seam**:
-   - The game progression is governed by a deterministic, typed state machine managing three sequential acts and the final epilogue.
-   - Progression States:
-     - `SCENE_INVESTIGATION`: 3D Point & Click mode; player collects clues and unlocks stakeholder valuations.
-     - `ALLOCATION_WORKBENCH`: Player manipulates items on the scale; live sentiment feedback is displayed.
-     - `JUDGMENT_GATE`: Player commits allocation and rates intuitive fairness (1–5) prior to metric exposure.
-     - `VERDICT_REVEAL`: Mathematical metrics, envy graph, and historical story consequences are rendered.
-     - `ACT_TRANSITION` / `EPILOGUE`: Accumulates alignment vectors toward the 4 ending paths.
+### Domain
 
-3. **Alignment Tracking & Epilogue Engine**:
-   - Tracks a lightweight 3-dimensional vector across verdicts:
-     - `welfarePreference`: Weight assigned to maximizing total NSW product.
-     - `envyAversion`: Weight assigned to satisfying strict EF1/EFX.
-     - `utilitarianCompromise`: Tendency to sacrifice one party's contentment for stability.
-   - The dominant vector at Act III conclusion deterministically resolves the epilogue narrative.
+4. **New pure checks beside `scoreAllocation`**: envy-freeness, Proportionality, the per-pair envy gap, and the Most Aggrieved Party. `scoreAllocation` already provides utilities, NSW, EF1, and EFX.
+5. **Round-Robin** builds on `src/domain/round-robin.ts`, which currently shuffles the picking order from a seed; it must be extended to accept an explicit order, since Act III needs the rank order and its reverse.
+6. **Grading** is a pure function from (act, Final Verdict) to Grade and Master Seal.
+7. **Ending resolution** is a pure function from the Act III Final Verdict to a National Ending and severity. It replaces the alignment vector, which is removed.
 
-4. **3D Scene Viewport & Visual Presentation**:
-   - Implemented via Three.js with an orthographic/isometric perspective, featuring pre-lit historical dioramas for Guild, Yamen, and Imperial Council.
-   - Interaction is driven by Raycasting on tagged 3D meshes (items and character figures) paired with accessible HTML overlay dialogues for screen readers and touch devices.
-   - Fallback 2D card/table view is preserved for low-power devices and `prefers-reduced-motion` environments.
+### Progression
 
-5. **Bilingual Copy Contract**:
-   - All character dialogues, historical descriptions, clue texts, and verdict scrolls are registered under `src/i18n/copy.ts` with complete `en` and `zh-TW` keys.
-   - Character names and historical artifacts maintain culturally accurate romanization and traditional script.
+8. A deterministic typed state machine per act:
+   `INVESTIGATION → INITIAL_VERDICT → JUDGMENT_GATE → DEBRIEF → REVISION → FINAL_VERDICT → MASTER_CHALLENGE (optional) → ACT_TRANSITION`
+   followed by `EPILOGUE` after Act III.
+9. **Indicator visibility is a function of state.** Nothing is shown before `DEBRIEF`. During `REVISION` and `MASTER_CHALLENGE` the Tools unlocked so far are live. NSW is additionally withheld during Act III `REVISION`.
+10. **Exactly one Revision.** Declining it makes the Initial Verdict the Final Verdict.
+11. Act I adds a Cut-and-Choose step in which the player partitions as the elder brother and the younger brother's choice is computed.
+12. The Performance Ledger stores, per act, the Initial Verdict, its intuitive rating, the Final Verdict, the Grade, and whether the Master Seal was earned.
+
+### Presentation
+
+13. Three.js orthographic dioramas for the Jinhua prefectural court, the Hangzhou prefectural court, and Wenhua Hall, with raycast interaction paired with accessible HTML overlays. A 2D fallback remains for low-power devices and `prefers-reduced-motion`.
+14. Cutscene slots CS-00 to CS-14 are defined in the master script. The software plays a video or a still-plus-caption fallback for each; producing the videos is outside this spec.
+15. Every classical-Chinese document shown on screen (ledger entries, the send-back note, the history-book endings) is accompanied by a plain-language caption or narration line.
+
+### Copy
+
+16. All dialogue, captions, and scroll text are registered in `src/i18n/copy.ts` with complete `en` and `zh-TW` keys.
+17. Dialogue refers to the Act III camps as 文官, 邊軍, 宮裡; tables and developer-facing text use 外朝, 薊鎮, 內廷.
 
 ---
 
 ## Testing Decisions
 
-### Good Test Principles
-- Tests must assert **external system behavior and observable contracts**, never private internal variables or Three.js internal render loops.
-- Assert that mathematical indicators remain completely hidden from DOM queries until the judgment gate action has been fired.
-- Verify that every predefined historical case produces verifiable, mathematically sound EF1, EFX, and NSW scores.
+Tests assert observable behaviour and contracts, never private state or the Three.js render loop.
 
-### Module Test Targets
-1. **Scenario Definition Validity**: Unit tests ensuring each of the 3 scenario `CaseInput` matrices are positive, non-degenerate, and mathematically produce the intended didactic dilemmas (Act 1 has an EF1 resolution; Act 2 demonstrates EFX tension; Act 3 demonstrates NSW zero-collapse).
-2. **State Machine Transitions**: Unit tests verifying that investigation flags correctly unlock allocation readiness, judgment submissions transition through the gate without leaking unrevealed metrics, and ending scores evaluate deterministically.
-3. **Scoring Seam Integration**: Integration tests confirming that scenario inputs pass cleanly through `src/domain/score.ts` without runtime mutation.
-4. **End-to-End User Flow**: Playwright test asserting the full user journey: Inspect Clues $\to$ Drag Items onto Scales $\to$ Submit Ruling $\to$ Verify Debrief Scroll $\to$ Reach Act Transition.
+1. **Scenario facts** (unit, exhaustive where feasible), locking the properties the story depends on:
+   - Act I: halving yields 50/50; the Master Challenge allocation yields 70/70; the scripted Cut-and-Choose yields 50/70.
+   - Act II: no envy-free allocation exists when the workshop goes to either son; the maximum Harmony Score is 131,648 and is envy-free; the "each takes their favourite" allocation is proportional but not envy-free.
+   - Act III: 0 envy-free, 31 EFX, 153 EF1, 219 Zero Product among 729; the NSW maximum 125,125 is unique and EFX; rank-order Round-Robin is EF1 but not EFX; both rejected edicts are Zero Product.
+2. **Grading and ending resolution** (unit): each Grade boundary; each National Ending with both severities; tie-breaking for the Most Aggrieved Party.
+3. **State machine** (unit): no indicator is exposed before `DEBRIEF`; only one Revision is possible; NSW is absent from Act III `REVISION`; declining Revision preserves the Initial Verdict.
+4. **Scoring seam** (integration): scenarios pass through `scoreAllocation` without mutation, including unit-item divisible goods.
+5. **End-to-end** (Playwright): investigate → allocate → rate → debrief → revise → grade → act transition, and one full run reaching a National Ending.
 
-### Prior Art
-- Existing unit tests in `tests/domain.test.ts` and `tests/example-fallback.test.ts`.
-- Component interaction tests in `tests/allocation-results.test.tsx` and `tests/application-ui.test.tsx`.
+Prior art: `tests/domain.test.ts`, `tests/example-fallback.test.ts`, `tests/allocation-results.test.tsx`, `tests/application-ui.test.tsx`, `tests/e2e/adventure.spec.ts`.
 
 ---
 
 ## Out of Scope
 
-1. **Multiplayer / Competitive PvP**: No real-time multi-agent bidding or online player-vs-player arbitration tournaments.
-2. **Open-Ended Generative AI Dialogue**: Dialogues and historical clues are purposefully scripted and pedagogically focused; no unbounded LLM conversational loops during courtroom trials.
-3. **Continuous 3D Character Walking / Physics Simulation**: The game uses point-and-click focus and camera panning rather than a WASD third-person character locomotion engine.
-4. **Arbitrary Custom Case Generation within Narrative Mode**: Custom case authoring remains available in the auxiliary Sandbox Mode, while the Narrative Campaign adheres to the structured three-act curriculum.
+1. **Multiplayer or competitive play.**
+2. **Generative dialogue.** All lines are scripted.
+3. **Free character locomotion.** Point-and-click focus and camera moves only.
+4. **Custom cases inside the campaign.** Authoring stays in sandbox mode.
+5. **Fractional NSW in the campaign.** The solver-backed upper bound remains a sandbox feature.
+6. **Producing cutscene video.** Storyboards and generated footage are a separate workstream.
 
 ---
 
 ## Further Notes
 
-- **Educational Alignment**: The three scenarios deliberately reflect the historical economic evolution from private mercantile law (Song dynasty merchant guilds) to statutory civil adjudication (Ming dynasty prefectural yamens) and macro fiscal policy (Ming/Qing strategic frontier grain and salt administration).
-- **Graceful Fallback**: Like the existing curated example, the narrative campaign is self-contained and functions in memory without requiring an external PostgreSQL instance for default playback.
+- **Existing implementation**: `src/narrative/scenarios.ts`, the `src/components/adventure/` components, and `tests/e2e/adventure.spec.ts` implement the first edition and must be reworked against this revision.
+- **Graceful fallback**: the campaign runs in memory and needs no PostgreSQL instance.

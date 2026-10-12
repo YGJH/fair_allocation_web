@@ -2,7 +2,6 @@ import type { Allocation, CaseInput } from '../domain/model';
 import type { JsonScore } from '../domain/score';
 import { copy, type Locale } from '../i18n/copy';
 import { displayItemName } from '../i18n/labels';
-import { isExampleCase } from '../shared/example';
 import type { AllocationStanding } from '../server/repository';
 import { NextCases } from './NextCases';
 import { ScoreExplanation } from './ScoreExplanation';
@@ -23,7 +22,6 @@ export function AllocationResults({
   standing?: AllocationStanding | null;
 }) {
   const t = copy[locale];
-  const animated = isExampleCase(caseId);
   const groups = caseData.agents.map((name, personIndex) => ({
     name,
     items: caseData.items.flatMap((item, itemIndex) => owners[itemIndex] === personIndex
@@ -69,13 +67,22 @@ export function AllocationResults({
 
         <section className="panel results-panel" aria-labelledby="results-title">
           <div className="panel-heading">
-            <h2 id="results-title">{animated ? t.walkthroughTitle : t.resultsTitle}</h2>
+            <h2 id="results-title">{t.walkthroughTitle}</h2>
           </div>
-          <ScoreExplanation locale={locale} score={score} caseData={caseData} owners={owners} standing={standing} animated={animated} />
+          <ScoreExplanation locale={locale} score={score} caseData={caseData} owners={owners} standing={standing} animated />
         </section>
       </div>
 
-      {animated && <div className="allocation-results__next"><NextCases locale={locale} /></div>}
+      <div className="allocation-results__next">
+        <section className="completion-reflection" aria-labelledby="completion-reflection-title">
+          <span className="completion-reflection__mark" aria-hidden="true">∴</span>
+          <div>
+            <h2 id="completion-reflection-title">{t.completionReflectionTitle}</h2>
+            <p>{t.completionReflectionBody}</p>
+          </div>
+        </section>
+        <NextCases locale={locale} currentCaseId={caseId} />
+      </div>
     </section>
   );
 }

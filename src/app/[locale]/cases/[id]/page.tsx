@@ -1,10 +1,9 @@
 import { getCase } from '../../../../server/repository';
 import { AllocationEditor } from '../../../../components/AllocationEditor';
-import { ShareCase } from '../../../../components/ShareCase';
 import { PageState } from '../../../../components/PageState';
+import { ExperienceDeck } from '../../../../components/ExperienceDeck';
 import { isLocale } from '../../../../i18n/locale';
 import { copy } from '../../../../i18n/copy';
-import { displayItemName } from '../../../../i18n/labels';
 import { getCuratedCase } from '../../../../shared/example';
 
 export default async function CasePage({ params }: { params: Promise<{ locale: string; id: string }> }) {
@@ -30,37 +29,26 @@ export default async function CasePage({ params }: { params: Promise<{ locale: s
 
     return (
       <main id="main-content" className="container case-page">
+        <ExperienceDeck locale={l} chapter="allocation">
         <nav className="breadcrumb" aria-label={l === 'en' ? 'Breadcrumb' : '麵包屑導覽'}>
           <a href={`/${l}`}>{t.backHome}</a>
         </nav>
 
-        <header className="case-hero">
+        <header className="case-brief">
           <div>
             <p className="eyebrow">{curatedCopy?.eyebrow ?? t.caseEyebrow}</p>
             <h1>{title}</h1>
-            <p className="case-lead">{curatedCopy?.intro ?? t.caseIntro}</p>
-            <div className="case-meta" aria-label={`${c.agents.length} ${t.people}, ${c.items.length} ${t.goods}`}>
-              <span><strong>{c.agents.length}</strong> {t.people}</span>
-              <span><strong>{c.items.length}</strong> {t.goods}</span>
-            </div>
           </div>
-          <aside className="case-scenario" aria-labelledby="scenario-title">
-            <p className="eyebrow" id="scenario-title">{scenarioTitle}</p>
-            <div className="case-scene" aria-label={curatedCopy?.intro ?? t.scenarioDetail}>
-              <div className="scene-person scene-person--maya"><span>{c.agents[0]?.slice(0, 1)}</span><strong>{c.agents[0]}</strong></div>
-              <div className="scene-orbit" aria-hidden="true" />
-              <div className="scene-items">
-                {c.items.map((item, index) => <span className={`scene-item scene-item--${index + 1}`} key={item}>{displayItemName(l, item, index)}</span>)}
-              </div>
-              <div className="scene-person scene-person--leo"><span>{c.agents[1]?.slice(0, 1)}</span><strong>{c.agents[1]}</strong></div>
-            </div>
-            <ShareCase locale={l} caseId={id} />
-          </aside>
+          <div className="case-meta" aria-label={scenarioTitle}>
+            <span><strong>{c.agents.length}</strong> {t.people}</span>
+            <span><strong>{c.items.length}</strong> {t.goods}</span>
+          </div>
         </header>
 
         <div className="case-layout case-layout--single" data-reveal>
           <AllocationEditor locale={l} caseId={id} caseData={c} />
         </div>
+        </ExperienceDeck>
       </main>
     );
   } catch {

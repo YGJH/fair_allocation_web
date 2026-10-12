@@ -5,6 +5,7 @@ import type { Allocation, CaseInput } from '../domain/model';
 import { copy, type Locale } from '../i18n/copy';
 import { displayItemName } from '../i18n/labels';
 import type { SurveyQuestionKey, SurveySummary } from '../shared/survey';
+import { ExperienceDeck } from './ExperienceDeck';
 
 type Question = {
   key: SurveyQuestionKey;
@@ -90,13 +91,6 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
 
   const complete = summary?.answered === questions.length;
   const current = questions[questionIndex];
-  const currentCopy = current ? {
-    identical: { category: t.identicalValues, title: t.identicalCaseTitle, detail: t.identicalCaseDetail },
-    nonIdentical: { category: t.nonIdenticalValues, title: t.nonIdenticalCaseTitle, detail: t.nonIdenticalCaseDetail },
-    optimalTension: { category: t.optimalTensionValues, title: t.optimalTensionTitle, detail: t.optimalTensionDetail },
-    equalButMovable: { category: t.equalButMovableValues, title: t.equalButMovableTitle, detail: t.equalButMovableDetail },
-    challenge: { category: t.challengeCase, title: t.challengeCaseTitle, detail: t.challengeCaseDetail },
-  }[current.key] : null;
   const fairAnswers = summary?.questions.filter((question) => question.userVerdict === true).length ?? 0;
   const utilityBundles = current ? current.caseData.agents.map((agent, personIndex) => {
     const items = current.caseData.items
@@ -120,17 +114,17 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
 
   return (
     <main id="main-content" className="home-main home-survey">
+      <ExperienceDeck locale={locale} chapter="judgment">
       <section className="survey-shell" aria-labelledby="home-title">
-        <header className="survey-intro">
+        <header className="survey-intro survey-intro--compact">
           <div>
             <p className="survey-kicker">{t.surveyEyebrow}</p>
             <h1 id="home-title">{t.surveyTitle}</h1>
           </div>
-          <p>{t.surveyIntro}</p>
         </header>
 
         <div className={complete ? 'survey-workspace is-complete' : 'survey-workspace'}>
-          {!complete && current && currentCopy ? (
+          {!complete && current ? (
             <div className="survey-question" key={current.allocationId}>
               <div className="survey-question__topline">
                 <span>{t.surveyProgress.replace('{current}', String(questionIndex + 1)).replace('{total}', String(questions.length))}</span>
@@ -144,13 +138,6 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
 
               <div className="survey-question__layout">
                 <div className="survey-prompt">
-                  <aside className="survey-task" aria-labelledby={`survey-task-title-${questionIndex}`}>
-                    <strong id={`survey-task-title-${questionIndex}`}>{t.surveyTaskTitle}</strong>
-                    <p>{t.surveyTaskDetail}</p>
-                  </aside>
-                  <p className="survey-category">{currentCopy.category}</p>
-                  <h2>{currentCopy.title}</h2>
-                  <p>{currentCopy.detail}</p>
                   <div className="survey-valuations">
                     <header>
                       <strong>{t.surveyValuationTitle}</strong>
@@ -175,6 +162,7 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
                         </article>
                       ))}
                     </div>
+                    <small className="survey-valuations__axis-note">{t.surveyValuationAxisNote}</small>
                   </div>
                 </div>
 
@@ -245,7 +233,6 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
               <div className="survey-decision" aria-live="polite">
                 <div>
                   <h2>{t.surveyQuestion}</h2>
-                  <p>{t.surveyDecisionHint}</p>
                 </div>
                 <div className="survey-decision__buttons">
                   <button type="button" aria-pressed={currentAnswer === false} className={`survey-choice survey-choice--unfair${currentAnswer === false ? ' is-selected' : ''}`} disabled={pending} onClick={() => answer(false)}>
@@ -276,22 +263,11 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
 
               <div className="survey-results__list">
                 {summary.questions.map((result, index) => {
-                  const question = questions[index];
-                  const title = {
-                    identical: t.identicalCaseTitle,
-                    nonIdentical: t.nonIdenticalCaseTitle,
-                    optimalTension: t.optimalTensionTitle,
-                    equalButMovable: t.equalButMovableTitle,
-                    challenge: t.challengeCaseTitle,
-                  }[question.key];
                   return (
                     <article className="survey-result-row" key={result.allocationId}>
                       <div className="survey-result-row__answer">
                         <span>{index + 1}</span>
-                        <div>
-                          <h3>{title}</h3>
-                          <p>{t.yourAnswer}: <strong>{result.userVerdict ? t.fairChoice : t.unfairChoice}</strong></p>
-                        </div>
+                        <p>{t.yourAnswer}: <strong>{result.userVerdict ? t.fairChoice : t.unfairChoice}</strong></p>
                       </div>
                       <div className="survey-result-row__community">
                         <div><span>{t.communityFair}</span><strong>{result.fairPercent ?? 0}%</strong></div>
@@ -311,6 +287,7 @@ export function HomeExperience({ locale, allocationHref, questions }: Props) {
           ) : null}
         </div>
       </section>
+      </ExperienceDeck>
     </main>
   );
 }

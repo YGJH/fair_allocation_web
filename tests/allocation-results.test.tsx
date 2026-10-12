@@ -22,20 +22,19 @@ test('an allocation reveals its mathematical result immediately without a fairne
   expect(fetchSpy).not.toHaveBeenCalled();
 });
 
-test('the curated allocation keeps the animated explanation and practice cases', () => {
+test('a completed case keeps the animated explanation and links to every other case', () => {
   render(<AllocationResults locale="en" caseId={EXAMPLE_CASE_ID} caseData={EXAMPLE_CASE} owners={EXAMPLE_OWNERS} score={EXAMPLE_SCORE} />);
 
   fireEvent.click(screen.getByRole('tab', { name: 'NSW' }));
   expect(screen.getByLabelText('8 × 13 = 104')).toBeTruthy();
-  expect(screen.getByRole('link', { name: /Identical values: Same list, different split/ })).toBeTruthy();
-  expect(screen.getByRole('link', { name: /Non-identical values: 100 to 1/ })).toBeTruthy();
-  expect(screen.getByRole('link', { name: /Challenge: The shared favorites/ })).toBeTruthy();
-  const nextCases = screen.getByRole('region', { name: 'Choose your next experiment' });
-  expect(nextCases.closest('.fairness-demo')).toBeNull();
-  expect(nextCases.parentElement?.className).toBe('allocation-results__next');
+  expect(screen.getByRole('heading', { name: 'Fairness is harder to create than it first appears.' })).toBeTruthy();
+  expect(screen.getByRole('region', { name: 'Try another allocation' })).toBeTruthy();
+  expect(screen.getAllByRole('link', { name: /Play this case/ })).toHaveLength(5);
+  expect(screen.queryByRole('link', { name: /Case 01/ })).toBeNull();
+  expect(screen.getByRole('link', { name: /Case 03.*Alice: 60, 40, 0; Bob: 100, 1, 1/ })).toBeTruthy();
 });
 
-test('regular allocations show the concise static result immediately', () => {
+test('regular allocations also show the replayable EF1, EFX, and NSW walkthrough', () => {
   render(<AllocationResults
     locale="zh-TW"
     caseId="11111111-1111-4111-8111-111111111111"
@@ -45,10 +44,15 @@ test('regular allocations show the concise static result immediately', () => {
     standing={{ rank: 2, total: 5, tied: 1, beatPercent: 75 }}
   />);
 
-  expect(screen.getByText('6')).toBeTruthy();
+  expect(screen.getByRole('heading', { name: '看看三種檢查方式' })).toBeTruthy();
   expect(screen.getByRole('heading', { name: '超越同案例 75% 的其他分配' })).toBeTruthy();
   expect(screen.getByText('#2 / 5')).toBeTruthy();
-  expect(screen.getAllByText('符合條件')).toHaveLength(2);
+  fireEvent.click(screen.getByRole('tab', { name: 'EFX' }));
+  expect(screen.getByText('移除任一重視的物品後，羨慕消失。')).toBeTruthy();
+  fireEvent.click(screen.getByRole('tab', { name: 'NSW' }));
+  expect(screen.getByLabelText('3 × 2 = 6')).toBeTruthy();
+  expect(screen.getByRole('button', { name: '再播放一次' })).toBeTruthy();
+  expect(screen.getByRole('heading', { name: '現在你知道，要達到公平並不簡單。' })).toBeTruthy();
   expect(screen.queryAllByRole('radio')).toHaveLength(0);
 });
 

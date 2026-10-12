@@ -141,11 +141,6 @@ export function AllocationEditor({ locale, caseId, caseData }: { locale: Locale;
         ><strong>{assigned}</strong><span>/ {caseData.items.length}</span></div>
       </div>
 
-      <aside className="allocation-task" aria-labelledby="allocation-task-title">
-        <span aria-hidden="true">1</span>
-        <div><strong id="allocation-task-title">{t.allocationTaskTitle}</strong><p>{t.allocationTaskDetail}</p></div>
-      </aside>
-
       {error && <p role="alert">{error}</p>}
 
       <div className="allocation-board" data-allocation-board>

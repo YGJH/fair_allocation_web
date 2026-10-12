@@ -4,6 +4,7 @@ import { afterEach, expect, test, vi } from 'vitest';
 import { AllocationEditor } from '../src/components/AllocationEditor';
 import { Leaderboard } from '../src/components/Leaderboard';
 import { NextCases } from '../src/components/NextCases';
+import { EXAMPLE_CASE_ID } from '../src/shared/example';
 
 const sample = { agents: ['A', 'B'], items: ['x', 'y'], values: [[3, 0], [0, 2]] };
 
@@ -58,13 +59,13 @@ test('leaderboard rows link to their rating-first detail', () => {
   expect(screen.getByRole('link', { name: /精確 NSW 10/ }).getAttribute('href')).toBe('/zh-TW/allocations/a');
 });
 
-test('next cases provide one recommendation without implying a required sequence', () => {
-  render(<NextCases locale="zh-TW" />);
+test('next cases show objective valuation patterns and omit the case just completed', () => {
+  render(<NextCases locale="zh-TW" currentCaseId={EXAMPLE_CASE_ID} />);
 
-  expect(screen.getByText('推薦先做')).toBeTruthy();
-  expect(screen.getByRole('link', { name: /推薦先做.*一個 100 分，一個 1 分/ })).toBeTruthy();
-  expect(screen.getByRole('link', { name: /換你來分.*12 分和 8 分，怎麼看？/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000501');
-  expect(screen.getByRole('link', { name: /換你來分.*都是 10 分，就公平嗎？/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000601');
+  expect(screen.getByRole('heading', { name: '再試一個分配案例' })).toBeTruthy();
+  expect(screen.getByRole('link', { name: /案例 03.*Alice: 60, 40, 0; Bob: 100, 1, 1/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000301');
+  expect(screen.getByRole('link', { name: /案例 05.*Alice: 4, 8, 1; Bob: 2, 10, 8/ }).getAttribute('href')).toBe('/zh-TW/cases/00000000-0000-4000-8000-000000000501');
+  expect(screen.queryByRole('link', { name: /案例 01/ })).toBeNull();
   expect(screen.getAllByRole('link', { name: /開始作答/ })).toHaveLength(5);
   expect(document.querySelectorAll('.practice-list > li')).toHaveLength(5);
 });

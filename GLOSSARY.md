@@ -100,6 +100,18 @@ _Avoid_: seal, token, 印信.
 ### Proposal (定分條陳)
 The allocation of the six Writs that Cheng Heng submits to the emperor in Act III. The emperor, not the player, decides; the ending follows from the Proposal's properties.
 
+### Cutscene (過場)
+A non-interactive photoreal video sequence identified by a CS number in the master script, built from clips of roughly 8–10 seconds.
+_Avoid_: cinematic, FMV, movie.
+
+### Scene Plate (場景底圖)
+The photoreal still image of a location that sits behind the interface during gameplay, one per act.
+_Avoid_: diorama, 3D scene, background.
+
+### Portrait Card (立繪卡)
+The framed photoreal portrait that represents a character during gameplay; clicking it makes the character speak, and its expression changes to show their reaction to the current allocation.
+_Avoid_: avatar, sprite, token.
+
 ### Allocation Workbench (分配案台)
 The interactive interface where the player assigns goods to each party: sliders in tenths for Divisible Goods and drag-and-drop for Indivisible Goods.
 _Avoid_: ritual scales.

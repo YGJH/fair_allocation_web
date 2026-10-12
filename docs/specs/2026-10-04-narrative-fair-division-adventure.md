@@ -1,6 +1,6 @@
-# Specification: The Art of Settled Shares (定分止爭錄) — 3D Narrative Fair Division Adventure
+# Specification: The Art of Settled Shares (定分止爭錄) — Narrative Fair Division Adventure
 
-> **Revision 2 (2026-10-10)**: aligned with the second edition of `docs/story/master-script.zh-TW.md`, ADR-0004 and ADR-0005. The master script is the source of truth for dialogue, matrices, thresholds, and ending text; this spec states what the software must do. Terms follow `GLOSSARY.md`.
+> **Revision 3 (2026-10-10)**: presentation changed from Three.js dioramas to photoreal stills with a 2D interface (ADR-0006). Revision 2 aligned the spec with the second edition of `docs/story/master-script.zh-TW.md`, ADR-0004 and ADR-0005. The master script is the source of truth for dialogue, matrices, thresholds, and ending text; `docs/art/` holds the visual rules and character definitions; this spec states what the software must do. Terms follow `GLOSSARY.md`.
 
 ## Problem Statement
 
@@ -12,7 +12,7 @@ When learning algorithmic game theory and microeconomic fair allocation, student
 
 ## Solution
 
-A 3D "Point & Click" historical narrative adventure set entirely in the Wanli reign of the Ming dynasty (1574–1581). The player is one person throughout—Cheng Heng, a fictional abacus-trained official—and the three cases form a single causal chain that carries him from a provincial courtroom to the emperor's audience hall.
+An interactive-film style historical narrative adventure—photoreal Cutscenes, photoreal Scene Plates and Portrait Cards, and a spare 2D interface—set entirely in the Wanli reign of the Ming dynasty (1574–1581). The player is one person throughout—Cheng Heng, a fictional abacus-trained official—and the three cases form a single causal chain that carries him from a provincial courtroom to the emperor's audience hall.
 
 | Act | Setting | Player's office | Parties | Goods | Concepts |
 | :--- | :--- | :--- | :---: | :--- | :--- |
@@ -30,9 +30,9 @@ In every act the player investigates the scene to collect valuations, commits an
 
 ### Exploration and investigation
 
-1. As a player, I want to explore a 3D isometric historical scene using point-and-click navigation, so that I feel immersed in each dispute.
-2. As a player, I want to inspect contested objects in the scene, so that I understand which can be cut and which cannot.
-3. As a player, I want to question each party, so that I uncover their private valuations.
+1. As a player, I want each act to open on a photoreal Scene Plate of the location with the people present shown as Portrait Cards, so that I feel I am in the room.
+2. As a player, I want to click marked objects on the Scene Plate, so that I understand which goods can be cut and which cannot.
+3. As a player, I want to click a Portrait Card to hear that party speak, so that I uncover their private valuations.
 4. As a player, I want a dossier that records every valuation I have heard, so that I can reason about trade-offs without taking notes.
 5. As a player, I want Master Zhou to tell me in plain language what to look at, what the rule is, and what to do next, so that I never need outside knowledge to proceed.
 
@@ -40,7 +40,7 @@ In every act the player investigates the scene to collect valuations, commits an
 
 6. As a player, I want to split each divisible good in tenths with a slider, so that sharing a good feels different from handing over an object.
 7. As a player, I want to drag each indivisible good to exactly one party, so that its indivisibility is tangible.
-8. As a player, I want to see parties react (expression, speech bubble) as I allocate, so that I sense tension before I see numbers.
+8. As a player, I want each party's Portrait Card to change expression (calm, pleased, aggrieved) and show a speech bubble as I allocate, so that I sense tension before I see numbers.
 9. As a player, I want every mathematical indicator hidden while I make my Initial Verdict, so that it reflects my intuition.
 10. As a player, I want to rate how fair my Initial Verdict feels (1–5) before the reveal, so that I can compare intuition with theory.
 
@@ -108,8 +108,10 @@ In every act the player investigates the scene to collect valuations, commits an
 
 ### Presentation
 
-13. Three.js orthographic dioramas for the Jinhua prefectural court, the Hangzhou prefectural court, and Wenhua Hall, with raycast interaction paired with accessible HTML overlays. A 2D fallback remains for low-power devices and `prefers-reduced-motion`.
-14. Cutscene slots CS-00 to CS-14 are defined in the master script. The software plays a video or a still-plus-caption fallback for each; producing the videos is outside this spec.
+13. **No 3D.** Each act has one Scene Plate (Jinhua prefectural court, Hangzhou prefectural court, Wenhua Hall) behind an HTML/CSS interface. All interaction targets are real DOM elements, so keyboard and screen-reader access need no separate overlay. Layout is 16:9, desktop first, and must remain usable on a phone held sideways.
+14. **Portrait Cards** carry up to three expressions per party (calm, pleased, aggrieved). Which expression shows is a pure function of the current allocation; before `DEBRIEF` it may only reflect that party's own share, never a formal criterion. The Envy Graph is drawn as lines between Portrait Cards.
+14a. **Cutscene** slots CS-00 to CS-14 are defined in the master script. Each is a sequence of clips. The player can skip any Cutscene; for a slot with no video yet, or under `prefers-reduced-motion`, the software shows a still with the same captions. Subtitles and narration captions are rendered by the software from `src/i18n/copy.ts`, not burned into video. Producing the videos is outside this spec.
+14b. Image and video assets live under `public/adventure/` with the naming scheme in `docs/art/style-guide.zh-TW.md`.
 15. Every classical-Chinese document shown on screen (ledger entries, the send-back note, the history-book endings) is accompanied by a plain-language caption or narration line.
 
 ### Copy
@@ -121,7 +123,7 @@ In every act the player investigates the scene to collect valuations, commits an
 
 ## Testing Decisions
 
-Tests assert observable behaviour and contracts, never private state or the Three.js render loop.
+Tests assert observable behaviour and contracts, never private state.
 
 1. **Scenario facts** (unit, exhaustive where feasible), locking the properties the story depends on:
    - Act I: halving yields 50/50; the Master Challenge allocation yields 70/70; the scripted Cut-and-Choose yields 50/70.
@@ -149,5 +151,5 @@ Prior art: `tests/domain.test.ts`, `tests/example-fallback.test.ts`, `tests/allo
 
 ## Further Notes
 
-- **Existing implementation**: `src/narrative/scenarios.ts`, the `src/components/adventure/` components, and `tests/e2e/adventure.spec.ts` implement the first edition and must be reworked against this revision.
+- **Existing implementation**: `src/narrative/scenarios.ts`, the `src/components/adventure/` components, and `tests/e2e/adventure.spec.ts` implement the first edition and must be reworked against this revision. `src/three/`, `SceneCanvas.tsx`, `SceneViewport.tsx`, and the `three` dependency are removed as part of that rework.
 - **Graceful fallback**: the campaign runs in memory and needs no PostgreSQL instance.

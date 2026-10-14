@@ -1,0 +1,450 @@
+.stage,
+.landscapeRoot,
+.gatedContent {
+  min-width: 0;
+  min-height: 100dvh;
+}
+
+.landscapeRoot,
+.gatedContent {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+}
+
+.stage {
+  --paper: #f3ebdc;
+  --old-paper: #e4d7bf;
+  --ink: #1f1b18;
+  --muted-ink: #6b625a;
+  --vermilion: #b5372b;
+  --official-blue: #2f4a63;
+  --rice-green: #5e7b5a;
+  --old-gold: #a8894f;
+  --night: #12100e;
+  --focus: #86b9e6;
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--night);
+  color: var(--ink);
+  font-family: 'Noto Serif TC', 'Songti TC', Georgia, serif;
+  isolation: isolate;
+}
+
+.background {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--night);
+  background-image: linear-gradient(rgb(18 16 14 / 18%), rgb(18 16 14 / 48%)), var(--game-stage-background, none);
+  background-position: center;
+  background-size: cover;
+}
+
+.background > :is(img, video, picture),
+.background > picture > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.safeArea {
+  position: relative;
+  place-self: center;
+  width: min(100vw, calc(100dvh * 16 / 9));
+  height: min(100dvh, calc(100vw * 9 / 16));
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background: rgb(18 16 14 / 8%);
+  aspect-ratio: 16 / 9;
+}
+
+.stageContent {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.stageToolbar {
+  position: absolute;
+  z-index: 20;
+  top: max(0.75rem, env(safe-area-inset-top));
+  right: max(0.75rem, env(safe-area-inset-right));
+  display: grid;
+  justify-items: end;
+  gap: 0.25rem;
+  max-width: min(22rem, calc(100% - 1.5rem));
+}
+
+.fullscreenButton,
+.primaryButton,
+.secondaryButton,
+.dangerButton,
+.textButton {
+  min-height: 2.75rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 0.125rem;
+  font: 700 1rem/1.35 system-ui, sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.fullscreenButton {
+  border-color: rgb(243 235 220 / 68%);
+  background: rgb(18 16 14 / 86%);
+  color: var(--paper);
+  box-shadow: 0 0.4rem 1.5rem rgb(0 0 0 / 28%);
+}
+
+.fullscreenButton:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.stageFeedback {
+  max-width: 32ch;
+  margin: 0;
+  padding: 0.2rem 0.45rem;
+  background: rgb(18 16 14 / 84%);
+  color: var(--paper);
+  font: 600 0.875rem/1.45 system-ui, sans-serif;
+  text-align: right;
+}
+
+.stageFeedback:empty {
+  display: none;
+}
+
+.skipLink {
+  position: absolute;
+  z-index: 30;
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: max(0.75rem, env(safe-area-inset-left));
+  padding: 0.65rem 0.9rem;
+  border: 2px solid var(--official-blue);
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 1rem/1.3 system-ui, sans-serif;
+  transform: translateY(calc(-100% - 1rem));
+}
+
+.skipLink:focus {
+  transform: none;
+}
+
+.stage :focus-visible,
+.orientationGate:focus-visible,
+.pauseSheet :focus-visible {
+  outline: 3px solid var(--focus, #2f4a63);
+  outline-offset: 3px;
+}
+
+.gatedContentBlocked {
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.orientationGate {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: none;
+  align-content: center;
+  justify-items: center;
+  gap: 1rem;
+  overflow: auto;
+  padding: max(2rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
+  background: var(--paper, #f3ebdc);
+  color: var(--ink, #1f1b18);
+  text-align: center;
+}
+
+.orientationGate[data-blocked='true'] {
+  display: grid;
+}
+
+.orientationGate h1,
+.orientationGate p {
+  max-width: 34rem;
+  margin: 0;
+}
+
+.orientationGate h1 {
+  font: 700 clamp(1.5rem, 7vw, 2.5rem)/1.25 'Noto Serif TC', 'Songti TC', Georgia, serif;
+}
+
+.orientationGate p {
+  color: var(--muted-ink, #6b625a);
+  font: 500 1rem/1.7 system-ui, sans-serif;
+}
+
+.rotateMark {
+  position: relative;
+  width: 4.5rem;
+  height: 3rem;
+  border: 2px solid var(--official-blue, #2f4a63);
+  border-radius: 0.25rem;
+}
+
+.rotateMark span {
+  position: absolute;
+  top: -0.65rem;
+  right: -0.65rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-top: 2px solid var(--vermilion, #b5372b);
+  border-right: 2px solid var(--vermilion, #b5372b);
+}
+
+.pauseBackdrop {
+  position: fixed;
+  z-index: 900;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: rgb(18 16 14 / 78%);
+}
+
+.pauseSheet {
+  --paper: #f3ebdc;
+  --old-paper: #e4d7bf;
+  --ink: #1f1b18;
+  --muted-ink: #6b625a;
+  --vermilion: #b5372b;
+  --official-blue: #2f4a63;
+  --focus: #2f4a63;
+  width: min(46rem, 100%);
+  max-height: calc(100dvh - max(2rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+  overflow: auto;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 42%);
+  font-family: 'Noto Serif TC', 'Songti TC', Georgia, serif;
+}
+
+.pauseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border-bottom: 1px solid rgb(31 27 24 / 32%);
+}
+
+.pauseHeader h2,
+.restartConfirmation h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  line-height: 1.2;
+}
+
+.primaryButton {
+  border-color: var(--official-blue);
+  background: var(--official-blue);
+  color: #fff;
+}
+
+.pauseBody {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+}
+
+.pauseBody > section {
+  min-width: 0;
+  padding: clamp(1rem, 3vw, 1.75rem);
+}
+
+.pauseBody > section + section {
+  border-left: 1px solid rgb(31 27 24 / 24%);
+}
+
+.pauseBody h3 {
+  margin: 0 0 0.75rem;
+  color: var(--official-blue);
+  font-size: 1.1rem;
+  line-height: 1.35;
+}
+
+.taskSection > div,
+.controlsHelp {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.controlsHelp :first-child,
+.taskSection > div > :first-child {
+  margin-top: 0;
+}
+
+.controlsHelp :last-child,
+.taskSection > div > :last-child {
+  margin-bottom: 0;
+}
+
+.settings {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(31 27 24 / 24%);
+}
+
+.toggleSetting,
+.volumeSetting {
+  min-height: 2.75rem;
+  font: 650 1rem/1.4 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.toggleSetting {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toggleSetting input {
+  width: 1.35rem;
+  height: 1.35rem;
+  accent-color: var(--official-blue);
+}
+
+.volumeSetting {
+  display: grid;
+  grid-template-columns: auto minmax(8rem, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+.volumeSetting input {
+  width: 100%;
+  min-height: 2.75rem;
+  accent-color: var(--official-blue);
+}
+
+.pauseActions,
+.confirmationActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border-top: 1px solid rgb(31 27 24 / 32%);
+}
+
+.secondaryButton {
+  border-color: var(--official-blue);
+  background: transparent;
+  color: var(--official-blue);
+}
+
+.textButton {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.restartConfirmation {
+  padding-top: clamp(1.5rem, 5vw, 3rem);
+}
+
+.restartConfirmation h2,
+.restartConfirmation p {
+  max-width: 36rem;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: clamp(1rem, 3vw, 1.75rem);
+  padding-left: clamp(1rem, 3vw, 1.75rem);
+}
+
+.restartConfirmation p {
+  margin-top: 1rem;
+  margin-bottom: clamp(1.5rem, 5vw, 3rem);
+  color: var(--muted-ink);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.dangerButton {
+  border-color: var(--vermilion);
+  background: var(--vermilion);
+  color: #fff;
+}
+
+.fullscreenButton:hover:not(:disabled),
+.primaryButton:hover,
+.secondaryButton:hover,
+.dangerButton:hover,
+.textButton:hover {
+  filter: brightness(1.12);
+}
+
+.fullscreenButton:active:not(:disabled),
+.primaryButton:active,
+.secondaryButton:active,
+.dangerButton:active,
+.textButton:active {
+  filter: brightness(0.9);
+}
+
+@media (max-width: 44rem), (max-height: 32rem) {
+  .pauseBackdrop {
+    place-items: start center;
+  }
+
+  .pauseBody {
+    grid-template-columns: 1fr;
+  }
+
+  .pauseBody > section + section {
+    border-top: 1px solid rgb(31 27 24 / 24%);
+    border-left: 0;
+  }
+
+  .pauseHeader,
+  .pauseActions,
+  .confirmationActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pauseHeader .primaryButton,
+  .pauseActions button,
+  .confirmationActions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 30rem) {
+  .volumeSetting {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage *,
+  .orientationGate *,
+  .pauseBackdrop * {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

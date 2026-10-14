@@ -1,0 +1,260 @@
+.player,
+.loading,
+.staticFallback {
+  --cutscene-paper: #eee4cf;
+  --cutscene-ink: #17120e;
+  --cutscene-gold: #d6b55e;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: #090807;
+  color: var(--cutscene-paper);
+}
+
+.player {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  place-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  padding: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  font: 600 1rem/1.5 system-ui, sans-serif;
+}
+
+.videoFrame,
+.stillFrame {
+  position: relative;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  border: 1px solid rgb(238 228 207 / 24%);
+  background: #100d0a;
+  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 55%);
+  aspect-ratio: 16 / 9;
+}
+
+.video,
+.stillFrame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gate,
+.error,
+.ended {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgb(7 6 5 / 62%);
+  text-align: center;
+}
+
+.gate p {
+  margin: 0;
+  color: #f4e9d2;
+  font: 650 clamp(1.2rem, 3vw, 2.25rem)/1.25 'Noto Serif TC', serif;
+}
+
+.enter,
+.primary {
+  min-width: 8rem;
+  min-height: 3rem;
+  padding: 0.65rem 1.2rem;
+  border: 1px solid var(--cutscene-gold);
+  border-radius: 0.2rem;
+  background: var(--cutscene-gold);
+  color: #21180e;
+  font: 800 1rem/1.2 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.captions {
+  position: absolute;
+  right: max(1rem, 7%);
+  bottom: clamp(1rem, 8%, 4rem);
+  left: max(1rem, 7%);
+  width: fit-content;
+  max-width: 78ch;
+  margin: 0 auto;
+  padding: 0.55rem 0.8rem;
+  border-radius: 0.2rem;
+  background: rgb(0 0 0 / 76%);
+  color: #fff;
+  font: 650 clamp(0.9rem, 1.7vw, 1.3rem)/1.55 system-ui, sans-serif;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+.error h3,
+.error p {
+  max-width: 42rem;
+  margin: 0;
+}
+
+.error div,
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.error button,
+.ended button,
+.controls button {
+  min-height: 2.75rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid rgb(238 228 207 / 38%);
+  border-radius: 0.2rem;
+  background: #241d17;
+  color: var(--cutscene-paper);
+  font: 700 0.8rem/1.2 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.controls {
+  width: 100%;
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.75rem;
+  padding: 0 0.65rem;
+  border: 1px solid rgb(238 228 207 / 22%);
+  font: 700 0.75rem/1 system-ui, sans-serif;
+}
+
+.controls input {
+  width: clamp(5rem, 10vw, 8rem);
+  accent-color: var(--cutscene-gold);
+}
+
+.controls .skip {
+  border-color: var(--cutscene-gold);
+  color: #f5d77f;
+}
+
+.player button:focus-visible,
+.staticFallback button:focus-visible,
+.player input:focus-visible {
+  outline: 3px solid #f2ce70;
+  outline-offset: 3px;
+}
+
+.player button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.staticFallback {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 2rem);
+  overflow: hidden;
+  padding: clamp(0.75rem, 2.5vw, 2.5rem);
+}
+
+.staticFallback .stillFrame {
+  width: 100%;
+}
+
+.transcriptPanel {
+  max-height: 100%;
+  overflow: auto;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid rgb(214 181 94 / 42%);
+  background: #1c1712;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--cutscene-gold);
+  font: 800 0.72rem/1.4 system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.transcriptPanel h2 {
+  margin: 0.25rem 0 0.6rem;
+  font: 700 clamp(1.5rem, 3vw, 2.5rem)/1.2 'Noto Serif TC', serif;
+}
+
+.transcriptPanel h3 {
+  margin: 1.25rem 0 0.5rem;
+  color: #dfc477;
+  font-size: 1rem;
+}
+
+.transcript {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+  padding-left: 1.5rem;
+  color: #ded3bd;
+  font: 500 0.92rem/1.75 system-ui, sans-serif;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .videoFrame,
+  .controls {
+    width: 100%;
+  }
+
+  .controls {
+    gap: 0.3rem;
+  }
+
+  .controls button,
+  .controls label {
+    min-height: 2.4rem;
+    padding: 0.35rem 0.55rem;
+  }
+}
+
+@media (max-width: 760px) and (min-height: 500px) {
+  .staticFallback {
+    grid-template-columns: 1fr;
+    align-content: start;
+    overflow: auto;
+  }
+
+  .transcriptPanel {
+    max-height: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player *,
+  .staticFallback * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

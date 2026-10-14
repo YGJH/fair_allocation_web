@@ -1,0 +1,68 @@
+.scenePlate {
+  position: relative;
+  min-height: 12rem;
+  overflow: hidden;
+  border: 1px solid rgb(216 189 119 / 48%);
+  background: #d8c7a9;
+  color: #221c16;
+}
+.sceneImage { display: block; width: 100%; height: 100%; min-height: 12rem; object-fit: cover; }
+.sceneFallback { display: grid; min-height: 12rem; place-content: center; gap: .45rem; padding: 1.5rem; text-align: center; background: repeating-linear-gradient(0deg, rgb(75 58 39 / 5%) 0 1px, transparent 1px 4px), #e8dcc7; }
+.sceneFallback strong { font: 700 clamp(1.1rem, 2.5vw, 1.7rem)/1.2 'Noto Serif TC', Georgia, serif; }
+.sceneFallback span { color: #5a4b3a; font: 600 .8rem/1.45 system-ui, sans-serif; }
+.sceneCaption { position: absolute; right: .75rem; bottom: .75rem; left: .75rem; padding: .65rem .8rem; background: rgb(25 19 14 / 82%); color: #f3ebdc; }
+.sceneCaption strong, .sceneCaption span { display: block; }
+.sceneCaption strong { font: 700 1rem/1.2 'Noto Serif TC', Georgia, serif; }
+.sceneCaption span { margin-top: .2rem; font: 500 .8rem/1.4 system-ui, sans-serif; }
+.hotspots { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: flex-end; gap: .45rem; padding: .75rem; }
+.hotspot { min-height: 2.5rem; border: 1px solid #d8bd77; background: rgb(27 20 15 / 88%); color: #f3ebdc; cursor: pointer; }
+.portraitGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .65rem; }
+.portrait { display: grid; grid-template-columns: 3.5rem 1fr; gap: .6rem; align-items: center; width: 100%; padding: .55rem; border: 1px solid rgb(216 189 119 / 58%); background: rgb(243 235 220 / 9%); color: #f3ebdc; text-align: left; cursor: pointer; }
+.portraitImage, .portraitFallback { width: 3.5rem; height: 4.4rem; object-fit: cover; }
+.portraitFallback { display: grid; place-items: center; border: 1px solid #a8894f; background: linear-gradient(145deg, #463b31, #1b1713); color: #e3c982; font: 700 1.35rem/1 'Noto Serif TC', Georgia, serif; }
+.portraitName { display: block; font: 700 .95rem/1.25 'Noto Serif TC', Georgia, serif; }
+.portraitRole { display: block; margin-top: .25rem; color: #d7c9b2; font: 500 .72rem/1.35 system-ui, sans-serif; }
+.portrait:focus-visible, .portrait.isSelected { outline: 3px solid #8fc5f2; outline-offset: 2px; background: rgb(216 189 119 / 20%); }
+.dossier { display: grid; gap: .9rem; }
+.task { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; align-items: center; }
+.task strong { color: #e3c982; font: 750 .8rem/1.3 system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+.clueList { display: grid; gap: .55rem; margin: 0; padding: 0; list-style: none; }
+.clue { border: 1px solid rgb(216 189 119 / 45%); background: rgb(243 235 220 / 6%); }
+.clueButton { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+.clueButton small { color: #d8bd77; white-space: nowrap; }
+.clueBody { padding: 0 .8rem .8rem; color: #ded2be; font: 500 .9rem/1.6 system-ui, sans-serif; }
+.clueBody p { margin: .2rem 0; }
+.clueBody q { color: #f3ebdc; }
+.workbench { display: grid; gap: 1rem; }
+.guidance { display: grid; gap: .55rem; padding: .85rem 1rem; border: 1px solid #a8894f; background: rgb(216 189 119 / 12%); color: #f3ebdc; }
+.guidance h3, .guidance p { margin: 0; }
+.guidance h3 { font: 700 1.05rem/1.3 'Noto Serif TC', Georgia, serif; }
+.guidance p, .guidance li { color: #ded2be; font: 500 .85rem/1.5 system-ui, sans-serif; }
+.guidance ol { margin: 0; padding-left: 1.25rem; }
+.guidance button { justify-self: start; min-height: 2.5rem; padding: .5rem .75rem; border: 1px solid #d8bd77; background: #a8894f; color: #17130e; font-weight: 750; cursor: pointer; }
+.reaction { display: grid; gap: .35rem; padding: .65rem; border-left: 3px solid #b5372b; background: rgb(181 55 43 / 11%); }
+.reaction .portrait { max-width: 24rem; }
+.goodRow { display: grid; gap: .45rem; padding: .8rem; border: 1px solid rgb(216 189 119 / 45%); background: rgb(243 235 220 / 7%); }
+.goodHeader { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+.goodHeader h3 { margin: 0; color: #f3ebdc; font: 700 1.05rem/1.3 'Noto Serif TC', Georgia, serif; }
+.goodHeader span { color: #e3c982; font: 700 .9rem/1.3 system-ui, sans-serif; }
+.shareBar { display: flex; height: 1.4rem; overflow: hidden; border: 1px solid rgb(243 235 220 / 48%); }
+.shareBar span { flex: 0 0 10%; border-right: 1px solid rgb(31 27 24 / 35%); }
+.shareBar span:first-child { background: #5e7b5a; }
+.shareBar span:nth-child(n+2) { background: #2f4a63; }
+.shareBar span:last-child { border-right: 0; }
+.range { width: 100%; accent-color: #d8bd77; }
+.rangeLabel { color: #ded2be; font: 600 .8rem/1.4 system-ui, sans-serif; }
+.adjustments { display: grid; grid-template-columns: repeat(2, 1fr); gap: .55rem; }
+.adjustments button, .actions button { min-height: 2.6rem; padding: .55rem .65rem; border: 1px solid rgb(216 189 119 / 75%); background: #25201b; color: #f3ebdc; cursor: pointer; }
+.adjustments button:disabled, .actions button:disabled { opacity: .45; cursor: not-allowed; }
+.liveText { margin: 0; color: #ded2be; font: 600 .82rem/1.45 system-ui, sans-serif; }
+.actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+.primary { border-color: #d8bd77 !important; background: #a8894f !important; color: #17130e !important; font-weight: 750; }
+.return { border-color: rgb(243 235 220 / 65%) !important; }
+.explanation { margin: 0; color: #ded2be; font: 500 .85rem/1.5 system-ui, sans-serif; }
+.rating { display: grid; gap: 1rem; }
+.ratingChoices { display: grid; grid-template-columns: repeat(5, minmax(2.5rem, 1fr)); gap: .45rem; }
+.ratingChoices button { min-height: 3rem; border: 1px solid #d8bd77; background: transparent; color: #f3ebdc; cursor: pointer; }
+.ratingChoices button[aria-pressed="true"] { background: #a8894f; color: #17130e; }
+@media (max-width: 42rem) { .portraitGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .goodHeader { align-items: flex-start; flex-direction: column; gap: .2rem; } }

@@ -1,0 +1,7 @@
+.archive { display: grid; gap: .75rem; padding: 1rem; border: 1px solid rgb(243 235 220 / 22%); background: rgb(18 16 14 / 68%); color: #f3ebdc; }
+.archive h2 { margin: 0; font: 700 1.35rem/1.2 'Noto Serif TC', Georgia, serif; }
+.archive p { margin: 0; color: #ddd1bb; line-height: 1.55; }
+.slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .5rem; padding: 0; margin: 0; list-style: none; }
+.slot { display: grid; gap: .45rem; min-height: 4rem; align-content: center; padding: .65rem; border: 1px solid rgb(243 235 220 / 20%); background: rgb(0 0 0 / 18%); }
+.slotName { font-weight: 700; }
+.slot button { justify-self: start; padding: .4rem .6rem; border: 1px solid #a8894f; background: transparent; color: #f3ebdc; cursor: pointer; }

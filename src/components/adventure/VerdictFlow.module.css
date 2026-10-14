@@ -1,0 +1,221 @@
+.judgmentGate,
+.scroll,
+.revisionPanel,
+.finalPanel {
+  display: grid;
+  gap: 1rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #d9bc70;
+  font: 750 0.76rem/1.4 system-ui, sans-serif;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.judgmentGate h2,
+.scroll h2,
+.revisionPanel h2,
+.finalPanel h2 {
+  margin: 0;
+  color: #f3ebdc;
+  font: 700 clamp(1.65rem, 3vw, 2.7rem)/1.1 'Noto Serif TC', 'Songti TC', Georgia, serif;
+}
+
+.ratingContent {
+  display: grid;
+  max-width: 42rem;
+  gap: .85rem;
+}
+
+.ratingContent p,
+.scrollHeader p,
+.revisionPanel > p,
+.finalPanel > p,
+.revealStep p,
+.revealStep li,
+.gaugeRow p {
+  margin: 0;
+  color: #ddd1bb;
+  font: 500 clamp(.95rem, 1.7vw, 1.1rem)/1.65 system-ui, sans-serif;
+}
+
+.ratingChoices {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(2.8rem, 1fr));
+  gap: .5rem;
+  max-width: 34rem;
+}
+
+.ratingChoices button,
+.primary,
+.secondary {
+  min-height: 3rem;
+  padding: .65rem .9rem;
+  border: 1px solid #d8bd77;
+  background: transparent;
+  color: #f3ebdc;
+  font: 750 1rem/1.3 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.ratingChoices button[aria-pressed='true'],
+.primary {
+  background: #a8894f;
+  color: #17130e;
+}
+
+.primary:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.scrollHeader {
+  display: grid;
+  gap: .55rem;
+}
+
+.scrollActions,
+.scrollFooter,
+.revisionActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .7rem;
+}
+
+.scrollActions span,
+.scrollFooter p {
+  margin: 0;
+  color: #d8bd77;
+  font: 650 .85rem/1.4 system-ui, sans-serif;
+}
+
+.revealStack {
+  display: grid;
+  gap: .75rem;
+}
+
+.revealStep,
+.shareGauge,
+.comparisonCard {
+  display: grid;
+  gap: .6rem;
+  padding: 1rem;
+  border: 1px solid rgb(216 189 119 / 46%);
+  background: rgb(243 235 220 / 7%);
+}
+
+.revealStep h3,
+.shareGauge h3,
+.comparisonCard h3 {
+  margin: 0;
+  color: #f3ebdc;
+  font: 700 1.2rem/1.3 'Noto Serif TC', 'Songti TC', Georgia, serif;
+}
+
+.revealStep ul {
+  display: grid;
+  gap: .35rem;
+  margin: 0;
+  padding-left: 1.3rem;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  color: #ded2be;
+  font: 500 .9rem/1.4 system-ui, sans-serif;
+}
+
+.matrix caption {
+  margin-bottom: .6rem;
+  color: #ded2be;
+  text-align: left;
+}
+
+.matrix th,
+.matrix td {
+  padding: .55rem .45rem;
+  border: 1px solid rgb(216 189 119 / 35%);
+  text-align: left;
+  vertical-align: top;
+}
+
+.matrix th {
+  color: #f3ebdc;
+  font-weight: 750;
+}
+
+.matrix td span + span {
+  display: block;
+  color: #d8bd77;
+  font-size: .78rem;
+}
+
+.revealStep details {
+  border-left: 2px solid #a8894f;
+  padding-left: .75rem;
+  color: #ded2be;
+}
+
+.revealStep summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.revealStep .result {
+  color: #e3c982;
+  font-weight: 750;
+}
+
+.gaugeList,
+.comparisonGrid {
+  display: grid;
+  gap: .75rem;
+}
+
+.gaugeRow {
+  display: grid;
+  gap: .35rem;
+}
+
+.gaugeTrack {
+  height: 1.3rem;
+  overflow: hidden;
+  border: 1px solid rgb(243 235 220 / 48%);
+  background: #2f4a63;
+}
+
+.gaugeTrack span {
+  display: block;
+  height: 100%;
+  background: #5e7b5a;
+}
+
+.gaugeEquivalent {
+  font-size: .85rem !important;
+}
+
+.comparisonGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.comparisonCard p {
+  margin: 0;
+  color: #ded2be;
+  font: 600 .9rem/1.5 system-ui, sans-serif;
+}
+
+.handoff {
+  margin: 0;
+  color: #d8bd77;
+  font: 650 .9rem/1.5 system-ui, sans-serif;
+}
+
+@media (max-width: 42rem) {
+  .comparisonGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -101,7 +101,7 @@ _Avoid_: seal, token, 印信.
 The allocation of the six Writs that Cheng Heng submits to the emperor in Act III. The emperor, not the player, decides; the ending follows from the Proposal's properties.
 
 ### Cutscene (過場)
-A non-interactive photoreal video sequence identified by a CS number in the master script, built from clips of roughly 8–10 seconds.
+A non-interactive sequence identified by a CS number in the master script. It takes one of three forms: generated video, an animatic of photoreal stills with slow game-side camera moves, or a dialogue scene that opens on a still and plays its lines through Portrait Cards.
 _Avoid_: cinematic, FMV, movie.
 
 ### Scene Plate (場景底圖)

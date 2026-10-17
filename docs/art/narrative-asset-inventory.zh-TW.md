@@ -53,6 +53,8 @@
 | `cs-13` | National Ending 戊 | 無新版素材；`missing` | `public/adventure/cutscenes/cs-13-{segment}.mp4`（`missing`） | `public/adventure/cutscenes/cs-13-fallback.jpg`（`missing`）＋canonical 字幕 | `blocked`；最低交付為 scene still＋字幕。 |
 | `cs-14` | Hidden Ending | 無新版素材；`missing` | `public/adventure/cutscenes/cs-14-{segment}.mp4`（`missing`） | `public/adventure/cutscenes/cs-14-fallback.jpg`（`missing`）＋canonical 字幕 | `blocked`；觸發條件只取自 master script。 |
 
+ADR-0007（2026-10-15）後，CS-01～CS-14 大多改為 animatic 或對話場，只有 7 段影片（CS-07、CS-09～CS-14）。新增素材的路徑：animatic 靜圖 `public/adventure/animatics/cs-XX/cs-XX-sN.jpg`；影片 `public/adventure/cutscenes/cs-XX-vN.mp4`，其起始畫面 `cs-XX-vN-start.jpg` 兼作 fallback。上表的「預定 runtime 路徑」欄待 manifest 更新時依此調整；逐張清單見 `docs/art/storyboards/cs-01-14.zh-TW.md`。
+
 所有靜態 fallback 都必須沿用同一組 localized timed cues／transcript，並提供繼續操作；它們不是省略敘事文字的捷徑。
 
 ## 3. Scene Plates（3）

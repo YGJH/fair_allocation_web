@@ -72,7 +72,7 @@
 - `Cutscene 0 Demo.mp4` 是 CS-00 正式母片；Web 版只做必要轉碼，不重新剪輯或調色。
 - 可在 CS-00 上疊加網站字幕、地點、人名、播放及略過控制。影片永遠可立即略過，字幕預設開啟。
 - 玩家按「入殿」後有聲播放並記住音量。CS-00 之外先使用低調環境音、字幕與少量關鍵音效，不使用暫時 AI 配音。
-- CS-01～CS-03 先以寫實靜圖、字幕和有限鏡頭運動組成 animatic。
+- CS-01～CS-03 先以寫實靜圖、字幕和有限鏡頭運動組成 animatic。依 ADR-0007，CS-01～CS-14 大多是 animatic 或對話場，只有 7 段影片；逐張分鏡見 `docs/art/storyboards/cs-01-14.zh-TW.md`。
 - 暫用 Scene Plate、Portrait 與 animatic 圖像依美術規範製作；先審一張場景及每位主要角色的標準 Portrait，再批次產出。
 - 生成角色必須原創且歷史可信，不模仿可辨識的演員或現代名人。
 - CS-00 使用正式影片、其餘使用經確認的 provisional 素材，即可驗收第一幕垂直切片。
@@ -517,7 +517,7 @@ PROLOGUE_CUTSCENE
 
 | 類型 | 最終需求 | 目前 | 缺件時 |
 | --- | ---: | ---: | --- |
-| Cutscene slot | 15 | CS-00 正式母片 1 支 | CS-01～CS-03 先做核准的 animatic；其餘 Scene still＋字幕＋繼續按鈕 |
+| Cutscene slot | 15 | CS-00 正式母片 1 支 | CS-01～CS-03 先做核准的 animatic；其餘 Scene still＋字幕＋繼續按鈕。各 slot 的最終做法見 ADR-0007 |
 | Scene Plate | 3 | 新版 0 | 先審一張原創 provisional 樣板，再批次產出；不用舊 3D poster |
 | Portrait | 35 | 新版 0 | 先鎖主要角色原創臉型；缺件時以姓名牌＋剪影維持可玩性 |
 | 字幕／旁白文案 | 兩語系 | 中文劇本完整 | 該 milestone 不完成前不視為可交付 |

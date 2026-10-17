@@ -87,7 +87,7 @@ Expression: [calm 的表情句]
 | :--- | :--- | :--- | :--- | :---: |
 | `cheng-heng` | 程衡（第一、二幕） | `both hands folded inside his wide sleeves in front of his waist` | calm | 1 |
 | `cheng-heng-act3` | 程衡（第三幕） | 同上 | calm、resolute | 2 |
-| `zhou` | 周先生 | `both arms holding a bundle of paper files tied with cloth tape against his chest` | calm、hint、worried、pleased | 4 |
+| `zhou` | 周先生 | `both arms holding a bundle of paper files tied with cloth tape against his chest` | calm、hint（兩張：`hint1`、`hint2`）、worried、pleased | 5 |
 | `chen-shouye` | 陳守業 | `his rough, sun-browned hands hang at his sides; sleeves rolled to the elbows` | calm、pleased、aggrieved | 3 |
 | `chen-congzheng` | 陳從征 | `a reddish-brown wooden crutch under his left arm, his left hand on its grip, right hand at his side` | calm、pleased、aggrieved | 3 |
 | `chen-elder` | 陳老太公 | `both hands resting on top of a bamboo cane held in front of him` | calm | 1 |
@@ -100,7 +100,7 @@ Expression: [calm 的表情句]
 | `qi-jiguang` | 戚繼光 | `his right hand resting on his wide leather belt, left arm relaxed` | calm、pleased、aggrieved、displeased | 4 |
 | `feng-bao` | 馮保 | `dark wooden prayer beads wound around his right hand, held at chest height` | calm、pleased、aggrieved、displeased | 4 |
 | `wanli` | 萬曆帝 | `seated behind a desk, his right hand resting flat on the desk top` | calm、displeased、approving | 3 |
-| | | | **合計** | **41** |
+| | | | **合計** | **42** |
 
 ### 角色專屬的表情調整
 
@@ -138,7 +138,7 @@ Expression: [calm 的表情句]
 | 角色 | 台詞（劇本位置） | 立繪 | 版式 |
 | :--- | :--- | :--- | :--- |
 | 周先生 | 「大人，這案子有意思……」（CS-01） | `zhou-calm` | 單人 |
-| 周先生 | 分秤、我分你選、妒線、找補、和氣值、輪流揀選、去一物的教學 | `zhou-hint` | 單人 |
+| 周先生 | 分秤、我分你選、妒線、找補、和氣值、輪流揀選、去一物的教學 | `zhou-hint1`、`zhou-hint2` 輪替 | 單人 |
 | 周先生 | 「田還是那些田……」（第一幕巧解）、示範三的提示 | `zhou-pleased` | 單人 |
 | 周先生 | 「大人，這回麻煩了……」（CS-04）、前一夜叮囑、示範二的提示 | `zhou-worried` | 單人 |
 | 周先生 | 朝廷三關的說明（CS-07） | 旁白，不用立繪 | — |
@@ -163,6 +163,8 @@ Expression: [calm 的表情句]
 | 程衡 | 「元輔所得最少。三家連乘，所得最多。」 | `cheng-heng-act3-resolute` | 兩人（左：張居正） |
 | 張居正 | 「當年老夫在考成簿上圈你……」 | `zhang-juzheng-pleased` | 兩人（右：程衡） |
 | 萬曆帝 | 硃批後（依結局） | `wanli-approving`（稱職）／`wanli-displeased`（不稱職） | 單人 |
+
+**周先生的提點有兩張**：`zhou-hint1` 與 `zhou-hint2` 是同一個表情的兩種姿態，刻意保留，讓連續好幾句教學時畫面不會一成不變。規則：同一段對話裡，周先生的提點台詞依出現順序輪替，第 1、3、5… 句用 `hint1`，第 2、4… 句用 `hint2`；每段對話都從 `hint1` 開始。沒有 `zhou-hint` 這個檔名。
 
 ## 7. 去背與檔案
 

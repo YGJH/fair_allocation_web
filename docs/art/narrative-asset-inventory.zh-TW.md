@@ -69,7 +69,7 @@ ADR-0007（2026-10-15）後，CS-01～CS-14 大多改為 animatic 或對話場�
 
 ## 4. 第一幕 Portrait Cards 與 expressions
 
-> 2026-10-17 更新：立繪改為接近正面、看鏡頭、去背的透明 PNG，表情依台詞擴充為 41 張（新增 `worried`、`resolute`，第三幕三方改為四級表情，程衡分第一二幕與第三幕兩版）。逐張清單以 [`portraits.zh-TW.md`](portraits.zh-TW.md) 為準；下列表格的張數、副檔名與背景規格待 manifest 更新時一併調整。場景底圖的提示見 [`plates.zh-TW.md`](plates.zh-TW.md)。
+> 2026-10-17 更新：立繪改為接近正面、看鏡頭、去背的透明 PNG，表情依台詞擴充為 42 張（新增 `worried`、`resolute`，第三幕三方改為四級表情，程衡分第一二幕與第三幕兩版）。逐張清單以 [`portraits.zh-TW.md`](portraits.zh-TW.md) 為準；下列表格的張數、副檔名與背景規格待 manifest 更新時一併調整。場景底圖的提示見 [`plates.zh-TW.md`](plates.zh-TW.md)。
 
 原規格為 1024×1536（2:3）寫實半身像、場景暗部虛化背景、不去背、無文字；臉孔必須原創，不模仿演員或現代名人。角色外觀只取自 `characters.zh-TW.md`。缺件時依計畫使用「姓名牌＋剪影」維持可玩性；目前工作樹內也沒有已核准的剪影檔，因此該 fallback 是 UI 政策，不得標成現有素材。
 
@@ -79,7 +79,7 @@ Campaign character ID 與美術檔名 stem 分層：例如 `master-zhou` 對應�
 | --- | --- | --- | --- | --- | --- | --- |
 | `portrait-cheng-heng-calm` | `cheng-heng` | `calm` | 無；`missing` | `public/adventure/portraits/cheng-heng-calm.jpg` | 姓名牌＋剪影 | `blocked`：四名主要角色標準樣板之一。 |
 | `portrait-zhou-calm` | `master-zhou` | `calm` | 無；`missing` | `public/adventure/portraits/zhou-calm.jpg` | 姓名牌＋剪影 | `blocked`：四名主要角色標準樣板之一。 |
-| `portrait-zhou-hint` | `master-zhou` | `hint` | 無；`missing` | `public/adventure/portraits/zhou-hint.jpg` | 姓名牌＋剪影 | `blocked`：標準 `calm` 核准前不得生成其他表情。 |
+| `portrait-zhou-hint1`、`portrait-zhou-hint2` | `master-zhou` | `hint`（兩張輪替，規則見 portraits.zh-TW.md 第 6 節） | 已生成 | `public/adventure/portraits/zhou-hint1.jpg`、`zhou-hint2.jpg` | 姓名牌＋剪影 | 已 commit |
 | `portrait-chen-shouye-calm` | `chen-shouye` | `calm` | 無；`missing` | `public/adventure/portraits/chen-shouye-calm.jpg` | 姓名牌＋剪影 | `blocked`：四名主要角色標準樣板之一。 |
 | `portrait-chen-shouye-pleased` | `chen-shouye` | `pleased` | 無；`missing` | `public/adventure/portraits/chen-shouye-pleased.jpg` | 姓名牌＋剪影 | `blocked`：標準 `calm` 核准前不得生成其他表情。 |
 | `portrait-chen-shouye-aggrieved` | `chen-shouye` | `aggrieved` | 無；`missing` | `public/adventure/portraits/chen-shouye-aggrieved.jpg` | 姓名牌＋剪影 | `blocked`：標準 `calm` 核准前不得生成其他表情。 |

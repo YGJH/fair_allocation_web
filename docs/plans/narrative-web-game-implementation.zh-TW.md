@@ -460,7 +460,7 @@ PROLOGUE_CUTSCENE
 
 **工作**
 
-- 逐批替換 15 個 Cutscene slot、3 張 Scene Plate、35 張 Portrait。
+- 逐批替換 15 個 Cutscene slot、3 張 Scene Plate、41 張 Portrait（清單見 `docs/art/portraits.zh-TW.md`）。
 - 移除 campaign 的 Three.js path；確認其他頁面的 Three.js 使用後再決定是否移除 package。
 - 圖片尺寸、影片 bitrate、字體 subset、lazy loading 與記憶體檢查。
 - 桌面與橫向手機視覺校對。

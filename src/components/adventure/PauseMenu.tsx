@@ -22,6 +22,10 @@ type PauseMenuLabels = {
   readonly controls: string;
   readonly subtitles: string;
   readonly volume: string;
+  readonly textSize: string;
+  readonly textSizeSmall: string;
+  readonly textSizeMedium: string;
+  readonly textSizeLarge: string;
   readonly replayCurrentCutscene: string;
   readonly recallArchive: string;
   readonly restart: string;
@@ -39,9 +43,11 @@ type PauseMenuProps = {
   readonly controlsHelp: ReactNode;
   readonly subtitles: boolean;
   readonly volume: number;
+  readonly textSize: 'small' | 'medium' | 'large';
   readonly onContinue: () => void;
   readonly onSubtitlesChange: (enabled: boolean) => void;
   readonly onVolumeChange: (volume: number) => void;
+  readonly onTextSizeChange: (textSize: 'small' | 'medium' | 'large') => void;
   readonly onReplayCurrentCutscene?: () => void;
   readonly onRestart: () => void;
   readonly onReturnToMenu: () => void;
@@ -61,9 +67,11 @@ export function PauseMenu({
   controlsHelp,
   subtitles,
   volume,
+  textSize,
   onContinue,
   onSubtitlesChange,
   onVolumeChange,
+  onTextSizeChange,
   onReplayCurrentCutscene,
   onRestart,
   onReturnToMenu,
@@ -171,6 +179,19 @@ export function PauseMenu({
                       onChange={handleVolumeChange}
                     />
                   </label>
+                  <fieldset className={styles.textSizeSetting}>
+                    <legend>{labels.textSize}</legend>
+                    {([
+                      ['small', labels.textSizeSmall],
+                      ['medium', labels.textSizeMedium],
+                      ['large', labels.textSizeLarge],
+                    ] as const).map(([value, label]) => (
+                      <label key={value}>
+                        <input type="radio" name="adventure-text-size" value={value} checked={textSize === value} onChange={() => onTextSizeChange(value)} />
+                        <span>{label}</span>
+                      </label>
+                    ))}
+                  </fieldset>
                 </div>
               </section>
             </div>

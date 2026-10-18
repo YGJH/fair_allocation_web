@@ -6,19 +6,25 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type CSSProperties,
   type KeyboardEvent,
 } from 'react';
 import type { Locale } from '../../i18n/copy';
 import { getAdventureCopy, type AdventureMessages } from '../../i18n/adventure';
 import {
   cutsceneManifest,
+  getPortraitAsset,
   type AvailableCutsceneSlot,
   type CutsceneManifestEntry,
+  type DialogueLineDefinition,
+  type SequenceCutsceneMedia,
+  type StillMotion,
 } from '../../narrative/media-manifest';
 import type { CampaignSettings } from '../../narrative/persistence';
+import { NarrativeDialogue, type NarrativeDialogueLine } from './NarrativeDialogue';
 import styles from './CutscenePlayer.module.css';
 
-type PlaybackSettings = Pick<CampaignSettings, 'subtitles' | 'volume'>;
+type PlaybackSettings = Pick<CampaignSettings, 'subtitles' | 'volume' | 'dialogueAutoPlay' | 'dialogueSpeed'>;
 
 type CutscenePlayerProps = {
   readonly slot: AvailableCutsceneSlot;
@@ -35,6 +41,195 @@ type PlayerStatus = 'gate' | 'playing' | 'paused' | 'error' | 'ended';
 
 function clampVolume(value: number) {
   return Math.min(1, Math.max(0, value));
+}
+
+function motionStyle(motion: StillMotion, durationSeconds: number): CSSProperties & Record<string, string | number> {
+  const base = { '--sequence-duration': `${durationSeconds}s` } as CSSProperties & Record<string, string | number>;
+  if (motion.kind === 'push-in' || motion.kind === 'pull-out') {
+    return { ...base, '--focus-x': `${motion.focus.x * 100}%`, '--focus-y': `${motion.focus.y * 100}%` };
+  }
+  return base;
+}
+
+function localizeDialogueLine(line: DialogueLineDefinition, messages: AdventureMessages): NarrativeDialogueLine {
+  if (line.speakerId === 'master-zhou') {
+    return {
+      ...line,
+      speakerName: messages.investigation.parties.masterZhou.name,
+      speakerRole: messages.investigation.parties.masterZhou.role,
+      text: messages.transcript[line.textKey],
+    };
+  }
+  if (line.speakerId === 'cheng-heng' || line.speakerId === 'cheng-heng-act3') {
+    return {
+      ...line,
+      speakerName: messages.investigation.parties.chengHeng.name,
+      speakerRole: messages.investigation.parties.chengHeng.role,
+      text: messages.transcript[line.textKey],
+    };
+  }
+  const party = line.speakerId === 'chen-shouye'
+    ? messages.investigation.parties.chenShouye
+    : line.speakerId === 'chen-congzheng'
+      ? messages.investigation.parties.chenCongzheng
+      : messages.investigation.parties.chenElder;
+  return { ...line, speakerName: party.name, speakerRole: party.role, text: messages.transcript[line.textKey] };
+}
+
+function SequenceVideoBeat({ segment, volume, suspended, onComplete, onFallback }: {
+  readonly segment: Extract<SequenceCutsceneMedia['segments'][number], { kind: 'video' }>;
+  readonly volume: number;
+  readonly suspended: boolean;
+  readonly onComplete: () => void;
+  readonly onFallback: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.volume = clampVolume(volume);
+    if (suspended) video.pause();
+    else void video.play().catch(() => {});
+  }, [suspended, volume]);
+  return (
+    <video
+      ref={videoRef}
+      className={styles.sequenceImage}
+      src={segment.src}
+      poster={segment.posterSrc}
+      playsInline
+      controls
+      autoPlay={!suspended}
+      onEnded={onComplete}
+      onError={onFallback}
+    >
+      <source src={segment.src} type={segment.mimeType} />
+    </video>
+  );
+}
+
+function SequencePlayer({
+  media,
+  locale,
+  messages,
+  settings,
+  subtitles,
+  reducedMotion,
+  suspended,
+  onSubtitlesChange,
+  onFallback,
+  onComplete,
+}: {
+  readonly media: SequenceCutsceneMedia;
+  readonly locale: Locale;
+  readonly messages: AdventureMessages;
+  readonly settings: PlaybackSettings;
+  readonly subtitles: boolean;
+  readonly reducedMotion: boolean;
+  readonly suspended: boolean;
+  readonly onSubtitlesChange: () => void;
+  readonly onFallback: () => void;
+  readonly onComplete: () => void;
+}) {
+  const [segmentIndex, setSegmentIndex] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const segment = media.segments[segmentIndex];
+  const completedRef = useRef(false);
+
+  const advance = useCallback(() => {
+    setElapsedSeconds(0);
+    if (segmentIndex >= media.segments.length - 1) {
+      if (!completedRef.current) {
+        completedRef.current = true;
+        onComplete();
+      }
+      return;
+    }
+    setSegmentIndex((current) => current + 1);
+  }, [media.segments.length, onComplete, segmentIndex]);
+
+  useEffect(() => {
+    if (segment?.kind !== 'still' || paused || suspended) return;
+    const timer = window.setInterval(() => setElapsedSeconds((current) => current + 0.1), 100);
+    return () => window.clearInterval(timer);
+  }, [paused, segment, suspended]);
+
+  useEffect(() => {
+    if (segment?.kind === 'still' && elapsedSeconds + 0.001 >= segment.durationSeconds) advance();
+  }, [advance, elapsedSeconds, segment]);
+
+  if (!segment) return null;
+  if (segment.kind === 'dialogue') {
+    return (
+      <section className={styles.sequenceShell} data-segment="dialogue">
+        <NarrativeDialogue
+          locale={locale}
+          lines={segment.lines.map((line) => localizeDialogueLine(line, messages))}
+          autoPlay={settings.dialogueAutoPlay}
+          speed={settings.dialogueSpeed}
+          continueLabel={messages.continue}
+          suspended={suspended}
+          onComplete={advance}
+        />
+        <button type="button" className={styles.sequenceSkip} onClick={onComplete}>{messages.skip}</button>
+      </section>
+    );
+  }
+  if (segment.kind === 'document') {
+    return (
+      <section className={styles.documentBeat} aria-labelledby="cutscene-document-title" data-segment="document">
+        <div className={styles.documentPaper}>
+          <p className={styles.documentSeal} aria-hidden="true">衡</p>
+          <h2 id="cutscene-document-title">{messages.transcript[segment.titleKey]}</h2>
+          {segment.bodyKeys.map((key) => <p key={key}>{messages.transcript[key]}</p>)}
+          <button type="button" className={styles.primary} onClick={advance}>{messages.continue}</button>
+        </div>
+      </section>
+    );
+  }
+  if (segment.kind === 'video') {
+    return (
+      <section className={styles.sequenceShell} data-segment="video">
+        <div className={styles.sequenceFrame}>
+          <SequenceVideoBeat segment={segment} volume={settings.volume} suspended={suspended || paused} onComplete={advance} onFallback={onFallback} />
+        </div>
+        <div className={styles.sequenceControls} role="group" aria-label={messages.title}>
+          <button type="button" onClick={() => setPaused((current) => !current)} disabled={suspended}>{paused ? messages.resume : messages.pause}</button>
+          <button type="button" className={styles.skip} onClick={onComplete}>{messages.skip}</button>
+        </div>
+      </section>
+    );
+  }
+
+  const activeOverlays = segment.overlays?.filter(({ startSeconds, endSeconds }) => elapsedSeconds >= startSeconds && elapsedSeconds < endSeconds) ?? [];
+  const motionClass = reducedMotion ? '' : styles[`motion_${segment.motion.kind.replace('-', '_')}`];
+  return (
+    <section className={styles.sequenceShell} data-segment="still">
+      <div className={styles.sequenceFrame} data-reduced-motion={reducedMotion ? 'true' : 'false'}>
+        <img
+          className={`${styles.sequenceImage} ${motionClass}`}
+          data-motion={segment.motion.kind}
+          style={motionStyle(segment.motion, segment.durationSeconds)}
+          src={segment.imageSrc}
+          width={2752}
+          height={1536}
+          alt={messages.transcript[segment.altKey]}
+          onError={onFallback}
+        />
+        {subtitles ? activeOverlays.map((overlay) => (
+          <p key={`${overlay.textKey}-${overlay.startSeconds}`} className={`${styles.sequenceOverlay} ${styles[`overlay_${overlay.kind}`]}`}>
+            {messages.transcript[overlay.textKey]}
+          </p>
+        )) : null}
+      </div>
+      <div className={styles.sequenceControls} role="group" aria-label={messages.title}>
+        <button type="button" onClick={() => setPaused((current) => !current)} disabled={suspended}>{paused ? messages.resume : messages.pause}</button>
+        <button type="button" onClick={onSubtitlesChange} aria-pressed={subtitles}>{subtitles ? messages.subtitlesOn : messages.subtitlesOff}</button>
+        <button type="button" className={styles.skip} onClick={onComplete}>{messages.skip}</button>
+      </div>
+    </section>
+  );
 }
 
 function StaticFallback({
@@ -259,7 +454,7 @@ export function CutscenePlayer({
     handlePauseResume();
   }
 
-  if (motionPreference === 'reduce' || showFallback || entry.media.kind === 'static') {
+  if (showFallback || entry.media.kind === 'static' || (motionPreference === 'reduce' && entry.media.kind === 'video')) {
     return (
       <StaticFallback
         entry={entry}
@@ -279,17 +474,24 @@ export function CutscenePlayer({
     );
   }
 
-  if (entry.media.kind !== 'video') {
+  if (entry.media.kind === 'sequence') {
     return (
-      <StaticFallback
-        entry={entry}
+      <SequencePlayer
+        media={entry.media}
+        locale={locale}
         messages={messages}
-        reducedMotion={false}
-        onContinue={finish}
-        continueRef={continueRef}
+        settings={settings}
+        subtitles={subtitles}
+        reducedMotion={motionPreference === 'reduce'}
+        suspended={suspended}
+        onSubtitlesChange={handleSubtitlesChange}
+        onFallback={() => setShowFallback(true)}
+        onComplete={finish}
       />
     );
   }
+
+  if (entry.media.kind !== 'video') return null;
 
   const activeCue = entry.cues.find((cue) => (
     currentTime >= cue.startSeconds && currentTime < cue.endSeconds

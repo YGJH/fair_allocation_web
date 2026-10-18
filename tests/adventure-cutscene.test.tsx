@@ -13,7 +13,12 @@ import {
   type AvailableCutsceneSlot,
 } from '../src/narrative/media-manifest';
 
-const defaultSettings = { subtitles: true, volume: 0.8 } as const;
+const defaultSettings = {
+  subtitles: true,
+  volume: 0.8,
+  dialogueAutoPlay: false,
+  dialogueSpeed: 'standard',
+} as const;
 
 function stubMotionPreference(reduce: boolean) {
   let matches = reduce;
@@ -62,6 +67,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -92,7 +98,7 @@ describe('CutscenePlayer', () => {
 
     expect(await screen.findByRole('alert')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Use static version' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Read the story scroll' })).toBeTruthy();
   });
 
   test('ended and skip can complete the cutscene only once', async () => {
@@ -132,8 +138,8 @@ describe('CutscenePlayer', () => {
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(2);
 
     fireEvent.error(video);
-    fireEvent.click(screen.getByRole('button', { name: 'Use static version' }));
-    expect(screen.getByRole('heading', { name: 'Paper fallback · CS-00' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Read the story scroll' }));
+    expect(screen.getByRole('heading', { name: 'Paper story scroll' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Complete cutscene transcript' })).toBeTruthy();
     expect(screen.getByText(/All my life, I have done nothing else/)).toBeTruthy();
     expect(onComplete).not.toHaveBeenCalled();
@@ -149,7 +155,7 @@ describe('CutscenePlayer', () => {
     const onComplete = vi.fn();
     renderPlayer({ onComplete });
 
-    expect(await screen.findByRole('heading', { name: 'Paper fallback · CS-00' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Paper story scroll' })).toBeTruthy();
     expect(document.querySelector('video')).toBeNull();
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
     expect(screen.getByText('Six years earlier.')).toBeTruthy();
@@ -158,13 +164,54 @@ describe('CutscenePlayer', () => {
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
-  test.each(['cs-01', 'cs-02', 'cs-03'] as const)('%s static fallback exposes its complete transcript and continues', async (slot) => {
+  test('plays CS-01 stills before its canonical Portrait Card dialogue', async () => {
+    vi.useFakeTimers();
     const onComplete = vi.fn();
-    renderPlayer({ slot, onComplete });
-    expect(await screen.findByRole('heading', { name: `Paper fallback · ${slot.toUpperCase()}` })).toBeTruthy();
-    expect(screen.getByRole('list')).toBeTruthy();
+    const view = renderPlayer({ slot: 'cs-01', onComplete });
+
+    expect(view.container.querySelector('img')?.getAttribute('src')).toContain('cs-01-s1.jpg');
+    expect(view.container.querySelector('[data-motion="push-in"]')).toBeTruthy();
+
+    act(() => vi.advanceTimersByTime(3_000));
+    expect(view.container.querySelector('img')?.getAttribute('src')).toContain('cs-01-s2.jpg');
+    expect(screen.getByText('Yiwu County · Appeal')).toBeTruthy();
+
+    act(() => vi.advanceTimersByTime(2_500));
+    expect(screen.getByText(/Yiwu magistrate followed the law/)).toBeTruthy();
+    expect(view.container.querySelector('img')?.getAttribute('src')).toContain('zhou-calm.jpg');
+    expect(onComplete).not.toHaveBeenCalled();
+
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(onComplete).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  test('CS-03 waits on the Performance Ledger document instead of inventing a duration', async () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+    renderPlayer({ slot: 'cs-03', onComplete });
+
+    act(() => vi.advanceTimersByTime(7_100));
+    act(() => vi.advanceTimersByTime(6_100));
+    expect(screen.getByRole('heading', { name: 'Performance Ledger' })).toBeTruthy();
+    expect(screen.getByText(/appeal in five years/)).toBeTruthy();
+    expect(screen.getByText(/Transfer to a busier prefecture/)).toBeTruthy();
+    expect(onComplete).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  test('reduced motion keeps every animatic beat but removes camera transforms', async () => {
+    cleanup();
+    vi.unstubAllGlobals();
+    stubMotionPreference(true);
+    renderPlayer({ slot: 'cs-02' });
+
+    const frame = await screen.findByRole('img', { name: /plants rice/i });
+    expect(frame.getAttribute('src')).toContain('cs-02-s1.jpg');
+    expect(frame.closest('[data-reduced-motion="true"]')).toBeTruthy();
   });
 
   test('live reduced-motion changes remove media and remount it behind a fresh gate', async () => {
@@ -178,7 +225,7 @@ describe('CutscenePlayer', () => {
     expect(screen.getByRole('button', { name: 'Pause' })).toBeTruthy();
     act(() => motion.setMatches(true));
 
-    expect(await screen.findByRole('heading', { name: 'Paper fallback · CS-00' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Paper story scroll' })).toBeTruthy();
     expect(view.container.querySelector('video')).toBeNull();
     expect(firstVideo.currentTime).toBe(0);
     expect(HTMLMediaElement.prototype.pause).toHaveBeenCalledTimes(1);
@@ -284,11 +331,20 @@ test('only available manifest slots can reach CutscenePlayer', () => {
     .toEqualTypeOf<AvailableCutsceneSlot>();
   expectTypeOf<AvailableCutsceneSlot>().toEqualTypeOf<'cs-00' | 'cs-01' | 'cs-02' | 'cs-03'>();
   expect(AVAILABLE_CUTSCENE_SLOTS).toEqual(['cs-00', 'cs-01', 'cs-02', 'cs-03']);
-  expect(Object.keys(cutsceneManifest)).toEqual(AVAILABLE_CUTSCENE_SLOTS);
+  expect(Object.keys(cutsceneManifest)).toEqual(AUTHORED_CUTSCENE_SLOTS);
   expect(Object.hasOwn(cutsceneManifest, 'cs-01')).toBe(true);
   for (const slot of AVAILABLE_CUTSCENE_SLOTS) {
     expect(cutsceneManifest[slot].slot).toBe(slot);
     expect(cutsceneManifest[slot].media.fallback.imageSrc).toBeTruthy();
+  }
+  expect(cutsceneManifest['cs-01'].media.kind).toBe('sequence');
+  expect(cutsceneManifest['cs-02'].media.kind).toBe('sequence');
+  expect(cutsceneManifest['cs-03'].media.kind).toBe('sequence');
+  if (cutsceneManifest['cs-01'].media.kind === 'sequence') {
+    expect(cutsceneManifest['cs-01'].media.segments.map(({ kind }) => kind)).toEqual(['still', 'still', 'dialogue']);
+  }
+  if (cutsceneManifest['cs-03'].media.kind === 'sequence') {
+    expect(cutsceneManifest['cs-03'].media.segments.map(({ kind }) => kind)).toEqual(['still', 'still', 'document']);
   }
 });
 
@@ -334,8 +390,8 @@ test('the stable slots, localized keys, and CS-00 cue keys stay in parity', () =
     expect(entry.media.fallback.transcriptKeys.length).toBeGreaterThan(0);
     expect(en.fallbackTitleBySlot[slot]).toBeTruthy();
     expect(zh.fallbackTitleBySlot[slot]).toBeTruthy();
-    expect(en.fallbackHeadingBySlot[slot]).toContain(slot.toUpperCase());
-    expect(zh.fallbackHeadingBySlot[slot]).toContain(slot.toUpperCase());
+    expect(en.fallbackHeadingBySlot[slot]).not.toMatch(/CS-\d|fallback/i);
+    expect(zh.fallbackHeadingBySlot[slot]).not.toMatch(/CS-\d|fallback/i);
     expect(en.fallbackAltBySlot[slot]).toBeTruthy();
     expect(zh.fallbackAltBySlot[slot]).toBeTruthy();
     for (const key of entry.media.fallback.transcriptKeys) {

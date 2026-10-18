@@ -31,6 +31,10 @@ const pauseLabels = {
   controls: 'Controls and help',
   subtitles: 'Subtitles',
   volume: 'Volume',
+  textSize: 'Text size',
+  textSizeSmall: 'Small',
+  textSizeMedium: 'Medium',
+  textSizeLarge: 'Large',
   replayCurrentCutscene: 'Replay current cutscene',
   recallArchive: 'Recall Archive',
   restart: 'Restart case',
@@ -79,9 +83,11 @@ function defaultPauseProps(overrides: Partial<PauseMenuProps> = {}): PauseMenuPr
     controlsHelp: <p>Use Tab to move and Enter to choose.</p>,
     subtitles: true,
     volume: 0.8,
+    textSize: 'medium',
     onContinue: vi.fn(),
     onSubtitlesChange: vi.fn(),
     onVolumeChange: vi.fn(),
+    onTextSizeChange: vi.fn(),
     onReplayCurrentCutscene: vi.fn(),
     onRestart: vi.fn(),
     onReturnToMenu: vi.fn(),
@@ -210,7 +216,7 @@ describe('GameStage fullscreen controls', () => {
     stubRequestFullscreen(() => Promise.reject(new DOMException('Denied', 'NotAllowedError')));
     const onPlay = vi.fn();
     render(
-      <GameStage labels={stageLabels} backgroundImageSrc="/adventure/plates/court.jpg">
+      <GameStage labels={stageLabels} backgroundImageSrc="/adventure/plates/plate-act1.jpg">
         <button type="button" onClick={onPlay}>Play case</button>
       </GameStage>,
     );
@@ -241,6 +247,30 @@ describe('GameStage fullscreen controls', () => {
     expect(requestFullscreen).toHaveBeenCalledTimes(1);
     expect((screen.getByRole('button', { name: stageLabels.fullscreenActive }) as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByRole('main').textContent).toContain('Case content');
+  });
+
+  test('automatically requests fullscreen once on the first eligible case interaction', async () => {
+    const user = userEvent.setup();
+    const requestFullscreen = stubRequestFullscreen(() => Promise.resolve());
+    const onOpen = vi.fn();
+    render(
+      <GameStage labels={stageLabels} autoFullscreenOnInteraction>
+        <header><button type="button">Open pause menu</button></header>
+        <button type="button" onClick={onOpen}>Open the first case</button>
+      </GameStage>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Open pause menu' }));
+    expect(requestFullscreen).not.toHaveBeenCalled();
+
+    const openCase = screen.getByRole('button', { name: 'Open the first case' });
+    await user.click(openCase);
+
+    await waitFor(() => expect(requestFullscreen).toHaveBeenCalledTimes(1));
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    await user.click(openCase);
+    expect(requestFullscreen).toHaveBeenCalledTimes(1);
+    expect(onOpen).toHaveBeenCalledTimes(2);
   });
 
   test('orientation lock rejection replaces success with non-blocking feedback', async () => {
@@ -321,6 +351,9 @@ describe('PauseMenu', () => {
 
     fireEvent.change(screen.getByRole('slider', { name: pauseLabels.volume }), { target: { value: '0.35' } });
     expect(props.onVolumeChange).toHaveBeenCalledWith(0.35);
+
+    await user.click(screen.getByRole('radio', { name: pauseLabels.textSizeLarge }));
+    expect(props.onTextSizeChange).toHaveBeenCalledWith('large');
 
     const replay = screen.getByRole('button', { name: pauseLabels.replayCurrentCutscene });
     replay.focus();

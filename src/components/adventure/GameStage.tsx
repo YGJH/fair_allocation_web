@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react';
 import { LandscapeGate, type LandscapeGateLabels } from './LandscapeGate';
@@ -28,6 +29,7 @@ type GameStageProps = {
   readonly labels: GameStageLabels;
   readonly backgroundImageSrc?: string;
   readonly background?: ReactNode;
+  readonly autoFullscreenOnInteraction?: boolean;
   readonly lockOrientationOnFullscreen?: boolean;
   readonly landscapeGateLabels?: LandscapeGateLabels;
   readonly onLandscapeBlockedChange?: (blocked: boolean) => void;
@@ -44,6 +46,7 @@ export function GameStage({
   labels,
   backgroundImageSrc,
   background,
+  autoFullscreenOnInteraction = false,
   lockOrientationOnFullscreen = false,
   landscapeGateLabels,
   onLandscapeBlockedChange,
@@ -51,6 +54,7 @@ export function GameStage({
   className,
 }: GameStageProps) {
   const stageRef = useRef<HTMLElement>(null);
+  const autoFullscreenAttemptedRef = useRef(false);
   const contentId = useId();
   const [feedback, setFeedback] = useState('');
   const [requestPending, setRequestPending] = useState(false);
@@ -100,6 +104,13 @@ export function GameStage({
     }
   }
 
+  function requestAutomaticFullscreen(event: ReactMouseEvent<HTMLElement>) {
+    if (!autoFullscreenOnInteraction || autoFullscreenAttemptedRef.current || fullscreenActive) return;
+    if (event.target instanceof Element && event.target.closest('[data-fullscreen-control], header, [role="dialog"]')) return;
+    autoFullscreenAttemptedRef.current = true;
+    void requestFullscreen();
+  }
+
   const backgroundStyle = backgroundImageSrc
     ? ({ '--game-stage-background': `url("${backgroundImageSrc}")` } as CSSProperties)
     : undefined;
@@ -125,6 +136,7 @@ export function GameStage({
           <button
             type="button"
             className={styles.fullscreenButton}
+            data-fullscreen-control
             onClick={() => void requestFullscreen()}
             disabled={requestPending || fullscreenActive}
           >
@@ -147,6 +159,7 @@ export function GameStage({
       className={stageClassName}
       style={backgroundStyle}
       aria-label={labels.stage}
+      onClickCapture={requestAutomaticFullscreen}
     >
       {landscapeGateLabels ? (
         <LandscapeGate labels={landscapeGateLabels} onBlockedChange={onLandscapeBlockedChange}>

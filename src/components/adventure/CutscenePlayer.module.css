@@ -250,9 +250,49 @@
   }
 }
 
+.sequenceShell,
+.documentBeat {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(rgb(9 8 7 / 58%), rgb(9 8 7 / 82%)),
+    url('/adventure/bg.jpg') center / cover no-repeat;
+  color: #f3ebdc;
+}
+.sequenceShell { grid-template-rows: minmax(0, 1fr) auto; gap: .45rem; padding: clamp(.4rem, 1vw, .8rem); }
+.sequenceFrame { position: relative; min-height: 0; overflow: hidden; background: #100d0a; aspect-ratio: 16 / 9; justify-self: center; height: 100%; max-width: 100%; }
+.sequenceImage { display: block; width: 100%; height: 100%; object-fit: cover; transform-origin: var(--focus-x, 50%) var(--focus-y, 50%); }
+.motion_push_in { animation: sequence-push-in var(--sequence-duration) linear both; }
+.motion_pull_out { animation: sequence-pull-out var(--sequence-duration) linear both; }
+.motion_pan_left { animation: sequence-pan-left var(--sequence-duration) linear both; }
+.motion_pan_right { animation: sequence-pan-right var(--sequence-duration) linear both; }
+@keyframes sequence-push-in { from { transform: scale(1); } to { transform: scale(1.06); } }
+@keyframes sequence-pull-out { from { transform: scale(1.06); } to { transform: scale(1); } }
+@keyframes sequence-pan-left { from { transform: scale(1.04) translateX(1.9%); } to { transform: scale(1.04) translateX(-1.9%); } }
+@keyframes sequence-pan-right { from { transform: scale(1.04) translateX(-1.9%); } to { transform: scale(1.04) translateX(1.9%); } }
+.sequenceOverlay { position: absolute; z-index: 2; margin: 0; color: #fff; text-shadow: 0 2px 4px #000, 0 0 1px #000; }
+.overlay_caption { right: 8%; bottom: 8%; left: 8%; max-width: 72ch; margin-inline: auto; padding: .55rem .8rem; background: rgb(0 0 0 / 68%); font: 600 clamp(.88rem, 1.6vw, 1.2rem)/1.6 'Noto Serif TC', Georgia, serif; text-align: center; }
+.overlay_location, .overlay_title { left: 7%; bottom: 10%; padding: .38rem .65rem; border-left: 3px solid #b5372b; background: rgb(18 16 14 / 78%); font: 700 clamp(1rem, 2.4vw, 1.8rem)/1.3 'Noto Serif TC', Georgia, serif; letter-spacing: .08em; }
+.sequenceControls { display: flex; flex-wrap: wrap; justify-content: center; gap: .45rem; }
+.sequenceControls button, .sequenceSkip { min-height: 2.55rem; padding: .45rem .75rem; border: 1px solid rgb(243 235 220 / 42%); background: #211b16; color: #f3ebdc; cursor: pointer; }
+.sequenceControls .skip, .sequenceSkip { border-color: #a8894f; color: #e6cd8a; }
+.sequenceSkip { position: absolute; z-index: 4; top: .75rem; right: .75rem; }
+.documentBeat { place-items: center; padding: clamp(1rem, 4vw, 3rem); background: radial-gradient(circle at 50% 20%, #31271d, #0e0c0a 72%); }
+.documentPaper { position: relative; width: min(42rem, 94%); max-height: 100%; overflow: auto; padding: clamp(1.4rem, 4vw, 3rem); border: 1px solid #a8894f; background: linear-gradient(100deg, #e4d7bf, #f3ebdc 18%, #eadfc9 82%, #d9c8aa); color: #1f1b18; box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 52%); }
+.documentPaper::before { content: ''; position: absolute; inset: .55rem; border: 1px solid rgb(31 27 24 / 24%); pointer-events: none; }
+.documentPaper h2 { margin: 0 0 1.25rem; text-align: center; font: 700 clamp(1.45rem, 3vw, 2.15rem)/1.25 'Noto Serif TC', Georgia, serif; letter-spacing: .12em; }
+.documentPaper p { position: relative; max-width: 42ch; margin: .75rem auto; font: 550 clamp(.92rem, 1.7vw, 1.08rem)/1.75 'Noto Serif TC', Georgia, serif; }
+.documentPaper .documentSeal { position: absolute; top: 1.3rem; right: 1.5rem; width: 2.7rem; margin: 0; border: 2px solid #b5372b; color: #b5372b; font-size: 1.55rem; line-height: 2.35rem; text-align: center; transform: rotate(-5deg); }
+.documentPaper button { display: block; margin: 1.5rem auto 0; }
+@media (max-width: 760px) { .sequenceShell { padding: .25rem; } .sequenceControls button { min-height: 2.25rem; } .documentBeat { padding: .5rem; } .documentPaper { padding: 1.2rem; } }
 @media (prefers-reduced-motion: reduce) {
   .player *,
-  .staticFallback * {
+  .staticFallback *,
+  .sequenceShell * {
     scroll-behavior: auto !important;
     transition: none !important;
     animation: none !important;

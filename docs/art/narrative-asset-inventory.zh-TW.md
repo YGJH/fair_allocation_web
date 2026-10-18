@@ -38,9 +38,9 @@
 | Asset ID | Canonical 定位（不取代 master script） | 現有來源／狀態 | 預定 runtime 路徑 | Fallback | 核准狀態／工程備註 |
 | --- | --- | --- | --- | --- | --- |
 | `cs-00` | 文華殿倒敘序幕 | 根目錄 `Cutscene 0 Demo.mp4`（`final`）；Web 衍生素材為 `provisional` | `public/adventure/cutscenes/cs-00.mp4`（`provisional`） | `public/adventure/cutscenes/cs-00-fallback.jpg`（`provisional`）；poster 為 `public/adventure/cutscenes/cs-00-poster.jpg`（`provisional`） | 母片 `approved`；三項正式路徑素材待 runtime／Safari 與 UI safe-area 審查。Timed cues 仍為 `review-pending`。不得依 storyboard 重剪。 |
-| `cs-01` | 第一幕開場；見 master script「第一幕／開場」 | 無新版素材；`missing` | `public/adventure/animatics/cs-01/`（`missing`） | `public/adventure/cutscenes/cs-01-fallback.jpg`（`missing`）＋canonical 字幕 | `blocked`：先核准 Scene Plate 與四名主要角色標準 Portrait。 |
-| `cs-02` | 第一幕收尾；見 master script「第一幕／斷案卷宗」 | 無新版素材；`missing` | `public/adventure/animatics/cs-02/`（`missing`） | `public/adventure/cutscenes/cs-02-fallback.jpg`（`missing`）＋canonical 字幕 | `blocked`：不得在樣板核准前批次生成。 |
-| `cs-03` | 第一幕幕間；見 master script「第一幕／幕間一」 | 無新版素材；`missing` | `public/adventure/animatics/cs-03/`（`missing`） | `public/adventure/cutscenes/cs-03-fallback.jpg`（`missing`）＋canonical 字幕 | `blocked`；第一幕垂直切片必需。 |
+| `cs-01` | 第一幕開場；見 master script「第一幕／開場」 | 2 張 2752×1536 JPEG；`available` | `public/adventure/animatics/cs-01/cs-01-s1.jpg`、`cs-01-s2.jpg` | 第一格兼靜態替代＋canonical 逐字稿 | 已接入 sequence player：3 秒 push-in、2.5 秒 hold、周先生對話；節奏依 Demo 實機回饋加快。 |
+| `cs-02` | 第一幕收尾；見 master script「第一幕／斷案卷宗」 | 1 張 2752×1536 JPEG；`available` | `public/adventure/animatics/cs-02/cs-02-s1.jpg` | 同張靜態替代＋canonical 逐字稿 | 已接入 sequence player：8 秒 pan-right。 |
+| `cs-03` | 第一幕幕間；見 master script「第一幕／幕間一」 | 2 張 2752×1536 JPEG；`available` | `public/adventure/animatics/cs-03/cs-03-s1.jpg`、`cs-03-s2.jpg` | 第一格兼靜態替代＋canonical 逐字稿／考成簿文件 | 已接入 sequence player：7 秒 push-in、6 秒 pan-left、手動文件頁。 |
 | `cs-04` | 第二幕開場；見 master script「第二幕／開場」 | 無新版素材；`missing` | `public/adventure/cutscenes/cs-04-{segment}.mp4`（`missing`） | `public/adventure/cutscenes/cs-04-fallback.jpg`（`missing`）＋canonical 字幕 | `blocked`；後續批次，最低交付為 scene still＋字幕。 |
 | `cs-05` | 第二幕收尾；見 master script「第二幕／斷案卷宗」 | 無新版素材；`missing` | `public/adventure/cutscenes/cs-05-{segment}.mp4`（`missing`） | `public/adventure/cutscenes/cs-05-fallback.jpg`（`missing`）＋canonical 字幕 | `blocked`；後續批次。 |
 | `cs-06` | 第二幕幕間「三份文書，一個名字」 | 無新版素材；`missing` | `public/adventure/cutscenes/cs-06-{segment}.mp4`（`missing`） | `public/adventure/cutscenes/cs-06-fallback.jpg`（`missing`）＋canonical 字幕 | `blocked`；後續批次。 |
@@ -63,7 +63,7 @@ ADR-0007（2026-10-15）後，CS-01～CS-14 大多改為 animatic 或對話場�
 
 | Asset ID | Canonical 規格來源 | 現有來源／狀態 | 預定 runtime 路徑 | Fallback | 核准狀態 |
 | --- | --- | --- | --- | --- | --- |
-| `plate-act1` | style guide §7.1；第一幕金華府衙二堂 | 無；`missing` | `public/adventure/plates/plate-act1.jpg` | 素材缺件時只能用可讀的紙色介面／場景名稱，不得用舊 3D poster | `blocked`：IP-0 所需的第一張原創 provisional 樣板尚未製作、尚未核准。 |
+| `plate-act1` | style guide §7.1；第一幕金華府衙二堂 | 2752×1536 RGB JPEG；`available` | `public/adventure/plates/plate-act1.jpg` | 素材載入失敗時使用可讀的紙色介面／場景名稱，不得用舊 3D poster | 已接入第一幕搜證與案台；仍未去背，現以 16:9 cover 裁切。 |
 | `plate-act2` | style guide §7.1；第二幕杭州府衙大堂 | 無；`missing` | `public/adventure/plates/plate-act2.jpg` | 同上 | `blocked`：待 `plate-act1` 樣板核准後再批次製作。 |
 | `plate-act3` | style guide §7.1；第三幕文華殿 | 無；`missing` | `public/adventure/plates/plate-act3.jpg` | 同上 | `blocked`：待 `plate-act1` 樣板核准後再批次製作。 |
 
@@ -77,16 +77,16 @@ Campaign character ID 與美術檔名 stem 分層：例如 `master-zhou` 對應�
 
 | Portrait asset ID | Campaign character ID | 表情 | 現有來源／狀態 | 預定 runtime 路徑 | Fallback | 核准狀態 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `portrait-cheng-heng-calm` | `cheng-heng` | `calm` | 無；`missing` | `public/adventure/portraits/cheng-heng-calm.jpg` | 姓名牌＋剪影 | `blocked`：四名主要角色標準樣板之一。 |
-| `portrait-zhou-calm` | `master-zhou` | `calm` | 無；`missing` | `public/adventure/portraits/zhou-calm.jpg` | 姓名牌＋剪影 | `blocked`：四名主要角色標準樣板之一。 |
-| `portrait-zhou-hint1`、`portrait-zhou-hint2` | `master-zhou` | `hint`（兩張輪替，規則見 portraits.zh-TW.md 第 6 節） | 已生成 | `public/adventure/portraits/zhou-hint1.jpg`、`zhou-hint2.jpg` | 姓名牌＋剪影 | 已 commit |
-| `portrait-chen-shouye-calm` | `chen-shouye` | `calm` | 無；`missing` | `public/adventure/portraits/chen-shouye-calm.jpg` | 姓名牌＋剪影 | `blocked`：四名主要角色標準樣板之一。 |
-| `portrait-chen-shouye-pleased` | `chen-shouye` | `pleased` | 無；`missing` | `public/adventure/portraits/chen-shouye-pleased.jpg` | 姓名牌＋剪影 | `blocked`：標準 `calm` 核准前不得生成其他表情。 |
-| `portrait-chen-shouye-aggrieved` | `chen-shouye` | `aggrieved` | 無；`missing` | `public/adventure/portraits/chen-shouye-aggrieved.jpg` | 姓名牌＋剪影 | `blocked`：標準 `calm` 核准前不得生成其他表情。 |
-| `portrait-chen-congzheng-calm` | `chen-congzheng` | `calm` | 無；`missing` | `public/adventure/portraits/chen-congzheng-calm.jpg` | 姓名牌＋剪影 | `blocked`：四名主要角色標準樣板之一。 |
-| `portrait-chen-congzheng-pleased` | `chen-congzheng` | `pleased` | 無；`missing` | `public/adventure/portraits/chen-congzheng-pleased.jpg` | 姓名牌＋剪影 | `blocked`：標準 `calm` 核准前不得生成其他表情。 |
-| `portrait-chen-congzheng-aggrieved` | `chen-congzheng` | `aggrieved` | 無；`missing` | `public/adventure/portraits/chen-congzheng-aggrieved.jpg` | 姓名牌＋剪影 | `blocked`：標準 `calm` 核准前不得生成其他表情。 |
-| `portrait-chen-elder-calm` | `chen-elder` | `calm` | 無；`missing` | `public/adventure/portraits/chen-elder-calm.jpg` | 姓名牌＋剪影 | `blocked`：待核心四名標準樣板核准後製作。 |
+| `portrait-cheng-heng-calm` | `cheng-heng` | `calm` | 2752×1536；`available` | `public/adventure/portraits/cheng-heng-calm.jpg` | 姓名牌＋剪影 | 已接入原判對話；未去背，以 cover 裁切。 |
+| `portrait-zhou-calm` | `master-zhou` | `calm` | 2752×1536；`available` | `public/adventure/portraits/zhou-calm.jpg` | 姓名牌＋剪影 | 已接入開場對話與巧解教學。 |
+| `portrait-zhou-hint1`、`portrait-zhou-hint2` | `master-zhou` | `hint`（兩張輪替，規則見 portraits.zh-TW.md 第 6 節） | 2752×1536；`available` | `public/adventure/portraits/zhou-hint1.jpg`、`zhou-hint2.jpg` | 姓名牌＋剪影 | 已接入卷宗／巧解提示輪替。 |
+| `portrait-chen-shouye-calm` | `chen-shouye` | `calm` | 2752×1536；`available` | `public/adventure/portraits/chen-shouye-calm.jpg` | 姓名牌＋剪影 | 已接入搜證與案台。 |
+| `portrait-chen-shouye-pleased` | `chen-shouye` | `pleased` | 2752×1536；`available` | `public/adventure/portraits/chen-shouye-pleased.jpg` | 姓名牌＋剪影 | 已接入 70／70 案台反應。 |
+| `portrait-chen-shouye-aggrieved` | `chen-shouye` | `aggrieved` | 2752×1536；`available` | `public/adventure/portraits/chen-shouye-aggrieved.jpg` | 姓名牌＋剪影 | 已接入不利門檻反應。 |
+| `portrait-chen-congzheng-calm` | `chen-congzheng` | `calm` | 2752×1536；`available` | `public/adventure/portraits/chen-congzheng-calm.jpg` | 姓名牌＋剪影 | 已接入搜證與案台。 |
+| `portrait-chen-congzheng-pleased` | `chen-congzheng` | `pleased` | 2752×1536；`available` | `public/adventure/portraits/chen-congzheng-pleased.jpg` | 姓名牌＋剪影 | 已接入 70／70 案台反應。 |
+| `portrait-chen-congzheng-aggrieved` | `chen-congzheng` | `aggrieved` | 2752×1536；`available` | `public/adventure/portraits/chen-congzheng-aggrieved.jpg` | 姓名牌＋剪影 | 已接入不利門檻反應。 |
+| `portrait-chen-elder-calm` | `chen-elder` | `calm` | 2752×1536；`available` | `public/adventure/portraits/chen-elder-calm.jpg` | 姓名牌＋剪影 | 已接入搜證。 |
 
 上述 10 張是第一幕 gameplay inventory。為使全劇需求可逐項核對，style guide §7.2 的其餘 25 張 Portrait Card 如下；目前全部仍缺件，缺件時一律使用姓名牌＋剪影 UI 政策，不把政策誤標成檔案：
 
@@ -118,7 +118,7 @@ Campaign character ID 與美術檔名 stem 分層：例如 `master-zhou` 對應�
 | `portrait-eunuch-lyu-calm` | `eunuch-lyu` | `calm` | `public/adventure/portraits/eunuch-lyu-calm.jpg` | 無；`missing` | 姓名牌＋剪影 |
 | `portrait-eunuch-lyu-displeased` | `eunuch-lyu` | `displeased` | `public/adventure/portraits/eunuch-lyu-displeased.jpg` | 無；`missing` | 姓名牌＋剪影 |
 
-合計 35 張：第一幕表格 10 張＋本表 25 張，與 style guide §7.2 的分類（24＋3＋4＋2＋1＋1）一致。`public/adventure/plates/` 的三張 Scene Plate 也仍為 `missing`；不得以 `public/game/posters/*.webp` 舊 poster 冒充。
+合計 35 張：第一幕表格 10 張＋本表 25 張，與 style guide §7.2 的分類（24＋3＋4＋2＋1＋1）一致。`plate-act1` 已存在；`plate-act2`、`plate-act3` 仍為 `missing`；不得以 `public/game/posters/*.webp` 舊 poster 冒充。
 
 ## 5. CS-00 正式 Web 衍生素材（provisional）
 
@@ -214,11 +214,11 @@ CS-00 的具名角色 ID 為 `wanli-emperor`、`zhang-juzheng`、`qi-jiguang`、
 - CS-00 poster 與 reduced-motion fallback 的來源幀已選定。
 - 因此 IP-1／IP-2 可開始，不因美術缺件延後規則與 state machine。
 
-### Gate 0B／美術樣板：blocked
+### Gate 0B／第一幕美術樣板：passed（仍有已知差異）
 
-1. `plate-act1` 原創 provisional Scene Plate 樣板不存在；舊 `public/game/posters/yamen.webp` 不可替代。
-2. 四名主要角色標準 Portrait 樣板 `cheng-heng-calm`、`zhou-calm`、`chen-shouye-calm`、`chen-congzheng-calm` 全部不存在，原創臉型尚未鎖定。
-3. CS-01～CS-03 animatic 在樣板核准前仍為 `blocked`；程式先使用可讀的紙色 still 與姓名牌／剪影 fallback。
+1. `plate-act1` 已交付並接入；舊 `public/game/posters/yamen.webp` 未作替代。
+2. 第一幕 gameplay 所需人物與表情均以 2752×1536 JPEG 交付並接入；目前檔案未去背，暫以 `object-fit: cover; object-position: center top` 裁切，這是已知 provisional 差異。
+3. CS-01～CS-03 共五張 animatic 已接入 sequence player；載入失敗仍保留可讀的紙色故事卷與逐字稿。
 
 ### IP-3 待辦
 

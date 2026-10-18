@@ -33,8 +33,10 @@ export function NationalEnding({ locale, ending, onContinue, headingRef, complet
     <section className={flowStyles.finalPanel} aria-labelledby="national-ending-title" data-national-ending>
       <p className={flowStyles.eyebrow}>{copy.heading}</p>
       <h1 ref={headingRef} id="national-ending-title" tabIndex={-1}>{copy.outcomeNames[ending.resolution.ending]}</h1>
-      {party ? <p>{copy.mostAggrievedLabel}: {party}</p> : null}
-      {ending.resolution.severity !== 'none' ? <p>{copy.severityLabel}: {copy.severityNames[ending.resolution.severity]}</p> : null}
+      {party || ending.resolution.severity !== 'none' ? <div className={flowStyles.endingMeta}>
+        {party ? <p>{copy.mostAggrievedLabel}: {party}</p> : null}
+        {ending.resolution.severity !== 'none' ? <p>{copy.severityLabel}: {copy.severityNames[ending.resolution.severity]}</p> : null}
+      </div> : null}
       <section aria-labelledby="history-book-text">
         <h2 id="history-book-text">{copy.formalLabel}</h2>
         <blockquote>{history.formal}</blockquote>
@@ -46,7 +48,7 @@ export function NationalEnding({ locale, ending, onContinue, headingRef, complet
       <section aria-labelledby="epilogue-summary">
         <h2 id="epilogue-summary">{copy.summaryHeading}</h2>
         <p><strong>{copy.gradesLabel}:</strong> {grades.join(' · ')}</p>
-        <p><strong>{copy.initialRatingsLabel}:</strong> {ratings.map((rating, index) => `${rating}/5 → ${grades[index]}`).join(' · ')}</p>
+        <p><strong>{copy.initialRatingsLabel}:</strong> {ratings.map((rating, index) => `${rating === null ? '—' : `${rating}/5`} → ${grades[index]}`).join(' · ')}</p>
         <p><strong>{copy.sealsLabel}:</strong> {seals.map((earned, index) => `${index + 1}: ${earned ? copy.earnedMark : copy.notEarnedMark}`).join(' · ')}</p>
         <p><strong>{copy.overallSealLabel}:</strong> {copy.overallSealNames[ending.summary.overallSeal]}</p>
         <p><strong>{copy.yiwuVignetteLabel}:</strong> {yiwuVignette}</p>

@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { AllocationWorkbench } from '../src/components/adventure/AllocationWorkbench';
+import { AllocationWorkbench, selectActOneReaction } from '../src/components/adventure/AllocationWorkbench';
 import type { CampaignAllocation } from '../src/narrative/types';
 import { createCampaignSave, decodeCampaignSave, encodeCampaignSave } from '../src/narrative/persistence';
 import { initialCampaignState } from '../src/narrative/state-machine';
@@ -71,7 +71,23 @@ describe('Act I allocation workbench', () => {
       await user.click(screen.getByRole('button', { name: 'Increase Silver share for Chen Congzheng' }));
     }
     expect(screen.getByRole('status').textContent).toContain('For the first time, the brothers look at each other.');
+    expect(document.querySelectorAll('[data-presentation="workbench"][data-expression="pleased"]')).toHaveLength(2);
     expect(document.body.textContent).not.toMatch(/utilities|proportionality|NSW|EF1|EFX|Grade|frontier/i);
+  });
+
+  test('shows both brothers as aggrieved when both adverse thresholds are crossed', () => {
+    const adverse: CampaignAllocation = [
+      { goodId: 'paddy-field', shares: [4, 6] },
+      { goodId: 'oil-tea-hillside', shares: [5, 5] },
+      { goodId: 'silver', shares: [6, 4] },
+    ];
+    expect(selectActOneReaction(adverse)).toEqual({
+      portraits: { 'chen-shouye': 'aggrieved', 'chen-congzheng': 'aggrieved' },
+      announcementKey: 'bothAggrieved',
+    });
+    const view = render(<WorkbenchHarness initialAllocation={adverse} />);
+    expect(view.container.querySelectorAll('[data-presentation="workbench"][data-expression="aggrieved"]')).toHaveLength(2);
+    expect(screen.getByRole('status').textContent).toContain('Chen Shouye holds his head');
   });
 
   test('resolves Paddy mutations by goodId after a shuffled persisted reload', async () => {

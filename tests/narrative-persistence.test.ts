@@ -69,7 +69,6 @@ function legalStates(): CampaignState[] {
   dispatch({ type: 'SUBMIT_CHALLENGE' });
   dispatch({ type: 'LEAVE_CHALLENGE' });
   dispatch({ type: 'ENTER_CHALLENGE' });
-  dispatch({ type: 'COMPLETE_CUTSCENE' });
   dispatch({ type: 'LEAVE_CHALLENGE' });
   dispatch({ type: 'START_REPLAY', act: 1 });
   dispatch({ type: 'SET_REPLAY_ALLOCATION', allocation: frontier });
@@ -92,8 +91,8 @@ function legalStates(): CampaignState[] {
   alternateDispatch({ type: 'COMPLETE_DEBRIEF' });
   alternateDispatch({ type: 'CHOOSE_REVISION', revise: false });
   alternateDispatch({ type: 'SKIP_CHALLENGE' });
-  alternateDispatch({ type: 'ENTER_CHALLENGE' });
   alternateDispatch({ type: 'COMPLETE_CUTSCENE' });
+  alternateDispatch({ type: 'ENTER_CHALLENGE' });
   alternateDispatch({ type: 'SKIP_CHALLENGE' });
   return states;
 }
@@ -115,6 +114,7 @@ function validNonHiddenEndingState(): CampaignState {
   dispatch({ type: 'COMPLETE_DEBRIEF' });
   dispatch({ type: 'CHOOSE_REVISION', revise: false });
   dispatch({ type: 'SKIP_CHALLENGE' });
+  dispatch({ type: 'COMPLETE_CUTSCENE' });
   dispatch({ type: 'CONTINUE_ACT' });
   dispatch({ type: 'COMPLETE_CUTSCENE' });
   dispatch({ type: 'BEGIN_ACT_TWO' });
@@ -182,12 +182,10 @@ describe('Campaign v2 save codec', () => {
 
     expect(ledgerIndex).toBeGreaterThanOrEqual(0);
     expect(reentered).toMatchObject({
-      phase: 'cutscene',
-      cutscene: { slotId: 'cs-02', returnTo: 'challenge' },
+      phase: 'challenge',
+      cutscene: null,
       challenge: { status: 'completed', reachedFrontier: true, masterSeal: true },
     });
-    const challenge = apply(reentered, { type: 'COMPLETE_CUTSCENE' });
-    expect(challenge.phase).toBe('challenge');
     const encoded = encodeCampaignSave(createCampaignSave(reentered));
     expect(encoded.status).toBe('encoded');
     if (encoded.status === 'encoded') {
@@ -195,6 +193,18 @@ describe('Campaign v2 save codec', () => {
         status: 'restored',
         envelope: { campaign: reentered },
       });
+    }
+  });
+
+  test('accepts both legacy challenge and new ledger return targets for an in-flight CS-02 save', () => {
+    const finalVerdict = legalStates().find(({ phase, act }) => phase === 'final-verdict' && act === 1);
+    expect(finalVerdict).toBeTruthy();
+    if (!finalVerdict) return;
+    for (const returnTo of ['challenge', 'ledger'] as const) {
+      const inFlight = { ...finalVerdict, phase: 'cutscene' as const, cutscene: { slotId: 'cs-02' as const, returnTo } };
+      const encoded = encodeCampaignSave(createCampaignSave(inFlight));
+      expect(encoded.status, returnTo).toBe('encoded');
+      if (encoded.status === 'encoded') expect(decodeCampaignSave(encoded.value).status, returnTo).toBe('restored');
     }
   });
 
@@ -383,6 +393,7 @@ describe('Campaign v2 save codec', () => {
       volume: 1,
       dialogueAutoPlay: false,
       dialogueSpeed: 'standard',
+      textSize: 'medium',
     });
     expect(DEFAULT_CAMPAIGN_SETTINGS.subtitles).toBe(true);
 

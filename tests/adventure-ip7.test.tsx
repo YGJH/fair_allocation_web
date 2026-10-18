@@ -34,7 +34,7 @@ describe('IP-7 Act I handoff', () => {
 
     render(<MasterChallenge locale="en" challenge={state.challenge} onChange={() => {}} onHint={() => {}} onSubmit={() => {}} onSkip={() => {}} onLeave={() => {}} />);
     expect(screen.getAllByText(/younger brother chooses Bundle B/).length).toBe(2);
-    expect(screen.getByText(/70 \/ 70 frontier is reached/)).toBeTruthy();
+    expect(screen.getByText(/found the authored solution/)).toBeTruthy();
   });
 
   test('stage three hint disqualifies the seal, while a completed challenge remains complete until edited', () => {

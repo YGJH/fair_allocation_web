@@ -6,6 +6,7 @@ import { ACT_ONE_DEFINITION } from '../../narrative/campaign-definition';
 import type { CampaignAllocation, CampaignChallenge } from '../../narrative/types';
 import type { Locale } from '../../i18n/copy';
 import { getAdventureCopy } from '../../i18n/adventure';
+import { PortraitCard } from './PortraitCard';
 import styles from './MasterChallenge.module.css';
 
 type MasterChallengeProps = {
@@ -29,7 +30,9 @@ export function MasterChallenge({
   onLeave,
   headingRef,
 }: MasterChallengeProps) {
-  const copy = getAdventureCopy(locale).masterChallenge;
+  const adventureCopy = getAdventureCopy(locale);
+  const copy = adventureCopy.masterChallenge;
+  const zhou = adventureCopy.investigation.parties.masterZhou;
   const allocation = challenge.allocation;
   const outcome = allocation ? resolveActOneCutAndChoose(allocation) : null;
   const goodNames = getAdventureCopy(locale).investigation.allocation.goodNames;
@@ -39,6 +42,7 @@ export function MasterChallenge({
     <section className={styles.panel} aria-labelledby="master-challenge-title">
       <p className={styles.eyebrow}>{copy.eyebrow}</p>
       <h2 ref={headingRef} tabIndex={-1} id="master-challenge-title">{copy.heading}</h2>
+      <PortraitCard locale={locale} characterId="master-zhou" expression="hint1" presentation="workbench" name={zhou.name} role={zhou.role} />
       <p>{copy.body}</p>
       <p className={styles.definition}>{copy.assignmentDefinition}</p>
 
@@ -96,7 +100,12 @@ export function MasterChallenge({
       <div className={styles.hints} aria-labelledby="challenge-hints-title">
         <h3 id="challenge-hints-title">{copy.hintsHeading}</h3>
         <p>{copy.hintStage(challenge.hintStage)}</p>
-        {challenge.hintStage > 0 ? <p>{copy.hintText(challenge.hintStage)}</p> : null}
+        {challenge.hintStage > 0 ? (
+          <div>
+            <PortraitCard locale={locale} characterId="master-zhou" expression={challenge.hintStage % 2 === 0 ? 'hint2' : 'hint1'} presentation="workbench" name={zhou.name} role={zhou.role} />
+            <p>{copy.hintText(challenge.hintStage)}</p>
+          </div>
+        ) : null}
         <div className={styles.actions}>
           {([1, 2, 3] as const).map((stage) => (
             <button
@@ -116,6 +125,12 @@ export function MasterChallenge({
         <h3 id="challenge-completion-title">{copy.completionHeading}</h3>
         <p>{challenge.status === 'completed' ? copy.completed : copy.notCompleted}</p>
         <p>{challenge.reachedFrontier ? copy.frontierReached : copy.frontierNotReached}</p>
+        {challenge.reachedFrontier ? (
+          <div>
+            <PortraitCard locale={locale} characterId="master-zhou" expression="pleased" presentation="workbench" name={zhou.name} role={zhou.role} />
+            <p>{copy.frontierDialogue}</p>
+          </div>
+        ) : null}
         <p>{challenge.masterSeal ? copy.sealAwarded : copy.sealUnavailable}</p>
       </div>
 

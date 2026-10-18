@@ -177,7 +177,7 @@ function replaceChallenge(state: CampaignState, challenge: CampaignChallenge): C
 }
 
 function createRecord(state: CampaignState, finalVerdict: CampaignVerdict, revisionUsed: boolean): CampaignRecord | null {
-  if (!state.initialVerdict || !state.intuitionRating) return null;
+  if (!state.initialVerdict || (state.act !== 1 && !state.intuitionRating)) return null;
   const grade = state.act === 1
     ? gradeActOne({ utilities: finalVerdict.metrics.utilities.map(BigInt) })
     : state.act === 2
@@ -222,7 +222,12 @@ function replayRecord(state: CampaignState, finalVerdict: CampaignVerdict): Camp
 
 export function campaignReducer(state: CampaignState, action: CampaignAction): CampaignState {
   switch (action.type) {
-    case 'RESTORE_PARSED': return action.state;
+    case 'RESTORE_PARSED': {
+      if (action.state.act === 1 && action.state.phase === 'intuition-rating') {
+        return { ...action.state, phase: 'debrief', intuitionRating: null };
+      }
+      return action.state;
+    }
     case 'COMPLETE_CUTSCENE': {
       if (state.phase !== 'cutscene' || !state.cutscene) return state;
       const slot = state.cutscene.slotId;
@@ -254,7 +259,7 @@ export function campaignReducer(state: CampaignState, action: CampaignAction): C
       };
     }
     case 'BEGIN_FROM_TITLE':
-      return state.phase === 'title' ? { ...state, phase: 'cutscene', cutscene: { slotId: 'cs-01', returnTo: 'intro' } } : state;
+      return state.phase === 'title' ? { ...state, phase: 'intro', cutscene: null } : state;
     case 'BEGIN_ACT_TWO':
       if (state.phase !== 'act-two-transition' || !state.actRecord || state.act !== 2) return state;
       return {
@@ -289,20 +294,25 @@ export function campaignReducer(state: CampaignState, action: CampaignAction): C
     case 'START_ALLOCATION': return state.phase === 'investigation' ? { ...state, phase: 'allocation' } : state;
     case 'RETURN_TO_INVESTIGATION': return state.phase === 'allocation' && !state.initialVerdict ? { ...state, phase: 'investigation' } : state;
     case 'SET_DRAFT_ALLOCATION': {
-      if (state.phase !== 'allocation' || !verdictFromAllocation(state.act, state.act === 3 ? normalizeCampaignWritAllocation(action.allocation) : action.allocation, state.discoveredClueIds)) return state;
+      if ((state.phase !== 'investigation' && state.phase !== 'allocation') || !verdictFromAllocation(state.act, state.act === 3 ? normalizeCampaignWritAllocation(action.allocation) : action.allocation, state.discoveredClueIds)) return state;
       return { ...state, draftAllocation: cloneAllocation(state.act === 3 ? normalizeCampaignWritAllocation(action.allocation) : action.allocation) };
     }
     case 'LOCK_INITIAL_VERDICT': {
-      if (state.phase !== 'allocation' || !hasRequiredClues(state)) return state;
+      if ((state.phase !== 'investigation' && state.phase !== 'allocation') || !hasRequiredClues(state)) return state;
       const initialVerdict = verdictFromAllocation(state.act, state.draftAllocation, state.discoveredClueIds);
-      return initialVerdict ? { ...state, phase: 'intuition-rating', initialVerdict } : state;
+      return initialVerdict ? {
+        ...state,
+        phase: state.act === 1 ? 'debrief' : 'intuition-rating',
+        initialVerdict,
+        intuitionRating: state.act === 1 ? null : state.intuitionRating,
+      } : state;
     }
     case 'SUBMIT_INTUITION_RATING':
       if (state.phase !== 'intuition-rating' || !Number.isInteger(action.rating) || action.rating < 1 || action.rating > 5) return state;
       return { ...state, phase: 'debrief', intuitionRating: action.rating as 1 | 2 | 3 | 4 | 5 };
     case 'COMPLETE_DEBRIEF': return state.phase === 'debrief' ? { ...state, phase: 'revision-decision' } : state;
     case 'CHOOSE_REVISION':
-      if (state.phase !== 'revision-decision' || !state.initialVerdict) return state;
+      if ((state.phase !== 'revision-decision' && !(state.act === 1 && state.phase === 'debrief')) || !state.initialVerdict) return state;
       if (!action.revise) return finishFinalVerdict(state, state.initialVerdict.allocation, false);
       if (state.revisionUsed) return state;
       return { ...state, phase: 'revision', revisionUsed: true, revisionAllocation: cloneAllocation(state.initialVerdict.allocation) };
@@ -318,7 +328,8 @@ export function campaignReducer(state: CampaignState, action: CampaignAction): C
       if ((state.phase !== 'final-verdict' && state.phase !== 'ledger') || !state.actRecord) return state;
       const challenge = challengeForAct(state);
       const next = state.challenge.status === 'completed' ? state : replaceChallenge(state, challenge);
-      return { ...next, phase: 'cutscene', cutscene: { slotId: state.act === 1 ? 'cs-02' : state.act === 2 ? 'cs-05' : 'cs-08', returnTo: 'challenge' } };
+      if (state.act === 1) return { ...next, phase: 'challenge', cutscene: null };
+      return { ...next, phase: 'cutscene', cutscene: { slotId: state.act === 2 ? 'cs-05' : 'cs-08', returnTo: 'challenge' } };
     }
     case 'SET_CHALLENGE_ALLOCATION': {
       const allocation = state.act === 3 ? normalizeCampaignWritAllocation(action.allocation) : action.allocation;
@@ -344,7 +355,8 @@ export function campaignReducer(state: CampaignState, action: CampaignAction): C
     case 'LEAVE_CHALLENGE': return state.phase === 'challenge' && state.actRecord ? { ...state, phase: state.challenge.returnTo } : state;
     case 'SKIP_CHALLENGE': {
       if ((state.phase !== 'final-verdict' && state.phase !== 'challenge') || !state.actRecord) return state;
-      return { ...replaceChallenge(state, state.challenge.status === 'completed' ? state.challenge : { ...state.challenge, status: 'skipped' }), phase: 'ledger' };
+      const next = replaceChallenge(state, state.challenge.status === 'completed' ? state.challenge : { ...state.challenge, status: 'skipped' });
+      return { ...next, phase: 'ledger', cutscene: null };
     }
     case 'OPEN_LEDGER': return state.phase === 'final-verdict' && state.actRecord ? { ...state, phase: 'ledger' } : state;
     case 'CONTINUE_ACT':

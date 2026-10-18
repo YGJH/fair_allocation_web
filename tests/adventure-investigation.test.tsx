@@ -20,10 +20,16 @@ describe('Act I investigation', () => {
     const view = render(<InvestigationDossier locale="en" discoveredClueIds={[]} onDiscoverClue={onDiscover} onStartAllocation={onStart} />);
 
     expect(screen.getByRole('button', { name: 'Enter allocation workbench' }).hasAttribute('disabled')).toBe(true);
-    const clues = screen.getAllByRole('button', { name: /Interview/ });
-    clues.forEach((clue) => fireEvent.click(clue));
-    expect(onDiscover).toHaveBeenCalledTimes(4);
+    for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(name) }));
+      expect(onDiscover).toHaveBeenCalledTimes(['Chen Shouye', 'Chen Congzheng', 'Chen Elder'].indexOf(name) + 1);
+      expect(view.container.querySelector('.portraitImage, img[src*="/adventure/portraits/"]')?.getAttribute('src')).toContain('/adventure/portraits/');
+      expect(screen.queryByRole('button', { name: 'Recorded' })).toBeNull();
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'The original Yiwu ruling' }));
+    expect(screen.getByText(/It weighs things, not people/)).toBeTruthy();
     expect(onDiscover.mock.calls.map(([id]) => id)).toEqual(clueIds);
+    expect(screen.queryByRole('button', { name: /Interview/ })).toBeNull();
 
     view.rerender(<InvestigationDossier locale="en" discoveredClueIds={[...clueIds]} onDiscoverClue={onDiscover} onStartAllocation={onStart} />);
     fireEvent.click(screen.getByRole('button', { name: 'Enter allocation workbench' }));

@@ -9,11 +9,11 @@ export const CAMPAIGN_V2_STORAGE_KEY = 'settled-shares-campaign-v2';
 export const LEGACY_CAMPAIGN_V1_STORAGE_KEY = 'settled-shares-campaign-v1';
 export const LEGACY_CAMPAIGN_NOTICE_STORAGE_KEY = 'settled-shares-campaign-v2-rebuilt-notice';
 export interface StorageLike { getItem(key: string): string | null; setItem(key: string, value: string): void; }
-export type CampaignSettings = { readonly subtitles: boolean; readonly volume: number; readonly dialogueAutoPlay: boolean; readonly dialogueSpeed: 'slow' | 'standard' | 'fast' };
+export type CampaignSettings = { readonly subtitles: boolean; readonly volume: number; readonly dialogueAutoPlay: boolean; readonly dialogueSpeed: 'slow' | 'standard' | 'fast'; readonly textSize: 'small' | 'medium' | 'large' };
 export type CampaignRecall = { readonly watchedCutsceneSlots: readonly CampaignCutsceneSlot[]; readonly watchedRevealActs: readonly CampaignAct[]; readonly firstUseGuidanceCompleted: boolean };
 export type CampaignSaveV2 = { readonly version: 2; readonly campaign: CampaignState; readonly settings: CampaignSettings; readonly recall: CampaignRecall };
 export type ParsedCampaignSaveV2 = Omit<CampaignSaveV2, 'campaign'> & { readonly campaign: ParsedCampaignState };
-export const DEFAULT_CAMPAIGN_SETTINGS: CampaignSettings = Object.freeze({ subtitles: true, volume: 1, dialogueAutoPlay: false, dialogueSpeed: 'standard' });
+export const DEFAULT_CAMPAIGN_SETTINGS: CampaignSettings = Object.freeze({ subtitles: true, volume: 1, dialogueAutoPlay: false, dialogueSpeed: 'standard', textSize: 'medium' });
 export const DEFAULT_CAMPAIGN_RECALL: CampaignRecall = Object.freeze({ watchedCutsceneSlots: [], watchedRevealActs: [], firstUseGuidanceCompleted: false });
 
 const actOneClueIds = ['clue-chen-shouye-valuations', 'clue-chen-congzheng-valuations', 'clue-chen-elder-equal-split', 'clue-yiwu-original-ruling'] as const;
@@ -31,7 +31,7 @@ const endingPartySchema = z.enum(['外朝', '薊鎮', '內廷']);
 const endingResolutionSchema = z.object({ ending: endingIdSchema, severity: endingSeveritySchema, mostAggrievedParty: endingPartySchema.nullable(), envyGap: z.number().int().nonnegative().nullable() }).strict();
 const endingStateSchema = z.object({ resolution: endingResolutionSchema, hiddenEnding: z.boolean(), summary: z.object({
   grades: z.tuple([gradeSchema, gradeSchema, gradeSchema]),
-  initialRatings: z.tuple([ratingSchema, ratingSchema, ratingSchema]),
+  initialRatings: z.tuple([ratingSchema.nullable(), ratingSchema, ratingSchema]),
   masterSeals: z.tuple([z.boolean(), z.boolean(), z.boolean()]),
   yiwuVignette: z.enum(['competent-or-better', 'ordinary-or-below']),
   hangzhouVignette: z.enum(['competent-or-better', 'ordinary-or-below']),
@@ -128,7 +128,7 @@ function validateRecordAllocations(record: { initialVerdict: { allocation: reado
     context.addIssue({ code: 'custom', message: `Act ${act} record contains an allocation from another act.` });
   }
 }
-const actOneRecordSchema = z.object({ act: z.literal(1), initialVerdict: campaignVerdictSchema, intuitionRating: ratingSchema, revisionUsed: z.boolean(), finalVerdict: campaignVerdictSchema, grade: gradeSchema, challenge: challengeSchema }).strict().superRefine((record, context) => {
+const actOneRecordSchema = z.object({ act: z.literal(1), initialVerdict: campaignVerdictSchema, intuitionRating: ratingSchema.nullable(), revisionUsed: z.boolean(), finalVerdict: campaignVerdictSchema, grade: gradeSchema, challenge: challengeSchema }).strict().superRefine((record, context) => {
   validateRecordAllocations(record, 1, context);
   if (record.grade !== gradeActOne({ utilities: record.finalVerdict.metrics.utilities.map(BigInt) })) context.addIssue({ code: 'custom', message: 'Act I grade does not match Final Verdict.' });
 });
@@ -207,13 +207,17 @@ export const campaignStateSchema = z.object({
   if (state.phase === 'cutscene') {
     const target = state.cutscene?.returnTo;
     const slot = state.cutscene?.slotId;
-    const validTarget = (slot === 'cs-00' && target === 'title') || (slot === 'cs-01' && target === 'intro') || (slot === 'cs-02' && target === 'challenge') || (slot === 'cs-03' && target === 'act-two-transition') || (slot === 'cs-04' && target === 'intro') || (slot === 'cs-05' && target === 'challenge') || (slot === 'cs-06' && target === 'act-three-transition') || (slot === 'cs-07' && target === 'intro') || (slot === 'cs-08' && target === 'challenge') || (['cs-09', 'cs-10', 'cs-11', 'cs-12'].includes(slot ?? '') && target === 'act-three-transition') || (['cs-09', 'cs-10', 'cs-11', 'cs-12', 'cs-13', 'cs-14'].includes(slot ?? '') && target === 'ending');
+    const validTarget = (slot === 'cs-00' && target === 'title') || (slot === 'cs-01' && target === 'intro') || (slot === 'cs-02' && (target === 'challenge' || target === 'ledger')) || (slot === 'cs-03' && target === 'act-two-transition') || (slot === 'cs-04' && target === 'intro') || (slot === 'cs-05' && target === 'challenge') || (slot === 'cs-06' && target === 'act-three-transition') || (slot === 'cs-07' && target === 'intro') || (slot === 'cs-08' && target === 'challenge') || (['cs-09', 'cs-10', 'cs-11', 'cs-12'].includes(slot ?? '') && target === 'act-three-transition') || (['cs-09', 'cs-10', 'cs-11', 'cs-12', 'cs-13', 'cs-14'].includes(slot ?? '') && target === 'ending');
     if (!validTarget) issue('Cutscene return target is not reachable.');
   }
   if (state.phase === 'final-verdict' || state.phase === 'challenge' || state.phase === 'ledger' || state.phase === 'act-three-transition' || state.phase === 'ending' || state.phase === 'completed') {
-    if (!state.initialVerdict || !state.intuitionRating || !state.finalVerdict || !state.actRecord) issue('Complete phases require a Final Verdict and record.');
+    const missingRequiredRating = state.act !== 1 && !state.intuitionRating;
+    if (!state.initialVerdict || missingRequiredRating || !state.finalVerdict || !state.actRecord) issue('Complete phases require a Final Verdict and record.');
   }
-  if (state.phase === 'revision' && (!state.initialVerdict || !state.intuitionRating || !state.revisionUsed || !state.revisionAllocation || state.finalVerdict || state.actRecord)) issue('Revision phase requires one active Revision.');
+  if (state.phase === 'revision') {
+    const missingRequiredRating = state.act !== 1 && !state.intuitionRating;
+    if (!state.initialVerdict || missingRequiredRating || !state.revisionUsed || !state.revisionAllocation || state.finalVerdict || state.actRecord) issue('Revision phase requires one active Revision.');
+  }
   if (state.phase === 'final-verdict' && state.finalVerdict) {
     const expected = state.revisionUsed ? state.revisionAllocation : state.initialVerdict?.allocation;
     if (!expected || JSON.stringify(expected) !== JSON.stringify(state.finalVerdict.allocation)) issue('Final Verdict must match the selected Revision path.');
@@ -229,7 +233,7 @@ export const campaignStateSchema = z.object({
   if (state.phase === 'replay' && state.replay?.selectedAct !== 1 && state.replay?.selectedAct !== 2 && state.replay?.selectedAct !== 3) issue('Replay act is not authored.');
 });
 
-export const campaignSettingsSchema = z.object({ subtitles: z.boolean(), volume: z.number().finite().min(0).max(1), dialogueAutoPlay: z.boolean(), dialogueSpeed: z.enum(['slow', 'standard', 'fast']) }).strict();
+export const campaignSettingsSchema = z.object({ subtitles: z.boolean(), volume: z.number().finite().min(0).max(1), dialogueAutoPlay: z.boolean(), dialogueSpeed: z.enum(['slow', 'standard', 'fast']), textSize: z.enum(['small', 'medium', 'large']).default('medium') }).strict();
 export const campaignRecallSchema = z.object({ watchedCutsceneSlots: z.array(cutsceneSlotSchema).superRefine((slots, context) => { if (new Set(slots).size !== slots.length) context.addIssue({ code: 'custom', message: 'Watched slots must be unique.' }); }), watchedRevealActs: z.array(z.union([z.literal(1), z.literal(2), z.literal(3)])).superRefine((acts, context) => { if (new Set(acts).size !== acts.length) context.addIssue({ code: 'custom', message: 'Watched acts must be unique.' }); }), firstUseGuidanceCompleted: z.boolean().default(false) }).strict();
 export const campaignSaveV2Schema = z.object({ version: z.literal(2), campaign: campaignStateSchema, settings: campaignSettingsSchema, recall: campaignRecallSchema }).strict();
 

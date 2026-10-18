@@ -1,0 +1,16 @@
+.dialogue {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: min(100%, 76rem);
+  min-height: 0;
+  margin: 0 auto;
+  color: #f3ebdc;
+}
+.portraitStage { display: grid; min-height: 0; place-items: end center; overflow: hidden; padding: clamp(.5rem, 2vw, 1.5rem) 1rem 0; }
+.dialogueBox { position: relative; z-index: 2; margin: -1px auto 0; width: min(92%, 68rem); padding: clamp(.85rem, 2vw, 1.25rem) clamp(1rem, 3vw, 2rem); border: 1px solid rgb(31 27 24 / 32%); border-top: 3px solid #2f4a63; background: linear-gradient(90deg, #f3ebdc, #e4d7bf); color: #1f1b18; box-shadow: 0 -1rem 3rem rgb(0 0 0 / 22%); }
+.speaker { margin: 0 0 .35rem; color: #2f4a63; font: 700 clamp(1rem, 1.8vw, 1.25rem)/1.2 'Noto Serif TC', Georgia, serif; }
+.line { max-width: 72ch; margin: 0; font: 550 clamp(.9rem, 1.55vw, 1.08rem)/1.75 'Noto Serif TC', Georgia, serif; }
+.dialogueBox button { position: absolute; right: 1rem; bottom: .8rem; min-height: 2.6rem; padding: .5rem .85rem; border: 1px solid #2f4a63; background: #2f4a63; color: #f3ebdc; cursor: pointer; }
+.dialogueBox button:focus-visible { outline: 3px solid #a8894f; outline-offset: 3px; }
+.autoStatus { margin: .5rem 0 0; color: #6b625a; font-size: .78rem; }
+@media (max-height: 31rem) { .portraitStage { place-items: center; } .dialogueBox { padding-block: .65rem; } .line { line-height: 1.5; } }

@@ -30,7 +30,6 @@ function reachInvestigation() {
   let state = initialCampaignState();
   state = dispatch(state, { type: 'COMPLETE_CUTSCENE' });
   state = dispatch(state, { type: 'BEGIN_FROM_TITLE' });
-  state = dispatch(state, { type: 'COMPLETE_CUTSCENE' });
   state = dispatch(state, { type: 'COMPLETE_INTRO' });
   return state;
 }
@@ -42,12 +41,11 @@ function discoverAll(state: CampaignState) {
   return state;
 }
 
-function reachDebrief(allocation: CampaignAllocation = halfSplit, rating = 3) {
+function reachDebrief(allocation: CampaignAllocation = halfSplit, _rating = 3) {
   let state = discoverAll(reachInvestigation());
   state = dispatch(state, { type: 'START_ALLOCATION' });
   state = dispatch(state, { type: 'SET_DRAFT_ALLOCATION', allocation });
-  state = dispatch(state, { type: 'LOCK_INITIAL_VERDICT' });
-  return dispatch(state, { type: 'SUBMIT_INTUITION_RATING', rating });
+  return dispatch(state, { type: 'LOCK_INITIAL_VERDICT' });
 }
 
 function reachFinalVerdict(
@@ -97,19 +95,15 @@ describe('Campaign v2 legal path', () => {
     state = dispatch(state, { type: 'COMPLETE_CUTSCENE' });
     expect(state.phase).toBe('title');
     state = dispatch(state, { type: 'BEGIN_FROM_TITLE' });
-    expect(state).toMatchObject({ phase: 'cutscene', cutscene: { slotId: 'cs-01', returnTo: 'intro' } });
-    state = dispatch(state, { type: 'COMPLETE_CUTSCENE' });
-    expect(state.phase).toBe('intro');
+    expect(state).toMatchObject({ phase: 'intro', cutscene: null });
     state = dispatch(state, { type: 'COMPLETE_INTRO' });
     state = discoverAll(state);
     state = dispatch(state, { type: 'START_ALLOCATION' });
     state = dispatch(state, { type: 'SET_DRAFT_ALLOCATION', allocation: inverted });
     state = dispatch(state, { type: 'LOCK_INITIAL_VERDICT' });
-    expect(state.phase).toBe('intuition-rating');
-    expect(state.initialVerdict?.metrics.utilities).toEqual([30, 30]);
-
-    state = dispatch(state, { type: 'SUBMIT_INTUITION_RATING', rating: 2 });
     expect(state.phase).toBe('debrief');
+    expect(state.initialVerdict?.metrics.utilities).toEqual([30, 30]);
+    expect(state.intuitionRating).toBeNull();
     state = dispatch(state, { type: 'COMPLETE_DEBRIEF' });
     state = dispatch(state, { type: 'CHOOSE_REVISION', revise: true });
     expect(state.revisionAllocation).toEqual(inverted);
@@ -144,6 +138,20 @@ describe('Campaign v2 legal path', () => {
     expect(state).toMatchObject({ act: 2, phase: 'act-two-transition', cutscene: null });
   });
 
+  test('supports an integrated investigation desk without requiring an allocation-phase transition', () => {
+    let state = reachInvestigation();
+    state = dispatch(state, { type: 'SET_DRAFT_ALLOCATION', allocation: frontier });
+    expect(state).toMatchObject({ phase: 'investigation', draftAllocation: frontier });
+    expect(campaignReducer(state, { type: 'LOCK_INITIAL_VERDICT' })).toBe(state);
+
+    state = discoverAll(state);
+    state = dispatch(state, { type: 'LOCK_INITIAL_VERDICT' });
+    expect(state).toMatchObject({
+      phase: 'debrief',
+      initialVerdict: { allocation: frontier },
+    });
+  });
+
   test('gates the initial verdict on all required clues and permits investigation return only before lock', () => {
     let state = reachInvestigation();
     state = dispatch(state, { type: 'START_ALLOCATION' });
@@ -172,23 +180,20 @@ describe('Campaign v2 legal path', () => {
 });
 
 describe('Rate-Before-Reveal selectors', () => {
-  test('does not expose a formal value through any selector before rating submission', () => {
+  test('opens Act I metrics only after the initial verdict is locked', () => {
     let state = discoverAll(reachInvestigation());
     state = dispatch(state, { type: 'START_ALLOCATION' });
     state = dispatch(state, { type: 'SET_DRAFT_ALLOCATION', allocation: frontier });
     state = dispatch(state, { type: 'LOCK_INITIAL_VERDICT' });
 
     expect(state.initialVerdict?.metrics.utilities).toEqual([70, 70]);
-    expect(selectVisibleMetrics(state)).toEqual({});
+    expect(selectVisibleMetrics(state)).toMatchObject({ utilities: [70, 70], proportionality: true, ef: true });
     expect(selectCampaignViewModel(state)).toEqual({
-      phase: 'intuition-rating',
-      cta: 'submit-intuition-rating',
-      task: 'rate-initial-verdict',
-      metrics: {},
+      phase: 'debrief',
+      cta: 'continue-debrief',
+      task: 'review-debrief',
+      metrics: { utilities: [70, 70], proportionality: true, ef: true },
     });
-    expect(JSON.stringify(selectCampaignViewModel(state))).not.toMatch(
-      /utilities|proportionality|reachedFrontier|"ef"/,
-    );
   });
 
   test('applies a metric allowlist for every campaign phase', () => {
@@ -259,9 +264,10 @@ describe('verdict snapshots and revision', () => {
     expect(campaignReducer(state, { type: 'SUBMIT_INTUITION_RATING', rating })).toBe(state);
   });
 
-  test.each([1, 2, 3, 4, 5])('accepts integer intuition rating %s', (rating) => {
+  test.each([1, 2, 3, 4, 5])('does not accept a legacy Act I intuition rating %s after lock', (rating) => {
     const state = reachDebrief(halfSplit, rating);
-    expect(state.intuitionRating).toBe(rating);
+    expect(state.intuitionRating).toBeNull();
+    expect(campaignReducer(state, { type: 'SUBMIT_INTUITION_RATING', rating })).toBe(state);
   });
 
   test('allows exactly one revision and freezes both verdict snapshots', () => {
@@ -283,10 +289,10 @@ describe('Master Challenge and non-blocking grades', () => {
   test('preserves a completed frontier result on re-entry and clears it only after an edit', () => {
     let state = reachFinalVerdict(inverted, 1);
     state = dispatch(state, { type: 'SKIP_CHALLENGE' });
-    expect(state).toMatchObject({ phase: 'ledger', challenge: { status: 'skipped' } });
+    expect(state).toMatchObject({ phase: 'ledger', cutscene: null, challenge: { status: 'skipped' } });
 
     state = dispatch(state, { type: 'ENTER_CHALLENGE' });
-    state = dispatch(state, { type: 'COMPLETE_CUTSCENE' });
+    expect(state.phase).toBe('challenge');
     state = dispatch(state, { type: 'SET_CHALLENGE_ALLOCATION', allocation: frontier });
     state = dispatch(state, { type: 'SUBMIT_CHALLENGE' });
     expect(state.challenge).toMatchObject({
@@ -297,8 +303,6 @@ describe('Master Challenge and non-blocking grades', () => {
     const completedRecord = state.actRecord;
 
     state = dispatch(state, { type: 'ENTER_CHALLENGE' });
-    expect(state.phase).toBe('cutscene');
-    state = dispatch(state, { type: 'COMPLETE_CUTSCENE' });
     expect(state.phase).toBe('challenge');
     expect(state.challenge).toBe(completedChallenge);
     expect(state.actRecord).toBe(completedRecord);

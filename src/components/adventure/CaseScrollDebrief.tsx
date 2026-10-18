@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type Ref } from 'react';
 import type { Locale } from '../../i18n/copy';
 import { getAdventureCopy } from '../../i18n/adventure';
 import type { CampaignVerdict } from '../../narrative/types';
+import { PortraitCard } from './PortraitCard';
 import { ShareGauge } from './ShareGauge';
 import styles from './VerdictFlow.module.css';
 
@@ -14,22 +15,28 @@ export function CaseScrollDebrief({
   verdict,
   watched,
   onWatched,
-  onContinue,
+  onAccept,
+  onRevise,
+  initiallyOpen = false,
   headingRef,
 }: {
   locale: Locale;
   verdict: CampaignVerdict;
   watched: boolean;
   onWatched: () => void;
-  onContinue: () => void;
+  onAccept: () => void;
+  onRevise: () => void;
+  initiallyOpen?: boolean;
   headingRef?: Ref<HTMLHeadingElement>;
 }) {
-  const copy = getAdventureCopy(locale).investigation.debrief;
+  const adventureCopy = getAdventureCopy(locale);
+  const copy = adventureCopy.investigation.debrief;
+  const zhou = adventureCopy.investigation.parties.masterZhou;
   const parties = [
     getAdventureCopy(locale).investigation.allocation.partyNames['chen-shouye'].name,
     getAdventureCopy(locale).investigation.allocation.partyNames['chen-congzheng'].name,
   ];
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initiallyOpen ? LAST_STEP : 0);
   const watchedRef = useRef(false);
   const complete = step === LAST_STEP;
 
@@ -49,11 +56,7 @@ export function CaseScrollDebrief({
   }
 
   function next() {
-    if (step < LAST_STEP) {
-      setStep((current) => Math.min(LAST_STEP, current + 1));
-      return;
-    }
-    onContinue();
+    if (step < LAST_STEP) setStep((current) => Math.min(LAST_STEP, current + 1));
   }
 
   return (
@@ -71,6 +74,7 @@ export function CaseScrollDebrief({
         {step >= 0 ? (
           <article className={styles.revealStep} aria-labelledby="reveal-utility-title">
             <h3 id="reveal-utility-title">{copy.utilityTitle}</h3>
+            <PortraitCard locale={locale} characterId="master-zhou" expression="hint1" presentation="workbench" name={zhou.name} role={zhou.role} />
             <p>{copy.utilityLead}</p>
             <ul>
               {verdict.metrics.utilities.map((utility, index) => (
@@ -86,6 +90,7 @@ export function CaseScrollDebrief({
         {step >= 1 ? (
           <article className={styles.revealStep} aria-labelledby="reveal-share-title">
             <h3 id="reveal-share-title">{copy.shareTitle}</h3>
+            <PortraitCard locale={locale} characterId="master-zhou" expression="hint2" presentation="workbench" name={zhou.name} role={zhou.role} />
             <p>{copy.shareLead}</p>
             <ShareGauge locale={locale} verdict={verdict} />
             <p className={styles.result}>{copy.proportionalityResult(verdict.metrics.proportionality)}</p>
@@ -98,6 +103,7 @@ export function CaseScrollDebrief({
         {step >= 2 ? (
           <article className={styles.revealStep} aria-labelledby="reveal-envy-title">
             <h3 id="reveal-envy-title">{copy.envyTitle}</h3>
+            <PortraitCard locale={locale} characterId="master-zhou" expression="hint1" presentation="workbench" name={zhou.name} role={zhou.role} />
             <p>{copy.envyLead}</p>
             <p className={styles.result}>{copy.envyResult(verdict.metrics.ef)}</p>
             <details>
@@ -109,6 +115,7 @@ export function CaseScrollDebrief({
         {step >= LAST_STEP ? (
           <article className={styles.revealStep} aria-labelledby="reveal-conclusion-title">
             <h3 id="reveal-conclusion-title">{copy.conclusionTitle}</h3>
+            <PortraitCard locale={locale} characterId="master-zhou" expression={verdict.metrics.proportionality && verdict.metrics.ef ? 'calm' : 'worried'} presentation="workbench" name={zhou.name} role={zhou.role} />
             <p>{verdict.metrics.proportionality
               ? verdict.metrics.ef ? copy.conclusionGood : copy.conclusionNeedsWork
               : copy.conclusionBelowDue}</p>
@@ -119,11 +126,25 @@ export function CaseScrollDebrief({
           </article>
         ) : null}
       </div>
+      {complete ? (
+        <section className={styles.inlineVerdict} aria-labelledby="inline-verdict-title">
+          <figure className={styles.judgmentImage}>
+            <img src="/adventure/animatics/cs-02/cs-02-s1.jpg" width={2752} height={1536} alt={adventureCopy.transcript.cs02Scene} />
+            <figcaption>{adventureCopy.transcript.cs02Scene}</figcaption>
+          </figure>
+          <div>
+            <h3 id="inline-verdict-title">{copy.revisionHeading}</h3>
+            <p>{copy.revisionBody}</p>
+            <div className={styles.revisionActions}>
+              <button type="button" className={styles.secondary} onClick={onAccept}>{copy.acceptInitial}</button>
+              <button type="button" className={styles.primary} onClick={onRevise}>{copy.reviseOnce}</button>
+            </div>
+          </div>
+        </section>
+      ) : null}
       <div className={styles.scrollFooter}>
         <p role="status" aria-live="polite">{complete ? copy.completeAnnouncement : `${step + 1}/4`}</p>
-        <button type="button" className={styles.primary} onClick={next}>
-          {complete ? copy.continue : copy.next}
-        </button>
+        {!complete ? <button type="button" className={styles.primary} onClick={next}>{copy.next}</button> : null}
       </div>
     </section>
   );

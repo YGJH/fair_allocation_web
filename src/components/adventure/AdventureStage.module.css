@@ -56,14 +56,13 @@
 
 .safeArea {
   position: relative;
-  place-self: center;
-  width: min(100vw, calc(100dvh * 16 / 9));
-  height: min(100dvh, calc(100vw * 9 / 16));
-  max-width: 100%;
-  max-height: 100%;
+  place-self: stretch;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
   overflow: hidden;
   background: rgb(18 16 14 / 8%);
-  aspect-ratio: 16 / 9;
 }
 
 .stageContent {
@@ -336,6 +335,20 @@
   min-height: 2.75rem;
   accent-color: var(--official-blue);
 }
+
+.textSizeSetting {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .45rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.textSizeSetting legend { grid-column: 1 / -1; margin-bottom: .25rem; font-weight: 700; }
+.textSizeSetting label { position: relative; display: grid; min-height: 2.75rem; place-items: center; border: 1px solid var(--official-blue); color: var(--official-blue); cursor: pointer; }
+.textSizeSetting input { position: absolute; opacity: 0; }
+.textSizeSetting label:has(input:checked) { background: var(--official-blue); color: #fff; }
+.textSizeSetting label:has(input:focus-visible) { outline: 3px solid var(--old-gold); outline-offset: 2px; }
 
 .pauseActions,
 .confirmationActions {

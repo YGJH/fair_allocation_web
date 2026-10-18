@@ -8,8 +8,8 @@ import { ScenePlate } from './ScenePlate';
 import { PortraitCard } from './PortraitCard';
 import styles from './Investigation.module.css';
 
-export function ActTwoInvestigation({ locale, discoveredClueIds, onDiscoverClue, onStartAllocation, headingRef }: {
-  locale: Locale; discoveredClueIds: readonly string[]; onDiscoverClue: (id: ActTwoClueId) => void; onStartAllocation: () => void; headingRef?: RefObject<HTMLHeadingElement | null>;
+export function ActTwoInvestigation({ locale, discoveredClueIds, onDiscoverClue, onStartAllocation, headingRef, hideStartAction = false }: {
+  locale: Locale; discoveredClueIds: readonly string[]; onDiscoverClue: (id: ActTwoClueId) => void; onStartAllocation: () => void; headingRef?: RefObject<HTMLHeadingElement | null>; hideStartAction?: boolean;
 }) {
   const copy = getAdventureCopy(locale).actTwo;
   const discovered = new Set(discoveredClueIds);
@@ -20,6 +20,6 @@ export function ActTwoInvestigation({ locale, discoveredClueIds, onDiscoverClue,
     <div className={styles.task}><div><strong>{copy.taskLabel}</strong><h2 ref={headingRef} tabIndex={-1} id="act-two-investigation-title">{copy.taskProgress(clueIds.filter((id) => discovered.has(id)).length, clueIds.length)}</h2></div><span>{requiredComplete ? copy.completeMark : copy.pendingMark}</span></div>
     <div className={styles.portraitGrid} aria-label={copy.peopleLabel}>{ACT_TWO_DEFINITION.parties.map((party, index) => { const clueId = clueIds[index] as ActTwoClueId; const person = copy.partyNames[party]; return <PortraitCard key={party} locale={locale} name={person.name} role={person.role} reaction={discovered.has(clueId) ? copy.clues[clueId].text : copy.pendingMark} selected={discovered.has(clueId)} onActivate={() => onDiscoverClue(clueId)} />; })}</div>
     <ol className={styles.clueList} aria-label={copy.taskLabel}>{clueIds.map((clueId) => { const clue = copy.clues[clueId]; const recorded = discovered.has(clueId); return <li className={styles.clue} key={clueId}><button type="button" className={styles.clueButton} aria-label={clue.title} aria-pressed={recorded} aria-expanded={recorded} onClick={() => onDiscoverClue(clueId)}><span>{clue.title}</span><small>{recorded ? copy.completeMark + ' ' + copy.clueRecorded : copy.clueRead}</small></button>{recorded ? <div className={styles.clueBody}><p><strong>{clue.speaker}</strong></p><p><q>{clue.text}</q></p></div> : null}</li>; })}</ol>
-    {!requiredComplete ? <p className={styles.explanation}>{copy.requiredCluesExplanation}</p> : null}<div className={styles.actions}><button type="button" className={styles.primary} disabled={!requiredComplete} onClick={onStartAllocation}>{getAdventureCopy(locale).investigation.enterAllocation}</button></div>
+    {!requiredComplete ? <p className={styles.explanation}>{copy.requiredCluesExplanation}</p> : null}{!hideStartAction ? <div className={styles.actions}><button type="button" className={styles.primary} disabled={!requiredComplete} onClick={onStartAllocation}>{getAdventureCopy(locale).investigation.enterAllocation}</button></div> : null}
   </section>;
 }

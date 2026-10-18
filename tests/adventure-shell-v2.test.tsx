@@ -135,7 +135,7 @@ describe('AdventureShell Campaign v2 integration', () => {
 
     await user.click(screen.getByRole('button', { name: 'Restart' }));
     await user.click(screen.getByRole('button', { name: 'Restart campaign' }));
-    expect(await screen.findByRole('heading', { name: /Paper fallback/ })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /Paper story scroll/ })).toBeTruthy();
     await waitFor(() => expect(readSavedCampaign().campaign.phase).toBe('cutscene'));
   });
 
@@ -195,7 +195,7 @@ describe('AdventureShell Campaign v2 integration', () => {
 
     expect(await screen.findByText(/cannot save the campaign right now/)).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Begin campaign' }));
-    expect(await screen.findByRole('heading', { name: /Paper fallback/ })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /Paper story scroll/ })).toBeTruthy();
     expect(document.body.textContent).not.toContain('SecurityError');
   });
 
@@ -209,7 +209,7 @@ describe('AdventureShell Campaign v2 integration', () => {
     expect(await screen.findByText(/cannot save the campaign right now/)).toBeTruthy();
     expect(localStorageGetter).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole('button', { name: 'Begin campaign' }));
-    expect(await screen.findByRole('heading', { name: /Paper fallback/ })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /Paper story scroll/ })).toBeTruthy();
     expect(localStorageGetter).toHaveBeenCalledTimes(1);
     expect(document.body.textContent).not.toContain('SecurityError');
   });
@@ -261,16 +261,18 @@ describe('AdventureShell Campaign v2 integration', () => {
     const user = userEvent.setup();
     render(<AdventureShell locale="en" />);
     await user.click(await screen.findByRole('button', { name: 'Begin campaign' }));
-    await screen.findByRole('heading', { name: /Paper fallback/ });
+    await screen.findByRole('heading', { name: /Paper story scroll/ });
     await user.click(screen.getByRole('button', { name: 'Open pause menu' }));
 
     expect(screen.getByRole('dialog', { name: 'Campaign paused' })).toBeTruthy();
     await user.click(screen.getByRole('checkbox', { name: 'Subtitles' }));
     fireEvent.change(screen.getByRole('slider', { name: 'Volume' }), { target: { value: '0.4' } });
-    await waitFor(() => expect(readSavedCampaign().settings).toMatchObject({ subtitles: false, volume: 0.4 }));
+    await user.click(screen.getByRole('radio', { name: 'Large' }));
+    await waitFor(() => expect(readSavedCampaign().settings).toMatchObject({ subtitles: false, volume: 0.4, textSize: 'large' }));
+    expect(document.querySelector('[data-adventure-v2]')?.getAttribute('data-text-size')).toBe('large');
 
     await user.click(screen.getByRole('button', { name: 'Replay current cutscene' }));
-    expect(await screen.findByRole('heading', { name: /Paper fallback/ })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /Paper story scroll/ })).toBeTruthy();
     expect(readSavedCampaign().campaign.phase).toBe('cutscene');
 
     await user.click(screen.getByRole('button', { name: 'Open pause menu' }));
@@ -279,24 +281,28 @@ describe('AdventureShell Campaign v2 integration', () => {
     expect(screen.getByRole('heading', { name: 'Restart the campaign?' })).toBeTruthy();
   });
 
-  test('remount restores partial investigation, allocation, and dismissed first-use guidance', async () => {
+  test('keeps evidence, valuation controls, and answer submission in one restorable case desk', async () => {
     const user = userEvent.setup();
     const first = render(<AdventureShell locale="en" />);
     await user.click(await screen.findByRole('button', { name: 'Begin campaign' }));
     await user.click(await screen.findByRole('button', { name: 'Continue' }));
     await user.click(screen.getByRole('button', { name: 'Open the first case' }));
-    await user.click(await screen.findByRole('button', { name: 'Continue' }));
     await user.click(screen.getByRole('button', { name: 'Begin investigation' }));
-    await user.click(screen.getByRole('button', { name: 'Chen Shouye’s valuations' }));
-    await user.click(screen.getByRole('button', { name: 'Chen Congzheng’s valuations' }));
-    await user.click(screen.getByRole('button', { name: 'The Chen elder explains the ruling' }));
+
+    expect(screen.getByRole('heading', { name: 'Act I investigation and allocation', level: 1 })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Allocation workbench' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Enter allocation workbench' })).toBeNull();
+    expect((screen.getByRole('button', { name: 'Lock Initial Verdict' }) as HTMLButtonElement).disabled).toBe(true);
+
+    for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
+      await user.click(screen.getByRole('button', { name: new RegExp(`^${name}`) }));
+    }
     await user.click(screen.getByRole('button', { name: 'The original Yiwu ruling' }));
-    await user.click(screen.getByRole('button', { name: 'Enter allocation workbench' }));
     await user.click(screen.getByRole('button', { name: 'Got it' }));
     await user.click(screen.getByRole('button', { name: 'Increase Paddy fields share for Chen Shouye' }));
     await waitFor(() => {
       const saved = readSavedCampaign();
-      expect(saved.campaign.phase).toBe('allocation');
+      expect(saved.campaign.phase).toBe('investigation');
       expect(saved.campaign.draftAllocation[0]).toEqual({ goodId: 'paddy-field', shares: [6, 4] });
       expect(saved.recall.firstUseGuidanceCompleted).toBe(true);
     });
@@ -304,8 +310,9 @@ describe('AdventureShell Campaign v2 integration', () => {
     first.unmount();
     render(<AdventureShell locale="en" />);
     await user.click(await screen.findByRole('button', { name: 'Continue campaign' }));
-    expect(await screen.findByRole('heading', { name: 'Allocation workbench', level: 1 })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Act I investigation and allocation', level: 1 })).toBeTruthy();
     expect(screen.getByRole('slider', { name: /Paddy fields: Chen Shouye, 6 shares; Chen Congzheng, 4 shares/ })).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Lock Initial Verdict' }) as HTMLButtonElement).disabled).toBe(false);
     expect(screen.queryByRole('heading', { name: 'First time at the workbench' })).toBeNull();
   });
 
@@ -315,13 +322,9 @@ describe('AdventureShell Campaign v2 integration', () => {
     render(<AdventureShell locale="en" />);
 
     await user.click(await screen.findByRole('button', { name: 'Continue campaign' }));
-    expect(screen.getByRole('button', { name: 'Intuition rating 3' })).toBeTruthy();
-    expect(document.body.textContent).not.toMatch(/Share Gauge|NSW|EF1|EFX|proportionality|envy gap|Master Seal|frontier|Grade/i);
+    expect(screen.getByRole('heading', { name: 'Read the judgment in four steps' })).toBeTruthy();
 
-    await user.click(screen.getByRole('button', { name: 'Intuition rating 3' }));
-    await user.click(screen.getByRole('button', { name: 'Submit intuition rating' }));
     await user.click(screen.getByRole('button', { name: 'Show the whole scroll' }));
-    await user.click(screen.getByRole('button', { name: 'Continue to the verdict choice' }));
     await user.click(screen.getByRole('button', { name: 'Revise once' }));
 
     expect(screen.getByRole('heading', { name: '得其分 · Proportionality' })).toBeTruthy();
@@ -338,7 +341,6 @@ describe('AdventureShell Campaign v2 integration', () => {
     const title = await screen.findByRole('heading', { name: 'The Art of Settled Shares' });
     expect(document.activeElement).toBe(title);
     await user.click(screen.getByRole('button', { name: 'Open the first case' }));
-    await user.click(await screen.findByRole('button', { name: 'Continue' }));
 
     const intro = screen.getByRole('heading', { name: /Partition of the Chen Brothers/ });
     expect(document.activeElement).toBe(intro);

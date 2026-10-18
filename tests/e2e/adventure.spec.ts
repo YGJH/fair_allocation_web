@@ -21,7 +21,7 @@ async function completeActThree(
 ) {
   await expect(page.getByRole('heading', { name: /Act III: Winter/ })).toBeVisible();
   await page.getByRole('button', { name: 'Begin Act III · CS-07' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name: 'Begin investigation' }).click();
   for (const clue of [
@@ -30,7 +30,7 @@ async function completeActThree(
     /Feng Bao.*valuations/,
     /Emperor.*instruction/,
   ]) await page.getByRole('button', { name: clue }).last().click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
+  await expect(page.getByRole('heading', { name: 'Six-Writ Allocation Workbench', level: 2 })).toBeVisible();
   await expect(page.getByText(/EF1|EFX|NSW|Harmony Score/)).toHaveCount(0);
   const setOwners = async (owners: readonly number[]) => {
     const fields = page.locator('fieldset');
@@ -48,7 +48,7 @@ async function completeActThree(
   await page.getByRole('button', { name: 'Lock Final Verdict' }).click();
   await expect(page.getByRole('heading', { name: 'Act III Final Verdict' })).toBeVisible();
   await page.getByRole('button', { name: 'Act III Master Challenge' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await setOwners(challengeOwners);
   await page.getByRole('button', { name: 'Check allocation' }).click();
@@ -62,11 +62,11 @@ async function completeActThree(
     await page.getByRole('button', { name: 'Open Recall Archive' }).click();
   }
   await page.getByRole('button', { name: 'Continue to the Act III ending boundary' }).click();
-  await expect(page.getByRole('heading', { name: `Paper fallback · ${expectedSlot.toUpperCase()}` })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Paper story scroll' })).toBeVisible();
   await expect(page.getByRole('img', { name: `Paper fallback / transcript for ${expectedSlot.toUpperCase()}` })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   if (deferHiddenEnding) {
-    await expect(page.getByRole('heading', { name: 'Paper fallback · CS-14' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Paper story scroll' })).toBeVisible();
     return;
   }
   const expectedEnding = expectedSlot === 'cs-09'
@@ -82,6 +82,15 @@ async function completeActThree(
   await expect(page.evaluate(() => JSON.parse(localStorage.getItem('settled-shares-campaign-v2')!).recall.watchedCutsceneSlots)).resolves.toEqual(expect.arrayContaining(['cs-07', 'cs-08', expectedSlot]));
 }
 
+async function openFirstCaseAndCompleteInvestigation(page: import('@playwright/test').Page) {
+  await page.getByRole('button', { name: 'Open the first case' }).click();
+  await page.getByRole('button', { name: 'Begin investigation' }).click();
+  for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
+    await page.getByRole('button', { name: new RegExp(`^${name}`) }).click();
+  }
+  await page.getByRole('button', { name: 'The original Yiwu ruling', exact: true }).click();
+}
+
 async function reachFinalVerdict(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Begin campaign' }).click();
   const prologueSkip = page.getByRole('button', { name: 'Skip cutscene' });
@@ -89,29 +98,15 @@ async function reachFinalVerdict(page: import('@playwright/test').Page) {
   await expect(prologueSkip.or(prologueContinue)).toBeVisible();
   if (await prologueSkip.isVisible()) await prologueSkip.click();
   else await prologueContinue.click();
-  await page.getByRole('button', { name: 'Open the first case' }).click();
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: 'Begin investigation' }).click();
-  for (const clue of [
-    'Chen Shouye’s valuations',
-    'Chen Congzheng’s valuations',
-    'The Chen elder explains the ruling',
-    'The original Yiwu ruling',
-  ]) await page.getByRole('button', { name: clue, exact: true }).click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
+  await openFirstCaseAndCompleteInvestigation(page);
   await page.getByRole('button', { name: 'Lock Initial Verdict' }).click();
-  await page.getByRole('button', { name: 'Intuition rating 3' }).click();
-  await page.getByRole('button', { name: 'Submit intuition rating' }).click();
-  for (let step = 0; step < 3; step += 1) await page.getByRole('button', { name: 'Open next fold' }).click();
-  await page.getByRole('button', { name: 'Continue to the verdict choice' }).click();
+  await page.getByRole('button', { name: 'Show the whole scroll' }).click();
   await page.getByRole('button', { name: 'Accept Initial Verdict' }).click();
   await expect(page.getByRole('heading', { name: 'Final Verdict' })).toBeVisible();
 }
 
 async function completeActOneMasterSeal(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Cut, then let the younger brother choose' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('slider', { name: /Paddy fields:/ }).fill('10');
   await page.getByRole('slider', { name: /Oil-tea hills:/ }).fill('5');
   await page.getByRole('slider', { name: /Silver:/ }).fill('0');
@@ -123,24 +118,23 @@ async function completeActOneMasterSeal(page: import('@playwright/test').Page) {
 }
 
 async function continueToActThreeAfterActTwoMasterSeal(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: 'Continue to CS-03' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Close the Act I record' }).click();
+  await expect(page.getByRole('img', { name: /oil lamp/i })).toBeVisible();
+  await page.getByRole('button', { name: 'Skip cutscene' }).click();
   await expect(page.getByRole('heading', { name: 'Five years later' })).toBeVisible();
-  await page.getByRole('button', { name: 'Begin Act II · CS-04' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Begin Act II · Hangzhou' }).click();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('heading', { name: /Act II: Winter/ })).toBeVisible();
   await page.getByRole('button', { name: 'Begin investigation' }).click();
   await page.getByRole('button', { name: 'The loom workshop model', exact: true }).click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
   await page.getByRole('button', { name: 'Lock Initial Verdict' }).click();
   await page.getByRole('button', { name: 'Intuition rating 3' }).click();
   await page.getByRole('button', { name: 'Submit intuition rating' }).click();
   await page.getByRole('button', { name: 'Continue to the verdict choice' }).click();
   await page.getByRole('button', { name: 'Accept Initial Verdict' }).click();
   await page.getByRole('button', { name: 'Act II Master Challenge' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('radio', { name: 'Xue Shoucheng' }).check();
   await page.locator('#act-two-mulberry-fields-0').fill('10');
@@ -159,37 +153,36 @@ async function continueToActThreeAfterActTwoMasterSeal(page: import('@playwright
   await expect(page.getByRole('heading', { name: 'Act II Performance Ledger' })).toBeVisible();
   await expect(page.getByText('Earned', { exact: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Continue to the Act III boundary' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
 }
 
 async function reachActThreeIntro(page: import('@playwright/test').Page) {
   await reachFinalVerdict(page);
   await page.getByRole('button', { name: 'Skip Master Challenge' }).click();
-  await page.getByRole('button', { name: 'Continue to CS-03' }).click();
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: 'Begin Act II · CS-04' }).click();
+  await page.getByRole('button', { name: 'Close the Act I record' }).click();
+  await page.getByRole('button', { name: 'Skip cutscene' }).click();
+  await page.getByRole('button', { name: 'Begin Act II · Hangzhou' }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('heading', { name: /Act II: Winter/ }).waitFor();
   await page.getByRole('button', { name: 'Begin investigation' }).click();
   await page.getByRole('button', { name: 'The loom workshop model', exact: true }).click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
   await page.getByRole('button', { name: 'Lock Initial Verdict' }).click();
   await page.getByRole('button', { name: 'Intuition rating 3' }).click();
   await page.getByRole('button', { name: 'Submit intuition rating' }).click();
   await page.getByRole('button', { name: 'Continue to the verdict choice' }).click();
   await page.getByRole('button', { name: 'Accept Initial Verdict' }).click();
   await page.getByRole('button', { name: 'Act II Master Challenge' }).click();
-  await page.getByRole('heading', { name: /Paper fallback/ }).waitFor();
+  await page.getByRole('heading', { name: /Paper story scroll/ }).waitFor();
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name: 'Check allocation' }).click();
   await page.getByRole('button', { name: 'Return to Performance Ledger' }).click();
   await page.getByRole('button', { name: 'Continue to the Act III boundary' }).click();
-  await page.getByRole('heading', { name: /Paper fallback/ }).waitFor();
+  await page.getByRole('heading', { name: /Paper story scroll/ }).waitFor();
   await page.getByRole('button', { name: 'Continue' }).click();
 }
 
-test('Act I investigation and allocation journey preserves secrecy until intuition rating', async ({ page }) => {
+test('Act I Case Desk integrates valuations, allocation adjustment, and verdict submission before intuition rating', async ({ page }) => {
   const clientDiagnostics: string[] = [];
   page.on('console', (message) => {
     if (message.type() === 'warning' || message.type() === 'error') {
@@ -197,40 +190,39 @@ test('Act I investigation and allocation journey preserves secrecy until intuiti
     }
   });
   page.on('pageerror', (error) => clientDiagnostics.push(`pageerror: ${error.message}`));
-  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.setViewportSize({ width: 667, height: 375 });
   await page.addInitScript(() => localStorage.clear());
   await page.goto('/en/adventure');
 
   await page.getByRole('button', { name: 'Begin campaign' }).click();
   await page.getByRole('button', { name: 'Skip cutscene' }).click();
-  await page.getByRole('button', { name: 'Open the first case' }).click();
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: 'Begin investigation' }).click();
+  await openFirstCaseAndCompleteInvestigation(page);
+  const dossier = page.locator('[data-investigation-dossier]');
+  await expect.poll(() => dossier.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(2);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(667);
 
-  await page.getByRole('button', { name: 'Chen Shouye’s valuations', exact: true }).click();
-  await page.getByRole('button', { name: 'Chen Congzheng’s valuations', exact: true }).click();
-  await page.getByRole('button', { name: 'The Chen elder explains the ruling', exact: true }).click();
-  await page.getByRole('button', { name: 'The original Yiwu ruling', exact: true }).click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
-
-  const paddy = page.getByRole('slider', { name: /Paddy fields:/ });
+  const caseDesk = page.locator('[data-case-desk]');
+  const workbench = caseDesk.locator('[data-allocation-workbench]');
+  await expect(caseDesk).toContainText('Chen Shouye');
+  await expect(caseDesk).toContainText('Paddy fields');
+  await expect(page.getByRole('button', { name: 'Enter allocation workbench' })).toHaveCount(0);
+  await expect(page.locator('[data-adventure-v2]')).toHaveAttribute('data-phase', 'investigation');
+  await expect.poll(() => workbench.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(3);
+  const paddy = caseDesk.getByRole('slider', { name: /Paddy fields:/ });
+  const paddyBefore = await paddy.inputValue();
   await paddy.focus();
   await paddy.press('ArrowRight');
-  await page.getByRole('button', { name: 'Return to investigation' }).click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
-  await page.getByRole('button', { name: 'Lock Initial Verdict' }).click();
+  await expect(paddy).not.toHaveValue(paddyBefore);
+  const workbenchPanel = workbench.locator('..');
+  const lockInitialVerdict = caseDesk.getByRole('button', { name: 'Lock Initial Verdict' });
+  await lockInitialVerdict.scrollIntoViewIfNeeded();
+  await expect.poll(() => workbenchPanel.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await expect(lockInitialVerdict).toBeVisible();
+  await lockInitialVerdict.click();
 
-  await expect(page.getByRole('heading', { name: 'Record your first intuition' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Intuition rating 1' })).toBeVisible();
-  await expect(page.getByText(/utilities|proportionality|NSW|EF1|EFX|Grade|frontier/i)).toHaveCount(0);
-
-  await page.getByRole('button', { name: 'Intuition rating 3' }).click();
-  await page.getByRole('button', { name: 'Submit intuition rating' }).click();
   await expect(page.getByRole('heading', { name: 'Read the judgment in four steps' })).toBeVisible();
-  for (let step = 0; step < 3; step += 1) {
-    await page.getByRole('button', { name: 'Open next fold' }).click();
-  }
-  await page.getByRole('button', { name: 'Continue to the verdict choice' }).click();
+  await expect(page.getByRole('button', { name: 'Intuition rating 1' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Show the whole scroll' }).click();
   await expect(page.getByRole('button', { name: 'Accept Initial Verdict' })).toBeVisible();
   await page.getByRole('button', { name: 'Revise once' }).click();
   await expect(page.getByRole('heading', { name: '得其分 · Proportionality' })).toBeVisible();
@@ -256,22 +248,13 @@ test('keyboard controls can complete the first-act path without pointer input', 
   await activate(page.getByRole('button', { name: 'Begin campaign' }));
   await activate(page.getByRole('button', { name: 'Skip cutscene' }));
   await activate(page.getByRole('button', { name: 'Open the first case' }));
-  await activate(page.getByRole('button', { name: 'Continue' }));
   await activate(page.getByRole('button', { name: 'Begin investigation' }));
-  for (const clue of [
-    'Chen Shouye’s valuations',
-    'Chen Congzheng’s valuations',
-    'The Chen elder explains the ruling',
-    'The original Yiwu ruling',
-  ]) await activate(page.getByRole('button', { name: clue, exact: true }));
-  await activate(page.getByRole('button', { name: 'Enter allocation workbench' }));
-  await activate(page.getByRole('button', { name: 'Lock Initial Verdict' }));
-  await activate(page.getByRole('button', { name: 'Intuition rating 3' }));
-  await activate(page.getByRole('button', { name: 'Submit intuition rating' }));
-  for (let step = 0; step < 3; step += 1) {
-    await activate(page.getByRole('button', { name: 'Open next fold' }));
+  for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
+    await activate(page.getByRole('button', { name: new RegExp(`^${name}`) }));
   }
-  await activate(page.getByRole('button', { name: 'Continue to the verdict choice' }));
+  await activate(page.getByRole('button', { name: 'The original Yiwu ruling', exact: true }));
+  await activate(page.getByRole('button', { name: 'Lock Initial Verdict' }));
+  await activate(page.getByRole('button', { name: 'Show the whole scroll' }));
   await activate(page.getByRole('button', { name: 'Accept Initial Verdict' }));
   await expect(page.getByRole('heading', { name: 'Final Verdict' })).toBeVisible();
   await activate(page.getByRole('button', { name: 'Skip Master Challenge' }));
@@ -284,49 +267,35 @@ test('the canonical path reaches Act III, challenge, Ledger, CS-09, and the Nati
   await page.goto('/en/adventure');
   await page.getByRole('button', { name: 'Begin campaign' }).click();
   await page.getByRole('button', { name: 'Skip cutscene' }).click();
-  await page.getByRole('button', { name: 'Open the first case' }).click();
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: 'Begin investigation' }).click();
-  for (const clue of [
-    'Chen Shouye’s valuations',
-    'Chen Congzheng’s valuations',
-    'The Chen elder explains the ruling',
-    'The original Yiwu ruling',
-  ]) await page.getByRole('button', { name: clue, exact: true }).click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
+  await openFirstCaseAndCompleteInvestigation(page);
   await page.getByRole('button', { name: 'Lock Initial Verdict' }).click();
-  await page.getByRole('button', { name: 'Intuition rating 3' }).click();
-  await page.getByRole('button', { name: 'Submit intuition rating' }).click();
-  for (let step = 0; step < 3; step += 1) await page.getByRole('button', { name: 'Open next fold' }).click();
-  await page.getByRole('button', { name: 'Continue to the verdict choice' }).click();
+  await page.getByRole('button', { name: 'Show the whole scroll' }).click();
   await page.getByRole('button', { name: 'Accept Initial Verdict' }).click();
   await page.getByRole('heading', { name: 'Final Verdict' }).waitFor();
   await page.getByRole('button', { name: 'Skip Master Challenge' }).click();
   await expect(page.getByRole('heading', { name: 'Act I record' })).toBeVisible();
   await expect(page.getByText('Initial Verdict')).toBeVisible();
-  await page.getByRole('button', { name: 'Continue to CS-03' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Close the Act I record' }).click();
+  await page.getByRole('button', { name: 'Skip cutscene' }).click();
   await expect(page.getByRole('heading', { name: 'Five years later' })).toBeVisible();
-  await page.getByRole('button', { name: 'Begin Act II · CS-04' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Begin Act II · Hangzhou' }).click();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('heading', { name: /Act II: Winter/ })).toBeVisible();
   await page.getByRole('button', { name: 'Begin investigation' }).click();
   await page.getByRole('button', { name: 'The loom workshop model', exact: true }).click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
   await page.getByRole('button', { name: 'Lock Initial Verdict' }).click();
   await page.getByRole('button', { name: 'Intuition rating 3' }).click();
   await page.getByRole('button', { name: 'Submit intuition rating' }).click();
   await page.getByRole('button', { name: 'Continue to the verdict choice' }).click();
   await page.getByRole('button', { name: 'Accept Initial Verdict' }).click();
   await page.getByRole('button', { name: 'Act II Master Challenge' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name: 'Check allocation' }).click();
   await page.getByRole('button', { name: 'Return to Performance Ledger' }).click();
   await page.getByRole('button', { name: 'Continue to the Act III boundary' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await completeActThree(page);
 });
@@ -371,28 +340,16 @@ test('all three Master Seals unlock CS-14 and persist through completion', async
 
   await page.getByRole('button', { name: 'Begin campaign' }).click();
   await page.getByRole('button', { name: 'Skip cutscene' }).click();
-  await page.getByRole('button', { name: 'Open the first case' }).click();
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: 'Begin investigation' }).click();
-  for (const clue of [
-    'Chen Shouye’s valuations',
-    'Chen Congzheng’s valuations',
-    'The Chen elder explains the ruling',
-    'The original Yiwu ruling',
-  ]) await page.getByRole('button', { name: clue, exact: true }).click();
-  await page.getByRole('button', { name: 'Enter allocation workbench' }).click();
+  await openFirstCaseAndCompleteInvestigation(page);
   await page.getByRole('button', { name: 'Lock Initial Verdict' }).click();
-  await page.getByRole('button', { name: 'Intuition rating 3' }).click();
-  await page.getByRole('button', { name: 'Submit intuition rating' }).click();
-  for (let step = 0; step < 3; step += 1) await page.getByRole('button', { name: 'Open next fold' }).click();
-  await page.getByRole('button', { name: 'Continue to the verdict choice' }).click();
+  await page.getByRole('button', { name: 'Show the whole scroll' }).click();
   await page.getByRole('button', { name: 'Accept Initial Verdict' }).click();
   await expect(page.getByRole('heading', { name: 'Final Verdict' })).toBeVisible();
 
   await completeActOneMasterSeal(page);
   await continueToActThreeAfterActTwoMasterSeal(page);
   await completeActThree(page, [1, 2, 0, 1, 0, 2], 'cs-09', true, [1, 2, 1, 0, 0, 2], true);
-  await expect(page.getByRole('heading', { name: 'Paper fallback · CS-14' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Paper story scroll' })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('heading', { name: 'Three legs standing' })).toBeVisible();
   await expect(page.getByText('All three Master Seals held: the hidden ending is unlocked.')).toBeVisible();
@@ -415,8 +372,6 @@ test('frontier challenge awards the Master Seal and survives completed re-entry'
   await page.goto('/en/adventure');
   await reachFinalVerdict(page);
   await page.getByRole('button', { name: 'Cut, then let the younger brother choose' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('slider', { name: /Paddy fields:/ }).fill('10');
   await page.getByRole('slider', { name: /Oil-tea hills:/ }).fill('5');
   await page.getByRole('slider', { name: /Silver:/ }).fill('0');
@@ -425,8 +380,7 @@ test('frontier challenge awards the Master Seal and survives completed re-entry'
   await page.getByRole('button', { name: 'Return to Performance Ledger' }).click();
   await expect(page.getByText('Earned')).toBeVisible();
   await page.getByRole('button', { name: 'Return to Master Challenge' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByRole('heading', { name: 'Cut, then let the younger brother choose' })).toBeVisible();
   await expect(page.getByText('Master Seal awarded.')).toBeVisible();
   await expect(page.getByText('Check edited allocation')).toBeVisible();
 });
@@ -437,14 +391,13 @@ test('stage-three hint permanently disqualifies the Master Seal', async ({ page 
   await page.goto('/en/adventure');
   await reachFinalVerdict(page);
   await page.getByRole('button', { name: 'Cut, then let the younger brother choose' }).click();
-  await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name: 'View hint 3' }).click();
   await page.getByRole('slider', { name: /Paddy fields:/ }).fill('10');
   await page.getByRole('slider', { name: /Oil-tea hills:/ }).fill('5');
   await page.getByRole('slider', { name: /Silver:/ }).fill('0');
   await page.getByRole('button', { name: 'Check allocation' }).click();
   await expect(page.getByText('No Master Seal is awarded for this attempt.')).toBeVisible();
-  await expect(page.getByText('The 70 / 70 frontier is reached.')).toBeVisible();
+  await expect(page.getByText('You found the authored solution to this case.')).toBeVisible();
 });
 
 test('Recall Archive replay does not change the Ledger campaign record', async ({ page }) => {
@@ -459,7 +412,7 @@ test('Recall Archive replay does not change the Ledger campaign record', async (
   await page.getByRole('button', { name: 'Open Recall Archive' }).click();
   const cs00 = page.getByRole('listitem').filter({ hasText: 'cs-00' });
   await cs00.getByRole('button', { name: 'Replay' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   const during = await page.evaluate(() => JSON.parse(localStorage.getItem('settled-shares-campaign-v2')!).campaign);
   expect(during).toEqual(before);
   await page.getByRole('button', { name: 'Continue' }).click();
@@ -478,7 +431,7 @@ test('pause controls remain interactive while the underlying phase is inert', as
   await pause.getByRole('checkbox', { name: 'Subtitles' }).click();
   await pause.getByRole('slider', { name: 'Volume' }).fill('0.4');
   await pause.getByRole('button', { name: 'Replay current cutscene' }).click();
-  await expect(page.getByRole('heading', { name: /Paper fallback/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Paper story scroll/ })).toBeVisible();
   await page.getByRole('button', { name: 'Open pause menu' }).click();
   await page.getByRole('button', { name: 'Restart' }).click();
   await expect(page.getByRole('heading', { name: 'Restart the campaign?' })).toBeVisible();
@@ -518,7 +471,7 @@ test('1440x900 and small-phone landscape keep critical controls inside the 16:9 
   await expect(phone.getByRole('dialog', { name: 'Rotate your phone' })).toHaveCount(0);
   await phone.getByRole('button', { name: 'Begin campaign' }).click();
   await expectInside(phone.getByRole('button', { name: 'Skip cutscene' }), phone.getByRole('main'));
-  await expectInside(phone.getByLabel('Cutscene CS-00: Prologue, The Keeper of the Steelyard').first(), phone.getByRole('main'));
+  await expectInside(phone.getByLabel('Prologue: The Keeper of the Steelyard').first(), phone.getByRole('main'));
   await context.close();
 });
 
@@ -632,7 +585,7 @@ test('media error can use the complete static fallback and still reach title', a
 
   await page.locator('video').dispatchEvent('error');
   await expect(page.getByRole('heading', { name: 'The video could not be played' })).toBeVisible();
-  await page.getByRole('button', { name: 'Use static version' }).click();
+  await page.getByRole('button', { name: 'Read the story scroll' }).click();
   await expect(page.getByRole('heading', { name: 'Complete cutscene transcript' })).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('heading', { name: 'The Art of Settled Shares' })).toBeFocused();

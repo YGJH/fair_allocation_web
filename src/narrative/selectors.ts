@@ -106,7 +106,7 @@ function analyzeVisibleAllocation(state: CampaignState): VisibleCampaignMetrics 
 
 /** The sole campaign disclosure boundary for formal metrics. */
 export function selectVisibleMetrics(state: CampaignState): VisibleCampaignMetrics {
-  if (state.intuitionRating === null || SEALED_PHASES.includes(state.phase)) return {};
+  if ((state.intuitionRating === null && state.act !== 1) || SEALED_PHASES.includes(state.phase)) return {};
 
   if (state.phase === 'debrief' || state.phase === 'revision-decision') {
     return state.initialVerdict ? visibleVerdictMetrics(state.initialVerdict.metrics) : {};

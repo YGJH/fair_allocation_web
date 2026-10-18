@@ -102,7 +102,7 @@ export type CampaignChallenge = {
 export type ActOneRecord = {
   readonly act: 1;
   readonly initialVerdict: CampaignVerdict;
-  readonly intuitionRating: 1 | 2 | 3 | 4 | 5;
+  readonly intuitionRating: 1 | 2 | 3 | 4 | 5 | null;
   readonly revisionUsed: boolean;
   readonly finalVerdict: CampaignVerdict;
   readonly grade: '不稱職' | '平常' | '稱職';

@@ -61,13 +61,17 @@ export interface AdventureMessages {
     readonly narratorFirstCase: string;
     readonly sixYearsEarlier: string;
     readonly cs01Scene: string;
+    readonly cs01Location: string;
     readonly cs01Zhou: string;
-    readonly cs01Closing: string;
     readonly cs02Scene: string;
-    readonly cs02Reaction: string;
     readonly cs03Scene: string;
     readonly cs03Letter: string;
-    readonly cs03Future: string;
+    readonly cs03TimeJump: string;
+    readonly cs03LedgerTitle: string;
+    readonly cs03LedgerEntry: string;
+    readonly cs03LedgerPlain: string;
+    readonly cs03Transfer: string;
+    readonly cs03TransferPlain: string;
     readonly cs04Scene: string;
     readonly cs04Zhou: string;
     readonly cs04Closing: string;
@@ -300,6 +304,7 @@ export interface AdventureMessages {
       readonly paddyToYounger: { readonly name: string; readonly role: string; readonly text: string };
       readonly silverToElder: { readonly name: string; readonly role: string; readonly text: string };
       readonly brothersExchange: { readonly name: string; readonly role: string; readonly text: string };
+      readonly bothAggrieved: { readonly name: string; readonly role: string; readonly text: string };
     };
     readonly scene: {
       readonly name: string;
@@ -416,6 +421,7 @@ export interface AdventureMessages {
     readonly completed: string;
     readonly notCompleted: string;
     readonly frontierReached: string;
+    readonly frontierDialogue: string;
     readonly frontierNotReached: string;
     readonly sealAwarded: string;
     readonly sealUnavailable: string;
@@ -514,6 +520,10 @@ export interface AdventureMessages {
     readonly controlsHelp: string;
     readonly subtitles: string;
     readonly volume: string;
+    readonly textSize: string;
+    readonly textSizeSmall: string;
+    readonly textSizeMedium: string;
+    readonly textSizeLarge: string;
     readonly replayCurrentCutscene: string;
     readonly recallArchive: string;
     readonly restart: string;
@@ -543,7 +553,7 @@ export interface AdventureMessages {
 
 export const adventureZhTW: AdventureMessages = {
   title: '序幕：執秤之人',
-  videoLabel: '過場 CS-00：序幕，執秤之人',
+  videoLabel: '序幕：執秤之人',
   enter: '入殿',
   pause: '暫停',
   resume: '繼續播放',
@@ -556,60 +566,32 @@ export const adventureZhTW: AdventureMessages = {
   skip: '略過過場',
   replay: '重播',
   retry: '重試',
-  useFallback: '改看靜態版本',
+  useFallback: '改看故事卷',
   continue: '繼續',
   loading: '準備過場中…',
   errorTitle: '影片無法播放',
-  errorBody: '您可以重試，或改看包含完整劇情文字的靜態版本。',
-  reducedMotionTitle: '靜態過場',
-  reducedMotionBody: '已依照您的減少動態設定，不載入或播放影片。',
-  fallbackTitle: '靜態過場',
+  errorBody: '您可以重試，或改看包含完整劇情文字的故事卷。',
+  reducedMotionTitle: '故事卷',
+  reducedMotionBody: '已依照您的減少動態設定，以靜態故事卷呈現。',
+  fallbackTitle: '故事卷',
   fallbackBody: '以下文字保留這段過場的完整劇情。',
   fallbackAlt: '文華殿內，萬曆帝御案前的冬日召對',
   fallbackTitleBySlot: {
-    'cs-00': 'CS-00 · 序幕：執秤之人',
-    'cs-01': 'CS-01 · 義烏陳氏兄弟析產',
-    'cs-02': 'CS-02 · 兄弟各得其分',
-    'cs-03': 'CS-03 · 義烏來信',
-    'cs-04': 'CS-04 · 杭州裴氏機房',
-    'cs-05': 'CS-05 · 機房照常開動',
-    'cs-06': 'CS-06 · 入京薦書',
-    'cs-07': 'CS-07 · 三道關口',
-    'cs-08': 'CS-08 · 最少的一份',
-    'cs-09': 'CS-09 · 鼎足而立',
-    'cs-10': 'CS-10 · 江陵之怨',
-    'cs-11': 'CS-11 · 薊門之怨',
-    'cs-12': 'CS-12 · 大璫之怨',
-    'cs-13': 'CS-13 · 留中不發',
-    'cs-14': 'CS-14 · 定分宗師',
+    'cs-00': '序幕：執秤之人', 'cs-01': '義烏陳氏兄弟析產', 'cs-02': '兄弟各得其分', 'cs-03': '義烏來信',
+    'cs-04': '杭州裴氏機房', 'cs-05': '機房照常開動', 'cs-06': '入京薦書', 'cs-07': '三道關口',
+    'cs-08': '最少的一份', 'cs-09': '鼎足而立', 'cs-10': '江陵之怨', 'cs-11': '薊門之怨',
+    'cs-12': '大璫之怨', 'cs-13': '留中不發', 'cs-14': '定分宗師',
   },
   fallbackHeadingBySlot: {
-    'cs-00': '紙面 fallback · CS-00',
-    'cs-01': '紙面 fallback · CS-01',
-    'cs-02': '紙面 fallback · CS-02',
-    'cs-03': '紙面 fallback · CS-03',
-    'cs-04': '紙面 fallback · CS-04',
-    'cs-05': '紙面 fallback · CS-05',
-    'cs-06': '紙面 fallback · CS-06',
-    'cs-07': '紙面 fallback · CS-07',
-    'cs-08': '紙面 fallback · CS-08',
-    'cs-09': '紙面 fallback · CS-09',
-    'cs-10': '紙面 fallback · CS-10',
-    'cs-11': '紙面 fallback · CS-11',
-    'cs-12': '紙面 fallback · CS-12',
-    'cs-13': '紙面 fallback · CS-13',
-    'cs-14': '紙面 fallback · CS-14',
+    'cs-00': '紙面故事卷', 'cs-01': '紙面故事卷', 'cs-02': '紙面故事卷', 'cs-03': '紙面故事卷', 'cs-04': '紙面故事卷',
+    'cs-05': '紙面故事卷', 'cs-06': '紙面故事卷', 'cs-07': '紙面故事卷', 'cs-08': '紙面故事卷', 'cs-09': '紙面故事卷',
+    'cs-10': '紙面故事卷', 'cs-11': '紙面故事卷', 'cs-12': '紙面故事卷', 'cs-13': '紙面故事卷', 'cs-14': '紙面故事卷',
   },
   fallbackAltBySlot: {
-    'cs-00': '文華殿內，萬曆帝御案前的冬日召對',
-    'cs-01': '紙面 fallback：金華府衙二堂',
-    'cs-02': '紙面 fallback：陳氏兄弟田埂與鐵匠鋪交接',
-    'cs-03': '紙面 fallback：油燈下陳從征寫信',
-    'cs-04': '紙面 fallback：杭州府衙',
-    'cs-05': '紙面 fallback：裴氏機房開機',
-    'cs-06': '紙面 fallback：三份推薦文書',
-    'cs-07': '紙面 fallback／逐字稿：CS-07', 'cs-08': '紙面 fallback／逐字稿：CS-08',
-    'cs-09': '紙面 fallback／逐字稿：CS-09', 'cs-10': '紙面 fallback／逐字稿：CS-10', 'cs-11': '紙面 fallback／逐字稿：CS-11', 'cs-12': '紙面 fallback／逐字稿：CS-12', 'cs-13': '紙面 fallback／逐字稿：CS-13', 'cs-14': '紙面 fallback／逐字稿：CS-14',
+    'cs-00': '文華殿內，萬曆帝御案前的冬日召對', 'cs-01': '金華府衙二堂', 'cs-02': '陳氏兄弟田埂與鐵匠鋪交接',
+    'cs-03': '油燈下陳從征寫信', 'cs-04': '杭州府衙', 'cs-05': '裴氏機房開機', 'cs-06': '三份推薦文書',
+    'cs-07': '三道關口的故事卷', 'cs-08': '最少一份的故事卷', 'cs-09': '鼎足而立的故事卷', 'cs-10': '江陵之怨的故事卷',
+    'cs-11': '薊門之怨的故事卷', 'cs-12': '大璫之怨的故事卷', 'cs-13': '留中不發的故事卷', 'cs-14': '定分宗師的故事卷',
   },
   transcriptTitle: '完整過場文字',
   cues: {
@@ -635,14 +617,18 @@ export const adventureZhTW: AdventureMessages = {
     narratorLife: '「我這一輩子沒做過別的事，就是替人把名分定下來。」',
     narratorFirstCase: '「頭一回，是在義烏。那年我二十八歲，剛學會穿官袍。」',
     sixYearsEarlier: '六年前。',
-    cs01Scene: 'CS-01 · 金華府衙二堂。新到任的程衡把戥子擱上公案，義烏送來的一疊積案落在面前。',
-    cs01Zhou: '周先生：「縣裡把每樣家產各判一半，兄弟兩人卻都上控。先問清楚，他們各自到底要什麼。」',
-    cs01Closing: '案卷在兄弟各自的所求之間展開。',
-    cs02Scene: 'CS-02 · 陳守業在田埂上插秧，抬頭看見城西升起一縷鐵匠鋪的煙。',
-    cs02Reaction: '兄弟各自按心中所重分得家產，案卷闔上，五年無人再上控。',
-    cs03Scene: 'CS-03 · 油燈下，陳從征用左手壓著紙，給薊鎮老營的同袍寫信。',
-    cs03Letter: '陳從征：「府裡新來的程大人，審案子帶著一桿稱銀子的小秤。他沒多給我一文錢，可我哥和我，如今又在一張桌上吃飯了。」',
-    cs03Future: '信使踏雪而行。五年後，更難的一樁案子將把程衡召往杭州；按下 CS-04，第二幕搜證便會開放。',
+    cs01Scene: '金華府衙二堂。新到任的程衡把戥子擱上公案，周先生抱著義烏送來的積案進門。',
+    cs01Location: '義烏縣　上控',
+    cs01Zhou: '周先生：「大人，這案子有意思。兄弟倆分家，義烏知縣照律法判的：每樣東西一人一半，一厘不差。結果哥哥不服，弟弟也不服，兩個人一起告到咱們這兒來了。判得這麼平，怎麼兩邊都喊冤？大人先去問問，他們各自到底想要什麼。」',
+    cs02Scene: '陳守業在田埂上插秧，抬頭看見城西升起一縷鐵匠鋪的煙。',
+    cs03Scene: '油燈下，陳從征用左手壓著紙，給薊鎮老營的同袍寫信。',
+    cs03Letter: '陳從征寫道：「府裡新來的程大人，審案子帶著一桿稱銀子的小秤。他沒多給我一文錢，可我哥和我，如今又在一張桌上吃飯了。」',
+    cs03TimeJump: '五年後 · 萬曆八年冬',
+    cs03LedgerTitle: '考成簿',
+    cs03LedgerEntry: '「所斷戶婚田土，五年無一上控。」',
+    cs03LedgerPlain: '他判過的分家、田產官司，五年來沒有一件再有人往上告。',
+    cs03Transfer: '御史朱批：調繁',
+    cs03TransferPlain: '調他去事情更多、更難辦的大府。',
     cs04Scene: 'CS-04 · 杭州府衙。清丈限期與織造局的上供期限，同時壓在裴氏機房這一案上。',
     cs04Zhou: '周先生：「機房劈不得。先問清楚每個人眼裡什麼最重，別讓冊子與機子一起停下。」',
     cs04Closing: '杭州案在兩道期限之間展開。',
@@ -710,11 +696,12 @@ export const adventureZhTW: AdventureMessages = {
       paddyToYounger: { name: '陳守業', role: '兄', text: '陳守業蹲了下去，抱著頭不說話。' },
       silverToElder: { name: '陳從征', role: '弟', text: '陳從征苦笑：「大人，我哥拿這銀子做什麼？埋在灶台底下嗎？」' },
       brothersExchange: { name: '陳守業', role: '陳氏兄弟', text: '兄弟倆第一次對看了一眼。' },
+      bothAggrieved: { name: '陳氏兄弟', role: '當事人', text: '陳守業抱頭不語；陳從征苦笑著望向案上的現銀。' },
     },
     scene: {
       name: '金華府衙二堂',
       description: '程衡把戥子擱上公案，義烏陳氏兄弟的析產案送到了府裡。',
-      fallback: '場景底圖尚未備妥；此紙面場景保留案名與操作。',
+      fallback: '案卷紙頁仍保留案件名稱與搜證操作。',
     },
     parties: {
       chengHeng: { name: '程衡', role: '金華府推官' },
@@ -841,8 +828,9 @@ export const adventureZhTW: AdventureMessages = {
     completionHeading: '挑戰完成',
     completed: '這份分配達到得其分的條件，挑戰完成。',
     notCompleted: '這份分配尚未達到得其分的條件。',
-    frontierReached: '已達到 70／70 frontier。',
-    frontierNotReached: '尚未達到 70／70 frontier。',
+    frontierReached: '已找到本案的巧解。',
+    frontierDialogue: '周先生：「大人您看，田還是那些田，銀子一兩也沒多。每樣對半分，兩人各拿五成；各拿各想要的，兩人各拿七成。多出來的這些，不是變出來的，是因為有人肯先問一句：你到底想要什麼。」',
+    frontierNotReached: '這份分法還有改進餘地。',
     sealAwarded: '已蓋巧字印。',
     sealUnavailable: '這次不蓋巧字印。',
     submit: '查驗分法',
@@ -867,11 +855,11 @@ export const adventureZhTW: AdventureMessages = {
     sealStatus: '巧字印',
     sealEarned: '已取得',
     sealNotEarned: '未取得',
-    progress: (earned) => `巧字印進度：${earned}/3；繼續至 CS-03 即可開啟第二幕。`,
-    futureLocked: 'CS-03 交接後，第二幕的指標與記錄會出現。',
+    progress: (earned) => `巧字印進度：${earned}/3；闔上義烏案卷即可開啟第二幕。`,
+    futureLocked: '義烏來信之後，第二幕的指標與記錄才會出現。',
     returnToChallenge: '返回巧解挑戰',
     openRecall: '開啟回憶檔案',
-    continue: '繼續至 CS-03',
+    continue: '闔上第一幕案卷',
   },
   recall: {
     heading: '回憶檔案',
@@ -882,8 +870,8 @@ export const adventureZhTW: AdventureMessages = {
   },
   transition: {
     heading: '五年後',
-    body: 'CS-03 結束第一幕。按下本地化按鈕開始 CS-04，進入可遊玩的第二幕搜證。',
-    continue: '開始第二幕 · CS-04',
+    body: '義烏來信收束第一幕。繼續前往杭州，展開下一案搜證。',
+    continue: '開始第二幕 · 杭州',
   },
   shell: {
     loading: '展開篇章中…',
@@ -940,6 +928,10 @@ export const adventureZhTW: AdventureMessages = {
     controlsHelp: '使用 Tab 移動焦點，按 Enter 或空白鍵選擇。過場可隨時略過。',
     subtitles: '字幕',
     volume: '音量',
+    textSize: '文字大小',
+    textSizeSmall: '小',
+    textSizeMedium: '中',
+    textSizeLarge: '大',
     replayCurrentCutscene: '重播目前過場',
     recallArchive: '回憶檔案',
     restart: '重新開始',
@@ -962,7 +954,7 @@ export const adventureZhTW: AdventureMessages = {
       finalVerdict: '查看已凍結的定讞。',
       solveMasterChallenge: '分成兩堆，查看弟弟的選擇，也可以完成巧解挑戰。',
       reviewLedger: '查看第一幕考成簿，選擇下一個交界。',
-      beginActTwo: '從 CS-03 繼續，即可開啟第二幕搜證。'
+      beginActTwo: '闔上義烏來信，即可開啟第二幕搜證。'
     },
   },
 };

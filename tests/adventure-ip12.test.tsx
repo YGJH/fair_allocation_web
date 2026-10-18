@@ -30,6 +30,7 @@ function campaignAtActThreeTransition(): CampaignState {
   dispatch({ type: 'COMPLETE_DEBRIEF' });
   dispatch({ type: 'CHOOSE_REVISION', revise: false });
   dispatch({ type: 'SKIP_CHALLENGE' });
+  dispatch({ type: 'COMPLETE_CUTSCENE' });
   dispatch({ type: 'CONTINUE_ACT' });
   dispatch({ type: 'COMPLETE_CUTSCENE' });
 

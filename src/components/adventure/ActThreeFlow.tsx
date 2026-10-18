@@ -15,7 +15,7 @@ type HeadingRef = RefObject<HTMLHeadingElement | null>;
 const writIds = ACT_THREE_DEFINITION.writs.map(({ id }) => id);
 const partyIds = ACT_THREE_DEFINITION.parties;
 
-export function ActThreeInvestigation({ locale, discoveredClueIds, onDiscoverClue, onStartAllocation, headingRef }: { locale: Locale; discoveredClueIds: readonly string[]; onDiscoverClue: (id: ActThreeClueId) => void; onStartAllocation: () => void; headingRef?: HeadingRef }) {
+export function ActThreeInvestigation({ locale, discoveredClueIds, onDiscoverClue, onStartAllocation, headingRef, hideStartAction = false }: { locale: Locale; discoveredClueIds: readonly string[]; onDiscoverClue: (id: ActThreeClueId) => void; onStartAllocation: () => void; headingRef?: HeadingRef; hideStartAction?: boolean }) {
   const copy = getAdventureCopy(locale).actThree;
   const discovered = new Set(discoveredClueIds);
   const clues = ACT_THREE_DEFINITION.clues;
@@ -25,7 +25,7 @@ export function ActThreeInvestigation({ locale, discoveredClueIds, onDiscoverClu
     <div className={styles.task}><div><strong>{copy.taskLabel}</strong><h2 ref={headingRef} tabIndex={-1} id="act-three-investigation-title">{copy.taskProgress(clues.filter(({ id }) => discovered.has(id)).length, clues.length)}</h2></div><span>{complete ? copy.completeMark : copy.pendingMark}</span></div>
     <div className={styles.portraitGrid} aria-label={copy.peopleLabel}>{partyIds.map((party, index) => { const clue = clues[index]; const person = copy.partyNames[party]; return <button className={styles.clueButton} type="button" key={party} aria-pressed={discovered.has(clue.id)} onClick={() => onDiscoverClue(clue.id)}><strong>{person.name}</strong><small>{person.role}</small><span>{discovered.has(clue.id) ? copy.clueRecorded : copy.clueRead}</span></button>; })}</div>
     <ol className={styles.clueList}>{clues.map(({ id }) => { const clue = copy.clues[id]; const recorded = discovered.has(id); return <li className={styles.clue} key={id}><button type="button" className={styles.clueButton} aria-expanded={recorded} aria-pressed={recorded} onClick={() => onDiscoverClue(id)}><span>{clue.title}</span><small>{recorded ? copy.clueRecorded : copy.clueRead}</small></button>{recorded ? <div className={styles.clueBody}><p><strong>{clue.speaker}</strong></p><p><q>{clue.text}</q></p></div> : null}</li>; })}</ol>
-    {!complete ? <p className={styles.explanation}>{copy.requiredCluesExplanation}</p> : null}<div className={styles.actions}><button type="button" className={styles.primary} disabled={!complete} onClick={onStartAllocation}>{copy.enterAllocation}</button></div>
+    {!complete ? <p className={styles.explanation}>{copy.requiredCluesExplanation}</p> : null}{!hideStartAction ? <div className={styles.actions}><button type="button" className={styles.primary} disabled={!complete} onClick={onStartAllocation}>{copy.enterAllocation}</button></div> : null}
   </section>;
 }
 
@@ -33,12 +33,12 @@ function setOwner(allocation: CampaignAllocation, writId: string, owner: number)
   return allocation.map((row) => row.goodId === writId ? { ...row, owner, writId } : row);
 }
 
-export function ActThreeWorkbench({ locale, allocation, canLock, onChange, onLock, onReturn, revisionMode = false }: { locale: Locale; allocation: CampaignAllocation; canLock: boolean; onChange: (allocation: CampaignAllocation) => void; onLock: () => void; onReturn: () => void; revisionMode?: boolean }) {
+export function ActThreeWorkbench({ locale, allocation, canLock, onChange, onLock, onReturn, revisionMode = false, integrated = false }: { locale: Locale; allocation: CampaignAllocation; canLock: boolean; onChange: (allocation: CampaignAllocation) => void; onLock: () => void; onReturn: () => void; revisionMode?: boolean; integrated?: boolean }) {
   const copy = getAdventureCopy(locale).actThree;
   return <section className={styles.workbench} aria-labelledby="act-three-workbench-title" data-act-three-workbench>
     <header><p className={styles.task}><strong>{copy.allocationHeading}</strong></p><h2 id="act-three-workbench-title">{copy.allocationHeading}</h2><p className={styles.explanation}>{revisionMode ? copy.revisionInstructions : copy.allocationInstructions}</p></header>
     {writIds.map((writId) => { const row = allocation.find(({ goodId }) => goodId === writId); if (!row) return null; return <fieldset className={styles.goodRow} key={writId}><legend>{copy.writNames[writId]}</legend><div className={styles.adjustments}>{partyIds.map((party, index) => <label key={party}><input type="radio" name={`writ-${writId}`} checked={row.owner === index} onChange={() => onChange(setOwner(allocation, writId, index))} />{copy.partyNames[party].name}</label>)}</div><p className={styles.liveText}>{copy.ownerLabel(copy.partyNames[partyIds[row.owner ?? 0]].name)}</p></fieldset>; })}
-    <div className={styles.actions}>{!revisionMode ? <button type="button" className={styles.return} onClick={onReturn}>{copy.returnToInvestigation}</button> : null}<button type="button" className={styles.primary} disabled={!canLock} onClick={onLock}>{revisionMode ? copy.revisionLock : copy.lock}</button></div>
+    <div className={styles.actions}>{!revisionMode && !integrated ? <button type="button" className={styles.return} onClick={onReturn}>{copy.returnToInvestigation}</button> : null}<button type="button" className={styles.primary} disabled={!canLock} onClick={onLock}>{revisionMode ? copy.revisionLock : copy.lock}</button></div>
   </section>;
 }
 
@@ -61,7 +61,7 @@ export function RemoveOneTest({ locale, allocation }: { locale: Locale; allocati
 
 export function ActThreeDebrief({ locale, verdict, headingRef, onContinue }: { locale: Locale; verdict: CampaignVerdict; headingRef?: HeadingRef; onContinue: () => void }) {
   const copy = getAdventureCopy(locale).actThree;
-  return <section className={flowStyles.scroll} aria-labelledby="act-three-debrief-title"><p className={flowStyles.eyebrow}>{copy.debriefHeading}</p><h2 ref={headingRef} tabIndex={-1} id="act-three-debrief-title">{copy.debriefHeading}</h2><p>{copy.debriefBody}</p><h3>{copy.utilitiesHeading}</h3><ul>{verdict.metrics.utilities.map((value, index) => <li key={partyIds[index]}>{copy.partyNames[partyIds[index]].name}: {value}</li>)}</ul><h3>{copy.envyHeading}</h3><ul>{(verdict.metrics.envyPairs ?? []).map(({ i, j, gap }) => <li key={`${i}-${j}`}>{copy.envyLine(copy.partyNames[partyIds[i]].name, copy.partyNames[partyIds[j]].name, gap)}</li>)}</ul><RemoveOneTest locale={locale} allocation={verdict.allocation} /><button className={flowStyles.primary} type="button" onClick={onContinue}>{copy.returnToLedger}</button></section>;
+  return <section className={flowStyles.scroll} aria-labelledby="act-three-debrief-title" data-act-three-debrief><p className={flowStyles.eyebrow}>{copy.debriefHeading}</p><h2 ref={headingRef} tabIndex={-1} id="act-three-debrief-title">{copy.debriefHeading}</h2><p>{copy.debriefBody}</p><section className={flowStyles.comparisonCard}><h3>{copy.utilitiesHeading}</h3><ul>{verdict.metrics.utilities.map((value, index) => <li key={partyIds[index]}>{copy.partyNames[partyIds[index]].name}: {value}</li>)}</ul></section><section className={flowStyles.comparisonCard}><h3>{copy.envyHeading}</h3><ul>{(verdict.metrics.envyPairs ?? []).map(({ i, j, gap }) => <li key={`${i}-${j}`}>{copy.envyLine(copy.partyNames[partyIds[i]].name, copy.partyNames[partyIds[j]].name, gap)}</li>)}</ul></section><RemoveOneTest locale={locale} allocation={verdict.allocation} /><button className={flowStyles.primary} type="button" onClick={onContinue}>{copy.returnToLedger}</button></section>;
 }
 
 export function ActThreeRevision({ locale, allocation, initialAllocation, headingRef, onChange, onLock }: { locale: Locale; allocation: CampaignAllocation; initialAllocation: CampaignAllocation; headingRef?: HeadingRef; onChange: (allocation: CampaignAllocation) => void; onLock: () => void }) {

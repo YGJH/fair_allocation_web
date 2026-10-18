@@ -34,11 +34,10 @@ import {
   initialCampaignState,
 } from '../../narrative/state-machine';
 import type { ActOneRecord, ActTwoRecord, ActThreeRecord, CampaignAllocation, CampaignVerdict } from '../../narrative/types';
-import type { AuthoredCutsceneSlot, AvailableCutsceneSlot } from '../../narrative/media-manifest';
+import { type AuthoredCutsceneSlot, type AvailableCutsceneSlot } from '../../narrative/media-manifest';
 import { AdventureDialog } from './AdventureDialog';
 import { AllocationWorkbench } from './AllocationWorkbench';
-import { ACT_ONE_CLUE_IDS, InvestigationDossier } from './InvestigationDossier';
-import { ScenePlate } from './ScenePlate';
+import { InvestigationDossier } from './InvestigationDossier';
 import { CutscenePlayer } from './CutscenePlayer';
 import { GameStage } from './GameStage';
 import { JudgmentGate } from './JudgmentGate';
@@ -265,6 +264,8 @@ export function AdventureShell({ locale }: { locale: Locale }) {
   return (
     <GameStage
       labels={messages.stage}
+      backgroundImageSrc="/adventure/bg.jpg"
+      autoFullscreenOnInteraction={active && campaign.phase !== 'cutscene'}
       lockOrientationOnFullscreen
       landscapeGateLabels={{
         title: messages.stage.rotateTitle,
@@ -273,7 +274,7 @@ export function AdventureShell({ locale }: { locale: Locale }) {
       onLandscapeBlockedChange={handleOrientationBlockedChange}
       chromeInert={modalOpen}
     >
-      <div className={styles.shell} data-adventure-v2 data-phase={campaign.phase}>
+      <div className={styles.shell} data-adventure-v2 data-phase={campaign.phase} data-text-size={settings.textSize}>
         <div
           className={styles.interactiveLayer}
           inert={modalOpen || undefined}
@@ -353,51 +354,64 @@ export function AdventureShell({ locale }: { locale: Locale }) {
                   onComplete={completeCutscene}
                 />
               ) : campaign.phase === 'title' ? (
-                <section className={styles.titlePanel} aria-labelledby="campaign-title">
-                  <p className={styles.eyebrow}>{messages.shell.titleEyebrow}</p>
-                  <h1 ref={phaseHeadingRef} tabIndex={-1} id="campaign-title">{messages.shell.campaignTitle}</h1>
-                  <blockquote>{messages.shell.titleLead}</blockquote>
-                  <button type="button" className={styles.primary} onClick={() => dispatch({ type: 'BEGIN_FROM_TITLE' })}>
-                    {messages.shell.begin}
-                  </button>
+                <section className={`${styles.titlePanel} ${styles.storySplit}`} aria-labelledby="campaign-title">
+                  <div className={styles.storyCopy}>
+                    <p className={styles.eyebrow}>{messages.shell.titleEyebrow}</p>
+                    <h1 ref={phaseHeadingRef} tabIndex={-1} id="campaign-title">{messages.shell.campaignTitle}</h1>
+                    <blockquote>{messages.shell.titleLead}</blockquote>
+                    <button type="button" className={styles.primary} onClick={() => dispatch({ type: 'BEGIN_FROM_TITLE' })}>
+                      {messages.shell.begin}
+                    </button>
+                  </div>
+                  <figure className={styles.storyImage}>
+                    <img src="/adventure/animatics/cs-01/cs-01-s1.jpg" width={2752} height={1536} alt={messages.transcript.cs01Scene} />
+                    <figcaption>{messages.transcript.cs01Scene}</figcaption>
+                  </figure>
                 </section>
               ) : campaign.phase === 'intro' ? (
-                <section className={styles.titlePanel} aria-labelledby="act-title">
-                  <p className={styles.eyebrow}>{campaign.act === 1 ? messages.shell.introEyebrow : campaign.act === 2 ? messages.actTwo.taskLabel : messages.actThree.taskLabel}</p>
-                  <h1 ref={phaseHeadingRef} tabIndex={-1} id="act-title">{campaign.act === 1 ? messages.shell.introTitle : campaign.act === 2 ? messages.actTwo.introTitle : messages.actThree.introTitle}</h1>
-                  <p>{campaign.act === 1 ? messages.shell.introBody : campaign.act === 2 ? messages.actTwo.introBody : messages.actThree.introBody}</p>
-                  <button type="button" className={styles.primary} onClick={() => dispatch({ type: 'COMPLETE_INTRO' })}>
-                    {messages.shell.continueIntro}
-                  </button>
+                <section className={`${styles.titlePanel} ${campaign.act === 1 ? styles.storySplit : ''}`} aria-labelledby="act-title">
+                  <div className={campaign.act === 1 ? styles.storyCopy : undefined}>
+                    <p className={styles.eyebrow}>{campaign.act === 1 ? messages.shell.introEyebrow : campaign.act === 2 ? messages.actTwo.taskLabel : messages.actThree.taskLabel}</p>
+                    <h1 ref={phaseHeadingRef} tabIndex={-1} id="act-title">{campaign.act === 1 ? messages.shell.introTitle : campaign.act === 2 ? messages.actTwo.introTitle : messages.actThree.introTitle}</h1>
+                    <p>{campaign.act === 1 ? messages.shell.introBody : campaign.act === 2 ? messages.actTwo.introBody : messages.actThree.introBody}</p>
+                    {campaign.act === 1 ? <blockquote className={styles.storyDialogue}>{messages.transcript.cs01Zhou}</blockquote> : null}
+                    <button type="button" className={styles.primary} onClick={() => dispatch({ type: 'COMPLETE_INTRO' })}>
+                      {messages.shell.continueIntro}
+                    </button>
+                  </div>
+                  {campaign.act === 1 ? <figure className={styles.storyImage}>
+                    <img src="/adventure/animatics/cs-01/cs-01-s2.jpg" width={2752} height={1536} alt={messages.transcript.cs01Scene} />
+                    <figcaption><strong>{messages.transcript.cs01Location}</strong><span>{messages.transcript.cs01Scene}</span></figcaption>
+                  </figure> : null}
                 </section>
-              ) : campaign.phase === 'investigation' ? (
-                campaign.act === 2 ? (
-                  <ActTwoInvestigation locale={locale} discoveredClueIds={campaign.discoveredClueIds} headingRef={phaseHeadingRef} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} />
-                ) : campaign.act === 3 ? (
-                  <ActThreeInvestigation locale={locale} discoveredClueIds={campaign.discoveredClueIds} headingRef={phaseHeadingRef} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} />
-                ) : (
-                  <section className={`${styles.boundaryPanel} ${styles.investigationPanel}`} aria-labelledby="phase-boundary-title">
-                    <p className={styles.eyebrow}>{messages.shell.introTitle}</p><h1 ref={phaseHeadingRef} tabIndex={-1} id="phase-boundary-title">{messages.shell.boundaryTitle}</h1>
-                    <ScenePlate locale={locale} name={messages.investigation.scene.name} description={messages.investigation.scene.description} fallbackLabel={messages.investigation.scene.fallback} hotspotsLabel={messages.investigation.sceneCluesLabel} hotspots={ACT_ONE_CLUE_IDS.map((clueId) => ({ id: clueId, label: messages.investigation.clues[clueId].title, onActivate: () => dispatch({ type: 'DISCOVER_CLUE', clueId }) }))} />
-                    <InvestigationDossier locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} />
-                  </section>
-                )
-              ) : campaign.phase === 'allocation' ? (
-                <section className={`${styles.boundaryPanel} ${styles.allocationPanel}`} aria-labelledby="allocation-phase-title">
-                  <p className={styles.eyebrow}>{campaign.act === 1 ? messages.shell.introTitle : campaign.act === 2 ? messages.actTwo.taskLabel : messages.actThree.taskLabel}</p>
-                  <h1 ref={phaseHeadingRef} tabIndex={-1} id="allocation-phase-title">{campaign.act === 1 ? messages.investigation.allocation.heading : campaign.act === 2 ? messages.actTwo.allocationHeading : messages.actThree.allocationHeading}</h1>
-                  {campaign.act === 1 ? <ScenePlate locale={locale} name={messages.investigation.scene.name} description={messages.investigation.scene.description} fallbackLabel={messages.investigation.scene.fallback} /> : campaign.act === 2 ? <ScenePlate locale={locale} name={messages.actTwo.sceneName} description={messages.actTwo.sceneDescription} fallbackLabel={messages.actTwo.sceneFallback} /> : <ScenePlate locale={locale} name={messages.actThree.sceneName} description={messages.actThree.sceneDescription} fallbackLabel={messages.actThree.sceneFallback} />}
-                  {campaign.act === 3 ? <ActThreeWorkbench locale={locale} allocation={campaign.draftAllocation} canLock={clueProgress.complete && selectCanStartAllocation({ ...campaign, phase: 'investigation' })} onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })} onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })} onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })} /> : <AllocationWorkbench
-                    act={campaign.act as 1 | 2}
-                    locale={locale}
-                    allocation={campaign.draftAllocation}
-                    canLock={clueProgress.complete && selectCanStartAllocation({ ...campaign, phase: 'investigation' })}
-                    guidanceCompleted={recall.firstUseGuidanceCompleted}
-                    onCompleteGuidance={() => setRecall((current) => ({ ...current, firstUseGuidanceCompleted: true }))}
-                    onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })}
-                    onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })}
-                    onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })}
-                  />}
+              ) : campaign.phase === 'investigation' || campaign.phase === 'allocation' ? (
+                <section className={`${styles.boundaryPanel} ${styles.caseDeskPanel}`} aria-labelledby="case-desk-title" data-case-desk>
+                  <header className={styles.caseDeskHeader}>
+                    <div>
+                      <p className={styles.eyebrow}>{campaign.act === 1 ? messages.shell.introTitle : campaign.act === 2 ? messages.actTwo.taskLabel : messages.actThree.taskLabel}</p>
+                      <h1 ref={phaseHeadingRef} tabIndex={-1} id="case-desk-title">{campaign.act === 1 ? messages.shell.boundaryTitle : campaign.act === 2 ? messages.actTwo.allocationHeading : messages.actThree.allocationHeading}</h1>
+                    </div>
+                    <p className={styles.caseDeskStatus}>{clueProgress.complete ? '✓' : `${clueProgress.found}/${clueProgress.total}`}</p>
+                  </header>
+                  <div className={styles.caseDeskGrid}>
+                    <div className={styles.caseFile}>
+                      {campaign.act === 2 ? <ActTwoInvestigation locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} hideStartAction /> : campaign.act === 3 ? <ActThreeInvestigation locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} hideStartAction /> : <InvestigationDossier locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} hideStartAction />}
+                    </div>
+                    <div className={styles.caseWorkbench}>
+                      {campaign.act === 3 ? <ActThreeWorkbench locale={locale} allocation={campaign.draftAllocation} canLock={clueProgress.complete && selectCanStartAllocation({ ...campaign, phase: 'investigation' })} onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })} onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })} onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })} integrated /> : <AllocationWorkbench
+                        act={campaign.act as 1 | 2}
+                        locale={locale}
+                        allocation={campaign.draftAllocation}
+                        canLock={clueProgress.complete && selectCanStartAllocation({ ...campaign, phase: 'investigation' })}
+                        guidanceCompleted={recall.firstUseGuidanceCompleted}
+                        onCompleteGuidance={() => setRecall((current) => ({ ...current, firstUseGuidanceCompleted: true }))}
+                        onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })}
+                        onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })}
+                        onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })}
+                        integrated
+                      />}
+                    </div>
+                  </div>
                 </section>
               ) : campaign.phase === 'intuition-rating' ? (
                 <section className={`${styles.boundaryPanel} ${styles.ratingPanel}`} aria-labelledby="judgment-gate-title">
@@ -407,9 +421,9 @@ export function AdventureShell({ locale }: { locale: Locale }) {
                     onRate={(rating) => dispatch({ type: 'SUBMIT_INTUITION_RATING', rating })}
                   />
                 </section>
-              ) : campaign.phase === 'debrief' && campaign.initialVerdict ? (
+              ) : (campaign.phase === 'debrief' || (campaign.act === 1 && campaign.phase === 'revision-decision')) && campaign.initialVerdict ? (
                 <section className={`${styles.boundaryPanel} ${styles.verdictPanel}`} aria-labelledby={campaign.act === 2 ? 'act-two-debrief-title' : 'case-scroll-title'}>
-                  {campaign.act === 2 ? <ActTwoDebrief locale={locale} verdict={campaign.initialVerdict} headingRef={phaseHeadingRef} onContinue={() => dispatch({ type: 'COMPLETE_DEBRIEF' })} /> : campaign.act === 3 ? <ActThreeDebrief locale={locale} verdict={campaign.initialVerdict} headingRef={phaseHeadingRef} onContinue={() => dispatch({ type: 'COMPLETE_DEBRIEF' })} /> : <CaseScrollDebrief locale={locale} verdict={campaign.initialVerdict} watched={recall.watchedRevealActs.includes(campaign.act)} onWatched={markRevealWatched} headingRef={phaseHeadingRef} onContinue={() => dispatch({ type: 'COMPLETE_DEBRIEF' })} />}
+                  {campaign.act === 2 ? <ActTwoDebrief locale={locale} verdict={campaign.initialVerdict} headingRef={phaseHeadingRef} onContinue={() => dispatch({ type: 'COMPLETE_DEBRIEF' })} /> : campaign.act === 3 ? <ActThreeDebrief locale={locale} verdict={campaign.initialVerdict} headingRef={phaseHeadingRef} onContinue={() => dispatch({ type: 'COMPLETE_DEBRIEF' })} /> : <CaseScrollDebrief locale={locale} verdict={campaign.initialVerdict} watched={recall.watchedRevealActs.includes(campaign.act)} onWatched={markRevealWatched} headingRef={phaseHeadingRef} initiallyOpen={campaign.phase === 'revision-decision'} onAccept={() => dispatch({ type: 'CHOOSE_REVISION', revise: false })} onRevise={() => dispatch({ type: 'CHOOSE_REVISION', revise: true })} />}
                 </section>
               ) : campaign.phase === 'revision-decision' && campaign.initialVerdict ? (
                 <section className={`${styles.boundaryPanel} ${styles.verdictPanel}`} aria-labelledby="revision-decision-title">
@@ -539,6 +553,10 @@ export function AdventureShell({ locale }: { locale: Locale }) {
             controls: messages.pauseMenu.controls,
             subtitles: messages.pauseMenu.subtitles,
             volume: messages.pauseMenu.volume,
+            textSize: messages.pauseMenu.textSize,
+            textSizeSmall: messages.pauseMenu.textSizeSmall,
+            textSizeMedium: messages.pauseMenu.textSizeMedium,
+            textSizeLarge: messages.pauseMenu.textSizeLarge,
             replayCurrentCutscene: messages.pauseMenu.replayCurrentCutscene,
             recallArchive: messages.pauseMenu.recallArchive,
             restart: messages.pauseMenu.restart,
@@ -552,9 +570,11 @@ export function AdventureShell({ locale }: { locale: Locale }) {
           controlsHelp={<p>{messages.pauseMenu.controlsHelp}</p>}
           subtitles={settings.subtitles}
           volume={settings.volume}
+          textSize={settings.textSize}
           onContinue={() => setPauseOpen(false)}
           onSubtitlesChange={(subtitles) => updateSettings({ subtitles })}
           onVolumeChange={(volume) => updateSettings({ volume })}
+          onTextSizeChange={(textSize) => updateSettings({ textSize })}
           onReplayCurrentCutscene={campaign.phase === 'cutscene' && campaign.cutscene
             ? () => {
                 setPauseOpen(false);

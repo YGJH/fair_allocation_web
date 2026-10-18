@@ -66,7 +66,8 @@ describe('IP-6 verdict flow components', () => {
         verdict={verdict}
         watched={false}
         onWatched={onWatched}
-        onContinue={vi.fn()}
+        onAccept={vi.fn()}
+        onRevise={vi.fn()}
       />,
     );
 
@@ -87,7 +88,7 @@ describe('IP-6 verdict flow components', () => {
 
   test('reports one-sided proportionality failures without claiming both brothers are below due', async () => {
     const user = userEvent.setup();
-    render(<CaseScrollDebrief locale="en" verdict={oneSidedVerdict} watched onWatched={vi.fn()} onContinue={vi.fn()} />);
+    render(<CaseScrollDebrief locale="en" verdict={oneSidedVerdict} watched onWatched={vi.fn()} onAccept={vi.fn()} onRevise={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: 'Show the whole scroll' }));
     expect(screen.getByText('At least one brother falls below his due share.')).toBeTruthy();
@@ -110,7 +111,7 @@ describe('IP-6 verdict flow components', () => {
     const onLock = vi.fn();
     render(
       <>
-        <CaseScrollDebrief locale="en" verdict={verdict} watched onWatched={onWatched} onContinue={vi.fn()} />
+        <CaseScrollDebrief locale="en" verdict={verdict} watched onWatched={onWatched} onAccept={vi.fn()} onRevise={vi.fn()} />
         <AllocationWorkbench
           locale="en"
           allocation={verdict.allocation}

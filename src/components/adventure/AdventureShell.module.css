@@ -51,8 +51,9 @@
   min-height: 100%;
   overflow: hidden;
   background:
-    radial-gradient(circle at 72% 30%, rgb(77 82 76 / 26%), transparent 38%),
-    linear-gradient(135deg, #201d19, #0e0d0c 72%);
+    radial-gradient(circle at 72% 30%, rgb(77 82 76 / 18%), transparent 38%),
+    linear-gradient(135deg, rgb(32 29 25 / 88%), rgb(14 13 12 / 76%) 72%),
+    url('/adventure/bg.jpg') center / cover no-repeat;
   color: var(--paper);
   isolation: isolate;
 }
@@ -210,21 +211,168 @@
 .ratingPanel,
 .verdictPanel {
   top: 4.8rem;
+  right: clamp(1.25rem, 5vw, 4rem);
   bottom: 1rem;
-  width: min(63rem, calc(100% - 2.5rem));
+  left: clamp(1.25rem, 5vw, 4rem);
+  width: auto;
+  min-height: 0;
+  padding: clamp(.75rem, 1.4vw, 1.2rem);
   overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   transform: none;
 }
 
 .investigationPanel > h1,
-.allocationPanel > h1,
-.ratingPanel > h1 {
-  margin-bottom: .8rem;
+.ratingPanel > h1,
+.phaseHeader h1 {
+  margin: .2rem 0 .55rem;
 }
 
-.investigationPanel > [class*="scenePlate"],
-.allocationPanel > [class*="scenePlate"] {
-  margin-bottom: 1rem;
+.phaseHeader {
+  min-width: 0;
+}
+
+.allocationPanel {
+  display: grid;
+  grid-template-areas:
+    'heading heading'
+    'scene workbench';
+  grid-template-columns: minmax(13rem, .42fr) minmax(46rem, 1.58fr);
+  align-content: start;
+  align-items: start;
+  gap: .75rem;
+}
+
+.allocationPanel > .phaseHeader { grid-area: heading; }
+.allocationPanel > [class*="scenePlate"] { grid-area: scene; }
+.allocationPanel > [class*="workbench"] { grid-area: workbench; }
+
+.caseDeskPanel {
+  top: 4.8rem;
+  right: clamp(1.25rem, 3vw, 3rem);
+  bottom: 1rem;
+  left: clamp(1.25rem, 3vw, 3rem);
+  display: grid;
+  width: auto;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: .65rem;
+  padding: .75rem;
+  overflow: hidden;
+  transform: none;
+}
+
+.caseDeskHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .15rem .25rem .6rem;
+  border-bottom: 1px solid rgb(216 189 119 / 42%);
+}
+
+.caseDeskHeader h1 {
+  max-width: none;
+  margin: .15rem 0 0;
+  font-size: clamp(1.45rem, 2.3vw, 2.25rem);
+}
+
+.caseDeskStatus {
+  display: grid;
+  min-width: 3.25rem;
+  min-height: 2.25rem;
+  margin: 0;
+  place-items: center;
+  border: 1px solid rgb(216 189 119 / 55%);
+  background: rgb(216 189 119 / 10%);
+  color: #e3c982;
+  font: 750 .85rem/1 system-ui, sans-serif;
+}
+
+.caseDeskGrid {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-columns: minmax(30rem, .84fr) minmax(38rem, 1.16fr);
+  gap: .65rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.caseFile,
+.caseWorkbench {
+  min-width: 0;
+  min-height: 0;
+  padding: .65rem;
+  overflow: auto;
+  border: 1px solid rgb(216 189 119 / 42%);
+  scrollbar-gutter: stable;
+}
+
+.caseFile {
+  border-top: 3px solid #9d7442;
+  background:
+    linear-gradient(145deg, rgb(47 34 25 / 92%), rgb(18 14 12 / 96%));
+  box-shadow: inset 0 0 0 1px rgb(243 235 220 / 4%);
+}
+
+.caseWorkbench {
+  border: 1px solid rgb(224 190 109 / 66%);
+  border-top: 4px solid #c49a52;
+  background:
+    radial-gradient(circle at 85% 8%, rgb(181 55 43 / 16%), transparent 30%),
+    linear-gradient(145deg, rgb(74 31 25 / 94%), rgb(27 17 14 / 97%) 58%, rgb(16 13 11 / 98%));
+  box-shadow:
+    inset 0 0 0 1px rgb(247 222 164 / 7%),
+    0 .8rem 2rem rgb(0 0 0 / 22%);
+}
+
+.caseWorkbench :global([data-allocation-workbench] > header),
+.caseWorkbench :global([data-act-three-workbench] > header) {
+  padding: .5rem .65rem;
+  border-left: 3px solid #c49a52;
+  background: linear-gradient(90deg, rgb(196 154 82 / 16%), transparent 80%);
+}
+
+.caseWorkbench :global([data-allocation-workbench] > [class*='actions']),
+.caseWorkbench :global([data-act-three-workbench] > [class*='actions']) {
+  position: sticky;
+  z-index: 2;
+  bottom: -.65rem;
+  justify-content: flex-end;
+  margin: .2rem -.65rem -.65rem;
+  padding: .65rem;
+  border-top: 1px solid rgb(216 189 119 / 46%);
+  background: linear-gradient(180deg, rgb(29 18 15 / 90%), rgb(18 13 11 / 98%));
+  box-shadow: 0 -.65rem 1.2rem rgb(15 10 8 / 45%);
+}
+
+.caseFile > :global([data-investigation-dossier]),
+.caseFile > :global([data-act-two-investigation]),
+.caseFile > :global([data-act-three-investigation]) {
+  min-width: 0;
+  grid-template-areas:
+    'scene scene'
+    'task task'
+    'people people'
+    'clues clues'
+    'note note';
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.caseFile :global([class*='scenePlate']) { grid-area: scene; }
+.caseFile :global([class*='task']) { grid-area: task; }
+.caseFile :global([class*='portraitGrid']) { grid-area: people; }
+.caseFile :global([class*='clueList']) {
+  grid-area: clues;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.caseFile :global([class*='explanation']) { grid-area: note; }
+
+.caseWorkbench > :global([data-allocation-workbench]),
+.caseWorkbench > :global([data-act-three-workbench]) {
+  min-width: 0;
 }
 
 .ratingContent {
@@ -285,6 +433,32 @@
   border-left: 1px solid rgb(243 235 220 / 42%);
   font-family: 'Noto Serif TC', 'Songti TC', Georgia, serif;
 }
+
+.storySplit {
+  top: 4.8rem;
+  right: clamp(1.25rem, 4vw, 4rem);
+  bottom: 1rem;
+  left: clamp(1.25rem, 4vw, 4rem);
+  display: grid;
+  width: auto;
+  min-height: 0;
+  grid-template-columns: minmax(20rem, .92fr) minmax(24rem, 1.08fr);
+  gap: clamp(1rem, 2vw, 2rem);
+  align-items: center;
+  padding: clamp(1rem, 2vw, 1.6rem);
+  overflow: auto;
+  transform: none;
+}
+.storyCopy { min-width: 0; }
+.storyCopy h1 { font-size: clamp(2rem, 4.8vw, 5rem); }
+.storyDialogue { max-height: 14rem; overflow: auto; padding-right: .5rem; }
+.storyImage { min-width: 0; margin: 0; border: 1px solid rgb(216 189 119 / 54%); background: #17130e; box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 34%); }
+.storyImage img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.storyImage figcaption { display: grid; gap: .2rem; padding: .55rem .7rem; color: #d7c9b2; font: 500 .8rem/1.45 system-ui, sans-serif; }
+.storyImage figcaption strong { color: #e3c982; font-family: 'Noto Serif TC', 'Songti TC', Georgia, serif; }
+
+.shell[data-text-size='small'] .phase :where(p, li, button, label, summary, dt, dd, th, td, caption, input, select, figcaption) { font-size: .82rem !important; }
+.shell[data-text-size='large'] .phase :where(p, li, button, label, summary, dt, dd, th, td, caption, input, select, figcaption) { font-size: 1.125rem !important; }
 
 .eyebrow {
   margin: 0;
@@ -367,6 +541,28 @@
     transform: none;
   }
 
+  .investigationPanel,
+  .allocationPanel,
+  .caseDeskPanel,
+  .ratingPanel,
+  .verdictPanel {
+    top: 4.1rem;
+    right: 0.75rem;
+    width: auto;
+  }
+
+  .caseDeskPanel {
+    padding: .55rem;
+  }
+
+  .caseDeskGrid {
+    grid-template-columns: minmax(28rem, .84fr) minmax(38rem, 1.16fr);
+  }
+
+  .storySplit {
+    grid-template-columns: minmax(21rem, .92fr) minmax(26rem, 1.08fr);
+  }
+
   .entryPanel h1,
   .titlePanel h1,
   .boundaryPanel h1 {
@@ -376,6 +572,23 @@
   .notice {
     top: 3.9rem;
   }
+}
+
+@media (orientation: landscape) and (max-height: 34rem) {
+  .investigationPanel,
+  .allocationPanel,
+  .caseDeskPanel,
+  .ratingPanel,
+  .verdictPanel { padding: .6rem; }
+
+  .caseDeskHeader h1 { font-size: 1.25rem; }
+  .caseDeskHeader .eyebrow { display: none; }
+
+  .phaseHeader h1,
+  .investigationPanel > h1 { font-size: 1.4rem; }
+
+  .allocationPanel { gap: .55rem; }
+  .allocationPanel > [class*='scenePlate'] { max-height: calc(100dvh - 8.5rem); }
 }
 
 @media (max-width: 36rem) {

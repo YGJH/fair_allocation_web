@@ -35,13 +35,13 @@ export function selectActOneReaction(allocation: CampaignAllocation): ActOneReac
 export function AllocationWorkbench(props: {
   locale: Locale; allocation: CampaignAllocation; canLock: boolean; guidanceCompleted?: boolean;
   onCompleteGuidance?: () => void; onChange: (allocation: CampaignAllocation) => void;
-  onLock: () => void; onReturn: () => void; revisionMode?: boolean; act?: 1 | 2; integrated?: boolean;
+  onLock: () => void; onReturn: () => void; revisionMode?: boolean; act?: 1 | 2; integrated?: boolean; paperMode?: boolean;
 }) {
   if (props.act === 2) return <ActTwoWorkbench {...props} />;
   return <ActOneWorkbench {...props} />;
 }
 
-function ActOneWorkbench({ locale, allocation, canLock, guidanceCompleted = true, onCompleteGuidance = () => {}, onChange, onLock, onReturn, revisionMode = false, integrated = false }: Parameters<typeof AllocationWorkbench>[0]) {
+function ActOneWorkbench({ locale, allocation, canLock, guidanceCompleted = true, onCompleteGuidance = () => {}, onChange, onLock, onReturn, revisionMode = false, integrated = false, paperMode = false }: Parameters<typeof AllocationWorkbench>[0]) {
   const investigationCopy = getAdventureCopy(locale).investigation;
   const copy = investigationCopy.allocation;
   const partyIds = ACT_ONE_DEFINITION.parties;
@@ -65,8 +65,19 @@ function ActOneWorkbench({ locale, allocation, canLock, guidanceCompleted = true
     if (!Number.isInteger(value) || value < 0 || value > 10) return;
     onChange(allocation.map((candidate) => candidate.goodId === goodId ? { ...candidate, shares: [value, 10 - value] } : candidate));
   }
-  return <section className={styles.workbench} aria-labelledby="allocation-workbench-title" data-allocation-workbench>
-    <header><p className={styles.task}><strong>{copy.heading}</strong></p><h2 id="allocation-workbench-title">{copy.heading}</h2><p className={styles.explanation}>{revisionMode ? copy.revisionInstructions : copy.instructions}</p></header>
+  return <section className={styles.workbench} aria-labelledby="allocation-workbench-title" data-allocation-workbench data-paper-desk={paperMode || undefined}>
+    <header><h2 id="allocation-workbench-title">{copy.heading}</h2><p className={styles.explanation}>{revisionMode ? copy.revisionInstructions : copy.instructions}</p></header>
+    {paperMode ? <div className={styles.valuationSummary}>
+      <table>
+        <caption>{copy.valuationHeading}</caption>
+        <thead><tr><th scope="col">{copy.goodLabel}</th>{partyIds.map((partyId) => <th scope="col" key={partyId}>{copy.partyNames[partyId].name}</th>)}</tr></thead>
+        <tbody>{ACT_ONE_DEFINITION.goods.map((good) => <tr key={good.id}>
+          <th scope="row">{copy.goodNames[good.id]}</th>
+          {good.values.map((value, index) => <td key={partyIds[index]}>{copy.valuePoints(value)}</td>)}
+        </tr>)}</tbody>
+      </table>
+      <p>{copy.valuationNote}</p>
+    </div> : null}
     {!guidanceCompleted ? <aside className={styles.guidance} aria-labelledby="allocation-guidance-title"><h3 id="allocation-guidance-title">{copy.guidance.title}</h3><p>{copy.guidance.body}</p><ol><li>{copy.guidance.ask}</li><li>{copy.guidance.chooseGood}</li><li>{copy.guidance.adjustShares}</li><li>{copy.guidance.lock}</li></ol><button type="button" onClick={onCompleteGuidance}>{copy.guidance.dismiss}</button></aside> : null}
     <div className={styles.reactionStage} aria-label={investigationCopy.peopleLabel}>
       <div className={styles.reactionPortraits}>

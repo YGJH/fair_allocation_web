@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, type Ref } from 'react';
 import type { Locale } from '../../i18n/copy';
 import { getAdventureCopy } from '../../i18n/adventure';
+import { getCutsceneStill } from '../../narrative/media-manifest';
 import type { CampaignVerdict } from '../../narrative/types';
+import { AnimaticStill } from './CutscenePlayer';
 import { PortraitCard } from './PortraitCard';
 import { ShareGauge } from './ShareGauge';
 import styles from './VerdictFlow.module.css';
@@ -30,6 +32,7 @@ export function CaseScrollDebrief({
   headingRef?: Ref<HTMLHeadingElement>;
 }) {
   const adventureCopy = getAdventureCopy(locale);
+  const cs02Still = getCutsceneStill('cs-02', 0);
   const copy = adventureCopy.investigation.debrief;
   const zhou = adventureCopy.investigation.parties.masterZhou;
   const parties = [
@@ -129,7 +132,7 @@ export function CaseScrollDebrief({
       {complete ? (
         <section className={styles.inlineVerdict} aria-labelledby="inline-verdict-title">
           <figure className={styles.judgmentImage}>
-            <img src="/adventure/animatics/cs-02/cs-02-s1.jpg" width={2752} height={1536} alt={adventureCopy.transcript.cs02Scene} />
+            {cs02Still ? <AnimaticStill segment={cs02Still} layout="standalone" alt={adventureCopy.transcript.cs02Scene} /> : null}
             <figcaption>{adventureCopy.transcript.cs02Scene}</figcaption>
           </figure>
           <div>

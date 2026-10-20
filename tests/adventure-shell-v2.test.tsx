@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -281,7 +281,7 @@ describe('AdventureShell Campaign v2 integration', () => {
     expect(screen.getByRole('heading', { name: 'Restart the campaign?' })).toBeTruthy();
   });
 
-  test('keeps evidence, valuation controls, and answer submission in one restorable case desk', async () => {
+  test('preserves the two-step Case Desk and allocation draft across a save and restore', async () => {
     const user = userEvent.setup();
     const first = render(<AdventureShell locale="en" />);
     await user.click(await screen.findByRole('button', { name: 'Begin campaign' }));
@@ -290,19 +290,25 @@ describe('AdventureShell Campaign v2 integration', () => {
     await user.click(screen.getByRole('button', { name: 'Begin investigation' }));
 
     expect(screen.getByRole('heading', { name: 'Act I investigation and allocation', level: 1 })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Allocation workbench' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Enter allocation workbench' })).toBeNull();
-    expect((screen.getByRole('button', { name: 'Lock Initial Verdict' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.queryByRole('heading', { name: 'Allocation workbench' })).toBeNull();
+    expect((screen.getByRole('button', { name: 'Continue to allocation' }) as HTMLButtonElement).disabled).toBe(true);
 
+    const people = screen.getByLabelText('People in the case');
     for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
-      await user.click(screen.getByRole('button', { name: new RegExp(`^${name}`) }));
+      await user.click(within(people).getByRole('button', { name: new RegExp(`^${name}`) }));
     }
     await user.click(screen.getByRole('button', { name: 'The original Yiwu ruling' }));
+    await user.click(screen.getByRole('button', { name: 'Continue to allocation' }));
+    expect(screen.getByRole('heading', { name: 'Allocation workbench' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Return to investigation' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Return to investigation' }));
+    expect((screen.getByRole('button', { name: 'Continue to allocation' }) as HTMLButtonElement).disabled).toBe(false);
+    await user.click(screen.getByRole('button', { name: 'Continue to allocation' }));
     await user.click(screen.getByRole('button', { name: 'Got it' }));
     await user.click(screen.getByRole('button', { name: 'Increase Paddy fields share for Chen Shouye' }));
     await waitFor(() => {
       const saved = readSavedCampaign();
-      expect(saved.campaign.phase).toBe('investigation');
+      expect(saved.campaign.phase).toBe('allocation');
       expect(saved.campaign.draftAllocation[0]).toEqual({ goodId: 'paddy-field', shares: [6, 4] });
       expect(saved.recall.firstUseGuidanceCompleted).toBe(true);
     });

@@ -1,9 +1,27 @@
 import { AdventureShell } from '../../../components/adventure/AdventureShell';
+import { ActOneUiPrototype, type ActOnePrototypeVariant } from '../../../components/adventure/ActOneUiPrototype';
 import { isLocale } from '../../../i18n/locale';
 
-export default async function AdventurePage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+function isActOnePrototypeVariant(value: string | undefined): value is ActOnePrototypeVariant {
+  return value === 'focus' || value === 'guided' || value === 'dossier';
+}
+
+export default async function AdventurePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
   const selectedLocale = isLocale(locale) ? locale : 'zh-TW';
+  const requestedVariant = query.variant;
+  const variant = Array.isArray(requestedVariant) ? requestedVariant[0] : requestedVariant;
+
+  if (process.env.NODE_ENV === 'development' && isActOnePrototypeVariant(variant)) {
+    return <ActOneUiPrototype locale={selectedLocale} variant={variant} />;
+  }
+
   return <AdventureShell locale={selectedLocale} />;
 }
 

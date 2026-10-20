@@ -61,7 +61,7 @@ button.portrait { cursor: pointer; }
 .task strong { color: #e3c982; font: 750 .8rem/1.3 system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
 .clueList { display: grid; gap: .55rem; margin: 0; padding: 0; list-style: none; }
 .clue { border: 1px solid rgb(216 189 119 / 45%); background: rgb(243 235 220 / 6%); }
-.clueButton { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .65rem; padding: .55rem .65rem; border: 0; background: transparent; color: inherit; text-align: left; }
+.clueButton { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .65rem; padding: .55rem .65rem; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
 .clueButton small { color: #d8bd77; white-space: nowrap; }
 .clueBody { padding: 0 .65rem .55rem; color: #ded2be; font: 500 .82rem/1.45 system-ui, sans-serif; }
 .clueBody p { margin: .2rem 0; }
@@ -139,9 +139,67 @@ button.portrait { cursor: pointer; }
 .ratingChoices { display: grid; grid-template-columns: repeat(5, minmax(2.5rem, 1fr)); gap: .45rem; }
 .ratingChoices button { min-height: 3rem; border: 1px solid #d8bd77; background: transparent; color: #f3ebdc; cursor: pointer; }
 .ratingChoices button[aria-pressed="true"] { background: #a8894f; color: #17130e; }
-@media (orientation: landscape) {
+
+.dossier[data-paper-desk] { color: #1f1b18; }
+.dossier[data-paper-desk] .task strong { color: #2f4a63; }
+.dossier[data-paper-desk] .task h2 { margin: 0; color: #1f1b18; font: 700 1.15rem/1.3 'Noto Serif TC', Georgia, serif; }
+.dossier[data-paper-desk] .sceneMedia { border-color: rgb(31 27 24 / 18%); background: #e4d7bf; }
+.dossier[data-paper-desk] .sceneCaption { background: rgb(243 235 220 / 94%); color: #1f1b18; }
+.dossier[data-paper-desk] .sceneCaption span { color: #6b625a; }
+.dossier[data-paper-desk] .hotspot { border-color: #2f4a63; background: #2f4a63; color: #f3ebdc; }
+.dossier[data-paper-desk] .sceneDialogue { border-color: rgb(31 27 24 / 15%); background: #e4d7bf; }
+.dossier[data-paper-desk] .portrait { border-color: rgb(31 27 24 / 18%); background: #f3ebdc; color: #1f1b18; }
+.dossier[data-paper-desk] .portraitRole,
+.dossier[data-paper-desk] .portraitReaction { color: #6b625a; }
+.dossier[data-paper-desk] .portraitFallback { border-color: rgb(47 74 99 / 35%); background: #e4d7bf; color: #2f4a63; }
+.dossier[data-paper-desk] .clue { border-color: rgb(31 27 24 / 15%); background: #f3ebdc; }
+.dossier[data-paper-desk] .clueButton { min-height: 3rem; color: #1f1b18; }
+.dossier[data-paper-desk] .clueButton:hover,
+.dossier[data-paper-desk] .clueButton[aria-pressed='true'] { background: #e4d7bf; }
+.dossier[data-paper-desk] .clueButton:focus-visible { outline: 3px solid #2f4a63; outline-offset: 2px; }
+.dossier[data-paper-desk] .clueButton small { color: #2f4a63; }
+.dossier[data-paper-desk] .explanation { color: #6b625a; }
+.dossier[data-paper-desk] .actions button { border-color: #2f4a63; background: #2f4a63; color: #f3ebdc; }
+.dossier[data-paper-desk] .actions button:disabled { border-color: #a39a8c; background: #d4c8b4; color: #6b625a; }
+
+.workbench[data-paper-desk] { color: #1f1b18; }
+.workbench[data-paper-desk] > header { display: grid; gap: .4rem; }
+.workbench[data-paper-desk] > header h2 { margin: 0; color: #1f1b18; font: 700 1.35rem/1.25 'Noto Serif TC', Georgia, serif; }
+.workbench[data-paper-desk] .task strong { color: #2f4a63; }
+.workbench[data-paper-desk] .explanation,
+.workbench[data-paper-desk] .rangeLabel,
+.workbench[data-paper-desk] .liveText { color: #514a43; }
+.workbench[data-paper-desk] .guidance { border-color: rgb(47 74 99 / 24%); background: #e4d7bf; color: #1f1b18; }
+.workbench[data-paper-desk] .guidance p,
+.workbench[data-paper-desk] .guidance li { color: #514a43; }
+.workbench[data-paper-desk] .guidance button { border-color: #2f4a63; background: #2f4a63; color: #f3ebdc; }
+.workbench[data-paper-desk] .valuationSummary { grid-column: 1 / -1; }
+.workbench[data-paper-desk] .valuationSummary table { width: 100%; border-collapse: collapse; color: #1f1b18; font: 500 .9rem/1.4 system-ui, sans-serif; text-align: left; }
+.workbench[data-paper-desk] .valuationSummary caption { padding: 0 0 .45rem; color: #2f4a63; font: 700 1rem/1.3 'Noto Serif TC', Georgia, serif; text-align: left; }
+.workbench[data-paper-desk] .valuationSummary th,
+.workbench[data-paper-desk] .valuationSummary td { padding: .45rem .6rem; border: 1px solid rgb(31 27 24 / 14%); }
+.workbench[data-paper-desk] .valuationSummary thead th { background: #e4d7bf; color: #2f4a63; font-weight: 700; }
+.workbench[data-paper-desk] .valuationSummary tbody th { background: rgb(228 215 191 / 55%); font-weight: 650; }
+.workbench[data-paper-desk] .valuationSummary td { font-variant-numeric: tabular-nums; }
+.workbench[data-paper-desk] .valuationSummary > p { margin: .35rem 0 0; color: #6b625a; font: 500 .76rem/1.4 system-ui, sans-serif; }
+.workbench[data-paper-desk] .reactionPortraits .portrait { border-color: rgb(31 27 24 / 18%); background: #f3ebdc; color: #1f1b18; }
+.workbench[data-paper-desk] .reactionPortraits .portraitRole { color: #6b625a; }
+.workbench[data-paper-desk] .reaction { border-color: #b5372b; background: rgb(181 55 43 / 8%); }
+.workbench[data-paper-desk] .goodRow { border-color: rgb(31 27 24 / 15%); background: #f3ebdc; box-shadow: none; }
+.workbench[data-paper-desk] .goodHeader h3 { color: #1f1b18; }
+.workbench[data-paper-desk] .goodHeader span { color: #2f4a63; }
+.workbench[data-paper-desk] .shareBar { border-color: rgb(31 27 24 / 22%); }
+.workbench[data-paper-desk] .range::-webkit-slider-runnable-track { border-color: rgb(31 27 24 / 18%); background: #d9d0c3; box-shadow: none; }
+.workbench[data-paper-desk] .range::-webkit-slider-thumb { border-color: #f3ebdc; background: #2f4a63; box-shadow: 0 0 0 1px rgb(31 27 24 / 25%); }
+.workbench[data-paper-desk] .range::-moz-range-track { border-color: rgb(31 27 24 / 18%); background: #d9d0c3; }
+.workbench[data-paper-desk] .range::-moz-range-thumb { border-color: #f3ebdc; background: #2f4a63; }
+.workbench[data-paper-desk] .adjustments button { border-color: rgb(47 74 99 / 32%); background: #e4d7bf; color: #1f1b18; }
+.workbench[data-paper-desk] .actions .primary { border-color: #2f4a63 !important; background: #2f4a63 !important; color: #f3ebdc !important; }
+.workbench[data-paper-desk] .actions .return { border-color: rgb(47 74 99 / 50%) !important; background: transparent !important; color: #2f4a63 !important; }
+.workbench[data-paper-desk] .actions button:disabled { opacity: .48; }
+
+@media (min-width: 70rem) and (orientation: landscape) {
   .dossier {
-    min-width: 56rem;
     grid-template-areas:
       'scene task'
       'scene clues'
@@ -167,18 +225,15 @@ button.portrait { cursor: pointer; }
   .dossier > .actions { grid-area: actions; }
 
   .workbench {
-    min-width: 46rem;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: start;
   }
 
   .workbench:has(> fieldset) {
-    min-width: 56rem;
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .workbench[data-act-three-workbench] {
-    min-width: 62rem;
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
@@ -201,6 +256,24 @@ button.portrait { cursor: pointer; }
   .workbench > header > .task { display: none; }
   .workbench > header h2 { flex: 0 0 auto; margin: 0; }
   .workbench > header > .explanation { max-width: 68ch; }
+
+  .workbench[data-paper-desk] > .valuationSummary { grid-column: span 1; align-self: start; }
+  .workbench[data-paper-desk] > .guidance {
+    grid-column: span 2;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: .65rem .8rem;
+  }
+  .workbench[data-paper-desk] > .guidance ol {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .4rem;
+    padding: 0;
+    list-style: none;
+  }
+  .workbench[data-paper-desk] > .guidance li { padding: .35rem .5rem; border-left: 2px solid rgb(47 74 99 / 38%); background: rgb(243 235 220 / 72%); }
+  .workbench[data-paper-desk] > .guidance button { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
 
   .reactionStage {
     grid-template-columns: minmax(0, 1fr) minmax(12rem, .7fr);

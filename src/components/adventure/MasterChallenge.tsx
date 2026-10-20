@@ -125,10 +125,10 @@ export function MasterChallenge({
         <h3 id="challenge-completion-title">{copy.completionHeading}</h3>
         <p>{challenge.status === 'completed' ? copy.completed : copy.notCompleted}</p>
         <p>{challenge.reachedFrontier ? copy.frontierReached : copy.frontierNotReached}</p>
-        {challenge.reachedFrontier ? (
+        {challenge.status === 'completed' ? (
           <div>
-            <PortraitCard locale={locale} characterId="master-zhou" expression="pleased" presentation="workbench" name={zhou.name} role={zhou.role} />
-            <p>{copy.frontierDialogue}</p>
+            {challenge.reachedFrontier ? <PortraitCard locale={locale} characterId="master-zhou" expression="pleased" presentation="workbench" name={zhou.name} role={zhou.role} /> : null}
+            <p>{copy.completionDialogue}</p>
           </div>
         ) : null}
         <p>{challenge.masterSeal ? copy.sealAwarded : copy.sealUnavailable}</p>

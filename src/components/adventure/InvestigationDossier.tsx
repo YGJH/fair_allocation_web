@@ -64,11 +64,11 @@ export function InvestigationDossier({ locale, discoveredClueIds, onDiscoverClue
 
   function activateClue(clueId: ActOneClueId) {
     onDiscoverClue(clueId);
-    setActiveClueId((current) => current === clueId ? null : clueId);
+    setActiveClueId(clueId);
   }
 
   return (
-    <section className={styles.dossier} aria-labelledby="investigation-dossier-title" data-investigation-dossier>
+    <section className={styles.dossier} aria-labelledby="investigation-dossier-title" data-investigation-dossier data-paper-desk>
       <ScenePlate
         locale={locale}
         name={copy.scene.name}
@@ -78,7 +78,7 @@ export function InvestigationDossier({ locale, discoveredClueIds, onDiscoverClue
         hotspotsLabel={copy.sceneCluesLabel}
         hotspots={[{
           id: 'clue-yiwu-original-ruling',
-          label: copy.clues['clue-yiwu-original-ruling'].title,
+          label: copy.sceneClueHotspot,
           onActivate: () => activateClue('clue-yiwu-original-ruling'),
         }]}
       >
@@ -126,11 +126,17 @@ export function InvestigationDossier({ locale, discoveredClueIds, onDiscoverClue
           const isDiscovered = discovered.has(clueId);
           return (
             <li className={styles.clue} key={clueId} data-recorded={isDiscovered ? 'true' : 'false'}>
-              <div className={styles.clueButton}>
+              <button
+                type="button"
+                className={styles.clueButton}
+                aria-label={clue.title}
+                aria-describedby={`clue-state-${clueId}`}
+                aria-pressed={activeClueId === clueId}
+                onClick={() => activateClue(clueId)}
+              >
                 <span>{clue.title}</span>
-                <small>{isDiscovered ? copy.discoveredLabel : copy.undiscoveredLabel}</small>
-              </div>
-              {isDiscovered ? <div className={styles.clueBody}><p><strong>{clue.speaker}</strong></p><p><q>{clue.text}</q></p></div> : null}
+                <small id={`clue-state-${clueId}`}>{isDiscovered ? copy.discoveredLabel : copy.undiscoveredLabel}</small>
+              </button>
             </li>
           );
         })}

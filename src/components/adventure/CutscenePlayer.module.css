@@ -266,6 +266,7 @@
 .sequenceShell { grid-template-rows: minmax(0, 1fr) auto; gap: .45rem; padding: clamp(.4rem, 1vw, .8rem); }
 .sequenceFrame { position: relative; min-height: 0; overflow: hidden; background: #100d0a; aspect-ratio: 16 / 9; justify-self: center; height: 100%; max-width: 100%; }
 .sequenceImage { display: block; width: 100%; height: 100%; object-fit: cover; transform-origin: var(--focus-x, 50%) var(--focus-y, 50%); }
+.standaloneImage { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; transform-origin: var(--focus-x, 50%) var(--focus-y, 50%); }
 .motion_push_in { animation: sequence-push-in var(--sequence-duration) linear both; }
 .motion_pull_out { animation: sequence-pull-out var(--sequence-duration) linear both; }
 .motion_pan_left { animation: sequence-pan-left var(--sequence-duration) linear both; }
@@ -292,7 +293,8 @@
 @media (prefers-reduced-motion: reduce) {
   .player *,
   .staticFallback *,
-  .sequenceShell * {
+  .sequenceShell *,
+  .standaloneImage {
     scroll-behavior: auto !important;
     transition: none !important;
     animation: none !important;

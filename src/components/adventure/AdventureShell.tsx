@@ -34,11 +34,11 @@ import {
   initialCampaignState,
 } from '../../narrative/state-machine';
 import type { ActOneRecord, ActTwoRecord, ActThreeRecord, CampaignAllocation, CampaignVerdict } from '../../narrative/types';
-import { type AuthoredCutsceneSlot, type AvailableCutsceneSlot } from '../../narrative/media-manifest';
+import { getCutsceneStill, type AuthoredCutsceneSlot, type AvailableCutsceneSlot } from '../../narrative/media-manifest';
 import { AdventureDialog } from './AdventureDialog';
 import { AllocationWorkbench } from './AllocationWorkbench';
 import { InvestigationDossier } from './InvestigationDossier';
-import { CutscenePlayer } from './CutscenePlayer';
+import { AnimaticStill, CutscenePlayer } from './CutscenePlayer';
 import { GameStage } from './GameStage';
 import { JudgmentGate } from './JudgmentGate';
 import { CaseScrollDebrief } from './CaseScrollDebrief';
@@ -79,6 +79,8 @@ function verdictForAllocation(allocation: CampaignAllocation, act: 1 | 2 | 3 = 1
 
 export function AdventureShell({ locale }: { locale: Locale }) {
   const messages = getAdventureCopy(locale);
+  const cs01TitleStill = getCutsceneStill('cs-01', 0);
+  const cs01IntroStill = getCutsceneStill('cs-01', 1);
   const rebuiltTitleId = useId();
   const rebuiltDescriptionId = useId();
   const restartTitleId = useId();
@@ -364,7 +366,7 @@ export function AdventureShell({ locale }: { locale: Locale }) {
                     </button>
                   </div>
                   <figure className={styles.storyImage}>
-                    <img src="/adventure/animatics/cs-01/cs-01-s1.jpg" width={2752} height={1536} alt={messages.transcript.cs01Scene} />
+                    {cs01TitleStill ? <AnimaticStill segment={cs01TitleStill} layout="standalone" alt={messages.transcript.cs01Scene} /> : null}
                     <figcaption>{messages.transcript.cs01Scene}</figcaption>
                   </figure>
                 </section>
@@ -380,37 +382,83 @@ export function AdventureShell({ locale }: { locale: Locale }) {
                     </button>
                   </div>
                   {campaign.act === 1 ? <figure className={styles.storyImage}>
-                    <img src="/adventure/animatics/cs-01/cs-01-s2.jpg" width={2752} height={1536} alt={messages.transcript.cs01Scene} />
+                    {cs01IntroStill ? <AnimaticStill segment={cs01IntroStill} layout="standalone" alt={messages.transcript.cs01Scene} /> : null}
                     <figcaption><strong>{messages.transcript.cs01Location}</strong><span>{messages.transcript.cs01Scene}</span></figcaption>
                   </figure> : null}
                 </section>
               ) : campaign.phase === 'investigation' || campaign.phase === 'allocation' ? (
-                <section className={`${styles.boundaryPanel} ${styles.caseDeskPanel}`} aria-labelledby="case-desk-title" data-case-desk>
+                <section className={`${styles.boundaryPanel} ${styles.caseDeskPanel}`} aria-labelledby="case-desk-title" data-case-desk data-act-one-case={campaign.act === 1 ? 'true' : undefined}>
                   <header className={styles.caseDeskHeader}>
                     <div>
                       <p className={styles.eyebrow}>{campaign.act === 1 ? messages.shell.introTitle : campaign.act === 2 ? messages.actTwo.taskLabel : messages.actThree.taskLabel}</p>
                       <h1 ref={phaseHeadingRef} tabIndex={-1} id="case-desk-title">{campaign.act === 1 ? messages.shell.boundaryTitle : campaign.act === 2 ? messages.actTwo.allocationHeading : messages.actThree.allocationHeading}</h1>
                     </div>
-                    <p className={styles.caseDeskStatus}>{clueProgress.complete ? '✓' : `${clueProgress.found}/${clueProgress.total}`}</p>
+                    <p className={styles.caseDeskStatus}>{campaign.act === 1
+                      ? campaign.phase === 'investigation' ? messages.investigation.taskProgress(clueProgress.found, clueProgress.total) : messages.investigation.caseDesk.complete
+                      : clueProgress.complete ? '✓' : `${clueProgress.found}/${clueProgress.total}`}</p>
                   </header>
-                  <div className={styles.caseDeskGrid}>
-                    <div className={styles.caseFile}>
-                      {campaign.act === 2 ? <ActTwoInvestigation locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} hideStartAction /> : campaign.act === 3 ? <ActThreeInvestigation locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} hideStartAction /> : <InvestigationDossier locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} hideStartAction />}
-                    </div>
-                    <div className={styles.caseWorkbench}>
-                      {campaign.act === 3 ? <ActThreeWorkbench locale={locale} allocation={campaign.draftAllocation} canLock={clueProgress.complete && selectCanStartAllocation({ ...campaign, phase: 'investigation' })} onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })} onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })} onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })} integrated /> : <AllocationWorkbench
-                        act={campaign.act as 1 | 2}
-                        locale={locale}
-                        allocation={campaign.draftAllocation}
-                        canLock={clueProgress.complete && selectCanStartAllocation({ ...campaign, phase: 'investigation' })}
-                        guidanceCompleted={recall.firstUseGuidanceCompleted}
-                        onCompleteGuidance={() => setRecall((current) => ({ ...current, firstUseGuidanceCompleted: true }))}
-                        onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })}
-                        onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })}
-                        onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })}
-                        integrated
-                      />}
-                    </div>
+                  {campaign.act === 1 ? (
+                    <ol className={styles.caseDeskSteps} aria-label={messages.investigation.caseDesk.progressLabel}>
+                      <li data-complete={campaign.phase === 'allocation' ? 'true' : undefined} aria-current={campaign.phase === 'investigation' ? 'step' : undefined}>
+                        <span>1</span>
+                        <div><strong>{messages.investigation.caseDesk.investigationStep}</strong><small>{campaign.phase === 'investigation' ? messages.investigation.caseDesk.investigationHint : messages.investigation.caseDesk.complete}</small></div>
+                      </li>
+                      <li data-current={campaign.phase === 'allocation' ? 'true' : undefined} aria-current={campaign.phase === 'allocation' ? 'step' : undefined}>
+                        <span>2</span>
+                        <div><strong>{messages.investigation.caseDesk.allocationStep}</strong><small>{messages.investigation.caseDesk.allocationHint}</small></div>
+                      </li>
+                    </ol>
+                  ) : null}
+                  <div className={styles.caseDeskGrid} data-act-one-stage={campaign.act === 1 ? campaign.phase : undefined}>
+                    {campaign.act === 1 ? campaign.phase === 'investigation' ? (
+                      <div className={styles.caseFile}>
+                        <InvestigationDossier
+                          locale={locale}
+                          discoveredClueIds={campaign.discoveredClueIds}
+                          onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })}
+                          onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })}
+                        />
+                      </div>
+                    ) : (
+                      <div className={`${styles.caseWorkbench} ${styles.caseWorkbenchWide}`}>
+                        <AllocationWorkbench
+                          act={1}
+                          locale={locale}
+                          allocation={campaign.draftAllocation}
+                          canLock={clueProgress.complete}
+                          guidanceCompleted={recall.firstUseGuidanceCompleted}
+                          onCompleteGuidance={() => setRecall((current) => ({ ...current, firstUseGuidanceCompleted: true }))}
+                          onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })}
+                          onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })}
+                          onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })}
+                          paperMode
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <div className={styles.caseFile}>
+                          {campaign.act === 2
+                            ? <ActTwoInvestigation locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} hideStartAction />
+                            : <ActThreeInvestigation locale={locale} discoveredClueIds={campaign.discoveredClueIds} onDiscoverClue={(clueId) => dispatch({ type: 'DISCOVER_CLUE', clueId })} onStartAllocation={() => dispatch({ type: 'START_ALLOCATION' })} hideStartAction />}
+                        </div>
+                        <div className={styles.caseWorkbench}>
+                          {campaign.act === 3
+                            ? <ActThreeWorkbench locale={locale} allocation={campaign.draftAllocation} canLock={clueProgress.complete && selectCanStartAllocation({ ...campaign, phase: 'investigation' })} onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })} onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })} onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })} integrated />
+                            : <AllocationWorkbench
+                              act={2}
+                              locale={locale}
+                              allocation={campaign.draftAllocation}
+                              canLock={clueProgress.complete && selectCanStartAllocation({ ...campaign, phase: 'investigation' })}
+                              guidanceCompleted={recall.firstUseGuidanceCompleted}
+                              onCompleteGuidance={() => setRecall((current) => ({ ...current, firstUseGuidanceCompleted: true }))}
+                              onChange={(allocation) => dispatch({ type: 'SET_DRAFT_ALLOCATION', allocation })}
+                              onLock={() => dispatch({ type: 'LOCK_INITIAL_VERDICT' })}
+                              onReturn={() => dispatch({ type: 'RETURN_TO_INVESTIGATION' })}
+                              integrated
+                            />}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </section>
               ) : campaign.phase === 'intuition-rating' ? (

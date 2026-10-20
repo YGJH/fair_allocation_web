@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { InvestigationDossier } from '../src/components/adventure/InvestigationDossier';
 import { ScenePlate } from '../src/components/adventure/ScenePlate';
@@ -18,10 +18,11 @@ describe('Act I investigation', () => {
     const onDiscover = vi.fn();
     const onStart = vi.fn();
     const view = render(<InvestigationDossier locale="en" discoveredClueIds={[]} onDiscoverClue={onDiscover} onStartAllocation={onStart} />);
+    const people = within(view.container.querySelector('[aria-label="People in the case"]') as HTMLElement);
 
-    expect(screen.getByRole('button', { name: 'Enter allocation workbench' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Continue to allocation' }).hasAttribute('disabled')).toBe(true);
     for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
-      fireEvent.click(screen.getByRole('button', { name: new RegExp(name) }));
+      fireEvent.click(people.getByRole('button', { name: new RegExp(name) }));
       expect(onDiscover).toHaveBeenCalledTimes(['Chen Shouye', 'Chen Congzheng', 'Chen Elder'].indexOf(name) + 1);
       expect(view.container.querySelector('.portraitImage, img[src*="/adventure/portraits/"]')?.getAttribute('src')).toContain('/adventure/portraits/');
       expect(screen.queryByRole('button', { name: 'Recorded' })).toBeNull();
@@ -32,7 +33,7 @@ describe('Act I investigation', () => {
     expect(screen.queryByRole('button', { name: /Interview/ })).toBeNull();
 
     view.rerender(<InvestigationDossier locale="en" discoveredClueIds={[...clueIds]} onDiscoverClue={onDiscover} onStartAllocation={onStart} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Enter allocation workbench' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continue to allocation' }));
     expect(onStart).toHaveBeenCalledTimes(1);
   });
 

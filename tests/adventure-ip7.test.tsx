@@ -1,11 +1,13 @@
 /** @vitest-environment jsdom */
-import { render, screen } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, test } from 'vitest';
 import { MasterChallenge } from '../src/components/adventure/MasterChallenge';
 import { PerformanceLedger } from '../src/components/adventure/PerformanceLedger';
 import { ACT_ONE_DEFINITION } from '../src/narrative/campaign-definition';
 import { campaignReducer, initialCampaignState } from '../src/narrative/state-machine';
 import type { ActOneRecord } from '../src/narrative/types';
+
+afterEach(cleanup);
 
 function completedState() {
   let state = initialCampaignState();
@@ -35,6 +37,17 @@ describe('IP-7 Act I handoff', () => {
     render(<MasterChallenge locale="en" challenge={state.challenge} onChange={() => {}} onHint={() => {}} onSubmit={() => {}} onSkip={() => {}} onLeave={() => {}} />);
     expect(screen.getAllByText(/younger brother chooses Bundle B/).length).toBe(2);
     expect(screen.getByText(/found the authored solution/)).toBeTruthy();
+  });
+
+  test('shows the scripted Cut-and-Choose conclusion after a safe split even without the Master Seal', () => {
+    let state = completedState();
+    state = campaignReducer(state, { type: 'SET_CHALLENGE_ALLOCATION', allocation: ACT_ONE_DEFINITION.demonstrations.halfSplit });
+    state = campaignReducer(state, { type: 'SUBMIT_CHALLENGE' });
+    expect(state.challenge.status).toBe('completed');
+    expect(state.challenge.reachedFrontier).toBe(false);
+
+    render(<MasterChallenge locale="en" challenge={state.challenge} onChange={() => {}} onHint={() => {}} onSubmit={() => {}} onSkip={() => {}} onLeave={() => {}} />);
+    expect(screen.getByText(/divider receives only five shares/)).toBeTruthy();
   });
 
   test('stage three hint disqualifies the seal, while a completed challenge remains complete until edited', () => {

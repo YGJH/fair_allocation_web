@@ -8,10 +8,12 @@ test('CS-04 opens the playable Act II investigation and CS-06 hands off to the p
   await page.getByRole('button', { name: 'Skip cutscene' }).click();
   await page.getByRole('button', { name: 'Open the first case' }).click();
   await page.getByRole('button', { name: 'Begin investigation' }).click();
+  const people = page.locator('[aria-label="People in the case"]');
   for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
-    await page.getByRole('button', { name: new RegExp(`^${name}`) }).click();
+    await people.getByRole('button', { name: new RegExp(`^${name}`) }).click();
   }
   await page.getByRole('button', { name: 'The original Yiwu ruling', exact: true }).click();
+  await page.getByRole('button', { name: 'Continue to allocation' }).click();
   await page.getByRole('button', { name: 'Lock Initial Verdict' }).click();
   await page.getByRole('button', { name: 'Show the whole scroll' }).click();
   await page.getByRole('button', { name: 'Accept Initial Verdict' }).click();

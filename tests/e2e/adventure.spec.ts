@@ -82,13 +82,15 @@ async function completeActThree(
   await expect(page.evaluate(() => JSON.parse(localStorage.getItem('settled-shares-campaign-v2')!).recall.watchedCutsceneSlots)).resolves.toEqual(expect.arrayContaining(['cs-07', 'cs-08', expectedSlot]));
 }
 
-async function openFirstCaseAndCompleteInvestigation(page: import('@playwright/test').Page) {
+async function openFirstCaseAndCompleteInvestigation(page: import('@playwright/test').Page, proceedToAllocation = true) {
   await page.getByRole('button', { name: 'Open the first case' }).click();
   await page.getByRole('button', { name: 'Begin investigation' }).click();
+  const people = page.locator('[aria-label="People in the case"]');
   for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
-    await page.getByRole('button', { name: new RegExp(`^${name}`) }).click();
+    await people.getByRole('button', { name: new RegExp(`^${name}`) }).click();
   }
   await page.getByRole('button', { name: 'The original Yiwu ruling', exact: true }).click();
+  if (proceedToAllocation) await page.getByRole('button', { name: 'Continue to allocation' }).click();
 }
 
 async function reachFinalVerdict(page: import('@playwright/test').Page) {
@@ -182,7 +184,7 @@ async function reachActThreeIntro(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Continue' }).click();
 }
 
-test('Act I Case Desk integrates valuations, allocation adjustment, and verdict submission before intuition rating', async ({ page }) => {
+test('Act I Case Desk guides the player from evidence to allocation before locking an Initial Verdict', async ({ page }) => {
   const clientDiagnostics: string[] = [];
   page.on('console', (message) => {
     if (message.type() === 'warning' || message.type() === 'error') {
@@ -196,27 +198,29 @@ test('Act I Case Desk integrates valuations, allocation adjustment, and verdict 
 
   await page.getByRole('button', { name: 'Begin campaign' }).click();
   await page.getByRole('button', { name: 'Skip cutscene' }).click();
-  await openFirstCaseAndCompleteInvestigation(page);
+  await openFirstCaseAndCompleteInvestigation(page, false);
   const dossier = page.locator('[data-investigation-dossier]');
-  await expect.poll(() => dossier.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(2);
+  await expect(dossier).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue to allocation' })).toBeEnabled();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(667);
 
   const caseDesk = page.locator('[data-case-desk]');
+  await page.getByRole('button', { name: 'Continue to allocation' }).click();
   const workbench = caseDesk.locator('[data-allocation-workbench]');
+  await expect(page.locator('[data-adventure-v2]')).toHaveAttribute('data-phase', 'allocation');
+  await expect(workbench.getByRole('table', { name: 'What each brother values' })).toBeVisible();
   await expect(caseDesk).toContainText('Chen Shouye');
   await expect(caseDesk).toContainText('Paddy fields');
   await expect(page.getByRole('button', { name: 'Enter allocation workbench' })).toHaveCount(0);
-  await expect(page.locator('[data-adventure-v2]')).toHaveAttribute('data-phase', 'investigation');
-  await expect.poll(() => workbench.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(3);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(667);
   const paddy = caseDesk.getByRole('slider', { name: /Paddy fields:/ });
   const paddyBefore = await paddy.inputValue();
   await paddy.focus();
   await paddy.press('ArrowRight');
   await expect(paddy).not.toHaveValue(paddyBefore);
-  const workbenchPanel = workbench.locator('..');
   const lockInitialVerdict = caseDesk.getByRole('button', { name: 'Lock Initial Verdict' });
   await lockInitialVerdict.scrollIntoViewIfNeeded();
-  await expect.poll(() => workbenchPanel.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await expect.poll(() => caseDesk.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   await expect(lockInitialVerdict).toBeVisible();
   await lockInitialVerdict.click();
 
@@ -249,10 +253,12 @@ test('keyboard controls can complete the first-act path without pointer input', 
   await activate(page.getByRole('button', { name: 'Skip cutscene' }));
   await activate(page.getByRole('button', { name: 'Open the first case' }));
   await activate(page.getByRole('button', { name: 'Begin investigation' }));
+  const people = page.locator('[aria-label="People in the case"]');
   for (const name of ['Chen Shouye', 'Chen Congzheng', 'Chen Elder']) {
-    await activate(page.getByRole('button', { name: new RegExp(`^${name}`) }));
+    await activate(people.getByRole('button', { name: new RegExp(`^${name}`) }));
   }
   await activate(page.getByRole('button', { name: 'The original Yiwu ruling', exact: true }));
+  await activate(page.getByRole('button', { name: 'Continue to allocation' }));
   await activate(page.getByRole('button', { name: 'Lock Initial Verdict' }));
   await activate(page.getByRole('button', { name: 'Show the whole scroll' }));
   await activate(page.getByRole('button', { name: 'Accept Initial Verdict' }));

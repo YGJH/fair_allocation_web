@@ -295,6 +295,15 @@ export interface AdventureMessages {
     readonly taskProgress: (found: number, total: number) => string;
     readonly taskIncomplete: string;
     readonly enterAllocation: string;
+    readonly sceneClueHotspot: string;
+    readonly caseDesk: {
+      readonly progressLabel: string;
+      readonly investigationStep: string;
+      readonly investigationHint: string;
+      readonly allocationStep: string;
+      readonly allocationHint: string;
+      readonly complete: string;
+    };
     readonly peopleLabel: string;
     readonly sceneCluesLabel: string;
     readonly discoveredLabel: string;
@@ -328,6 +337,10 @@ export interface AdventureMessages {
       readonly heading: string;
       readonly instructions: string;
       readonly revisionInstructions: string;
+      readonly valuationHeading: string;
+      readonly goodLabel: string;
+      readonly valuePoints: (value: number) => string;
+      readonly valuationNote: string;
       readonly goodNames: { readonly 'paddy-field': string; readonly 'oil-tea-hillside': string; readonly silver: string };
       readonly partyNames: {
         readonly 'chen-shouye': { readonly name: string; readonly role: string };
@@ -421,7 +434,7 @@ export interface AdventureMessages {
     readonly completed: string;
     readonly notCompleted: string;
     readonly frontierReached: string;
-    readonly frontierDialogue: string;
+    readonly completionDialogue: string;
     readonly frontierNotReached: string;
     readonly sealAwarded: string;
     readonly sealUnavailable: string;
@@ -686,7 +699,16 @@ export const adventureZhTW: AdventureMessages = {
     taskLabel: '搜證任務',
     taskProgress: (found, total) => `必要線索 ${found}/${total}`,
     taskIncomplete: '四項必要線索尚未齊全。請先逐一詢問並讀過案卷，才能進入分配案台。',
-    enterAllocation: '進入分配案台',
+    enterAllocation: '前往分配家產',
+    sceneClueHotspot: '查看案上的縣判原卷',
+    caseDesk: {
+      progressLabel: '案件流程',
+      investigationStep: '聽取陳述',
+      investigationHint: '詢問三位當事人，並查看義烏縣原判。',
+      allocationStep: '分配家產',
+      allocationHint: '依兩兄弟各自看重的家產分配十成。',
+      complete: '已完成',
+    },
     peopleLabel: '案中人物',
     sceneCluesLabel: '場景線索',
     discoveredLabel: '已記入',
@@ -714,12 +736,12 @@ export const adventureZhTW: AdventureMessages = {
       'clue-chen-shouye-valuations': {
         title: '陳守業的估值',
         speaker: '陳守業',
-        text: '二十畝田養七口人剛剛好，劈走十畝，就得餓死兩個。這田在小人心裡值 60 分。山場和銀子，各算 20 分罷。',
+        text: '老爺，小人不懂律。小人只曉得，二十畝田養七口人剛剛好，劈走十畝，就得餓死兩個。這田在小人心裡值 60 分。山場和銀子，各算 20 分罷——銀子是好東西，可銀子種不出稻子。',
       },
       'clue-chen-congzheng-valuations': {
         title: '陳從征的估值',
         speaker: '陳從征',
-        text: '水田是下不去了，頂多值 20 分。我要的是銀子——60 分；山場嘛，20 分，有也好。',
+        text: '大人，我這條腿是在薊鎮牆子嶺凍壞的，水田是下不去了。分我十畝田，我只能佃給別人，一年收不回幾斗租，頂多值 20 分。我要的是銀子——60 分。城西有間鐵匠鋪要盤出去，我在營裡修了八年鳥銃，這手藝餓不死人。山場嘛，20 分，有也好。',
       },
       'clue-chen-elder-equal-split': {
         title: '陳老太公說明原判',
@@ -734,8 +756,12 @@ export const adventureZhTW: AdventureMessages = {
     },
     allocation: {
       heading: '分配案台',
-      instructions: '三種家產各十成。調整一方時，另一方會保留總數十成；請先憑直覺提出初判。',
+      instructions: '每項家產共十成。滑桿設定哥哥所得，弟弟取得餘額。先憑直覺分配，指標稍後揭曉。',
       revisionInstructions: '初判會固定在旁供你比較。調整改判草案時，分秤與其他正式工具會即時更新；鎖定定讞後，整份記錄便會凍結。',
+      valuationHeading: '兩兄弟眼中的家產價值',
+      goodLabel: '家產',
+      valuePoints: (value) => `${value} 分`,
+      valuationNote: '分數是兄弟各自的主觀看法，不是市價。',
       goodNames: { 'paddy-field': '水田', 'oil-tea-hillside': '油茶山場', silver: '現銀' },
       partyNames: {
         'chen-shouye': { name: '陳守業', role: '兄' },
@@ -753,11 +779,11 @@ export const adventureZhTW: AdventureMessages = {
       requiredCluesExplanation: '請先完成四項必要線索，才能鎖定初判。',
       guidance: {
         title: '第一次使用案台',
-        body: '先問清楚各自所重，再選家產、調整成數，最後鎖定初判。',
-        ask: '詢問兄弟各自看重哪一項家產。',
-        chooseGood: '選擇要調整的家產。',
-        adjustShares: '用分配桿或加減按鈕調整十成。',
-        lock: '四項線索都記入後，鎖定初判。',
+        body: '滑桿設定哥哥的份額，弟弟取得其餘；也可返回上一步重看證詞。',
+        ask: '參照兄弟各自說出的估值。',
+        chooseGood: '設定分給哥哥的成數。',
+        adjustShares: '拖動分配桿，或用方向鍵調整。',
+        lock: '分好三項家產後鎖定初判。',
         dismiss: '知道了',
       },
     },
@@ -777,7 +803,7 @@ export const adventureZhTW: AdventureMessages = {
       utilityDetails: '書吏如何相加各人的主觀估值',
       utilityFormula: '對每一人而言，效用是 uᵢ(Aᵢ) = Σ vᵢ(g)：把他親口說出的各項家產價值，逐項相加到自己所得的那一份。',
       shareTitle: '得其分 · 比例公平',
-      shareLead: '分秤要問的是：兄弟各自有沒有拿到自己認定的家產應得之分。',
+      shareLead: '周先生取出兩根刻著十成的竹籤：「先別管東西是怎麼分的，只問他本人一句：全部家產算十成，你覺得自己拿到了幾成？兩個人分家，拿到五成以上，就不算吃虧。這叫得其分。大人看看，您這一判，兩根籤各停在幾成？」原判每樣對半，兄弟各得五成；若把水田分給弟弟、現銀分給哥哥，山場仍對半，兩人各只得三成；水田給哥哥、現銀給弟弟、山場對半，兄弟各得七成，也互不嫉妒。周先生又道：「田還是那些田，銀子一兩也沒多。每樣對半分，兩人各拿五成；各拿各想要的，兩人各拿七成。多出來的這些，不是變出來的，是因為有人肯先問一句：你到底想要什麼。」',
       shareDetails: '兩人分家時，每人認定的自己所得，至少要達到全部家產價值的一半：vᵢ(Aᵢ) ≥ vᵢ(M)/2。',
       envyTitle: '嫉妒 · EF 無嫉妒',
       envyLead: '再把各自的所得，和對方那一份放在一起比較。',
@@ -810,7 +836,7 @@ export const adventureZhTW: AdventureMessages = {
   masterChallenge: {
     eyebrow: '巧解挑戰',
     heading: '我分你選',
-    body: '把三種可分割家產分成甲、乙兩堆，由弟弟先挑；分的人拿另一堆。',
+    body: '鄉下分家還有個老辦法，不用官府：一個人把家產分成兩堆，另一個人先挑。分的人怕對方把好的那堆挑走，只好把兩堆分得一樣重。大人試試看，替哥哥守業分成兩堆。',
     assignmentDefinition: '每項家產共十成。分堆與弟弟的選擇，會和挑戰是否完成分開顯示。',
     assignmentLabel: '分堆分配',
     bundleA: '甲堆',
@@ -829,7 +855,7 @@ export const adventureZhTW: AdventureMessages = {
     completed: '這份分配達到得其分的條件，挑戰完成。',
     notCompleted: '這份分配尚未達到得其分的條件。',
     frontierReached: '已找到本案的巧解。',
-    frontierDialogue: '周先生：「大人您看，田還是那些田，銀子一兩也沒多。每樣對半分，兩人各拿五成；各拿各想要的，兩人各拿七成。多出來的這些，不是變出來的，是因為有人肯先問一句：你到底想要什麼。」',
+    completionDialogue: '周先生：「這個辦法，保證沒有人吃虧，可是分的人只拿得到五成——他不知道弟弟要什麼，不敢冒險。要讓兩邊都拿七成，得有人把兩個人的心思都問清楚。大人，那個人就是您。」',
     frontierNotReached: '這份分法還有改進餘地。',
     sealAwarded: '已蓋巧字印。',
     sealUnavailable: '這次不蓋巧字印。',

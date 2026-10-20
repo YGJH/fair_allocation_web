@@ -207,6 +207,12 @@ export const cutsceneManifest: Readonly<Record<AuthoredCutsceneSlot, CutsceneMan
   'cs-14': staticEntry('cs-14', cs14TranscriptKeys),
 };
 
+export function getCutsceneStill(slot: AvailableCutsceneSlot, stillIndex: number): StillSegment | undefined {
+  const media = cutsceneManifest[slot].media;
+  if (media.kind !== 'sequence') return undefined;
+  return media.segments.filter((segment): segment is StillSegment => segment.kind === 'still')[stillIndex];
+}
+
 export type PortraitAsset = {
   readonly characterId: CharacterId;
   readonly expression: PortraitExpression;

@@ -18,6 +18,7 @@ import {
   type CutsceneManifestEntry,
   type DialogueLineDefinition,
   type SequenceCutsceneMedia,
+  type StillSegment,
   type StillMotion,
 } from '../../narrative/media-manifest';
 import type { CampaignSettings } from '../../narrative/persistence';
@@ -49,6 +50,38 @@ function motionStyle(motion: StillMotion, durationSeconds: number): CSSPropertie
     return { ...base, '--focus-x': `${motion.focus.x * 100}%`, '--focus-y': `${motion.focus.y * 100}%` };
   }
   return base;
+}
+
+export function AnimaticStill({
+  segment,
+  alt,
+  layout = 'frame',
+  reducedMotion = false,
+  onError,
+}: {
+  readonly segment: StillSegment;
+  readonly alt: string;
+  readonly layout?: 'frame' | 'standalone';
+  readonly reducedMotion?: boolean;
+  readonly onError?: () => void;
+}) {
+  const motionClass = reducedMotion || segment.motion.kind === 'hold'
+    ? ''
+    : styles[`motion_${segment.motion.kind.replace('-', '_')}`];
+  const imageClass = layout === 'frame' ? styles.sequenceImage : styles.standaloneImage;
+
+  return (
+    <img
+      className={`${imageClass} ${motionClass}`.trim()}
+      data-motion={segment.motion.kind}
+      style={motionStyle(segment.motion, segment.durationSeconds)}
+      src={segment.imageSrc}
+      width={2752}
+      height={1536}
+      alt={alt}
+      onError={onError}
+    />
+  );
 }
 
 function localizeDialogueLine(line: DialogueLineDefinition, messages: AdventureMessages): NarrativeDialogueLine {
@@ -203,18 +236,13 @@ function SequencePlayer({
   }
 
   const activeOverlays = segment.overlays?.filter(({ startSeconds, endSeconds }) => elapsedSeconds >= startSeconds && elapsedSeconds < endSeconds) ?? [];
-  const motionClass = reducedMotion ? '' : styles[`motion_${segment.motion.kind.replace('-', '_')}`];
   return (
     <section className={styles.sequenceShell} data-segment="still">
       <div className={styles.sequenceFrame} data-reduced-motion={reducedMotion ? 'true' : 'false'}>
-        <img
-          className={`${styles.sequenceImage} ${motionClass}`}
-          data-motion={segment.motion.kind}
-          style={motionStyle(segment.motion, segment.durationSeconds)}
-          src={segment.imageSrc}
-          width={2752}
-          height={1536}
+        <AnimaticStill
+          segment={segment}
           alt={messages.transcript[segment.altKey]}
+          reducedMotion={reducedMotion}
           onError={onFallback}
         />
         {subtitles ? activeOverlays.map((overlay) => (

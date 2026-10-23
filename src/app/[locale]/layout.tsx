@@ -22,7 +22,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               <span>{t.homeTitle}</span>
             </Link>
             <nav className="site-nav" aria-label={l === 'en' ? 'Main navigation' : '主選單'}>
-              <Link className="nav-research" href={`/${l}/research`}>{t.researchNav}</Link>
+              <a className="nav-research" href="https://ygjh.github.io/fair_allocation_blog/">{t.researchNav}</a>
               <LanguageSwitch locale={l} />
             </nav>
           </div>

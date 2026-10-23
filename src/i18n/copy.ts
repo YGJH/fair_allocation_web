@@ -5,6 +5,7 @@ export const copy = {
     siteTagline: 'A hands-on guide to dividing things fairly',
     languageName: 'English',
     otherLanguage: '繁體中文',
+    researchNav: 'Research',
     navCase: 'Explore the case',
     judgeExample: 'Open allocation lab',
 
@@ -253,6 +254,7 @@ export const copy = {
     siteTagline: '動手探索如何公平分配',
     languageName: '繁體中文',
     otherLanguage: 'English',
+    researchNav: '研究文章',
     navCase: '探索案例',
     judgeExample: '進入分配實驗',
 

@@ -43,6 +43,66 @@ test('items can be assigned with the visible tap interaction', () => {
   expect(screen.getByRole('button', { name: /^x\./i }).closest('.agent-drop-zone')?.textContent).toMatch(/A/);
 });
 
+function touchAt(x: number, y: number) {
+  return { identifier: 1, clientX: x, clientY: y };
+}
+
+test('touch press-and-hold drags an item to a person', () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('scrollBy', vi.fn());
+  try {
+    render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);
+    const token = screen.getByRole('button', { name: /^x\./i });
+    const zone = screen.getByRole('button', { name: 'Place here: B' }).closest('[data-drop-agent]') as HTMLElement;
+    document.elementFromPoint = vi.fn(() => zone);
+
+    fireEvent.touchStart(token, { touches: [touchAt(10, 10)], changedTouches: [touchAt(10, 10)] });
+    vi.advanceTimersByTime(250);
+    expect(token.dataset.dragging).toBe('true');
+    const moved = fireEvent.touchMove(token, { cancelable: true, touches: [touchAt(10, 300)], changedTouches: [touchAt(10, 300)] });
+    expect(moved).toBe(false);
+    fireEvent.touchEnd(token, { cancelable: true, touches: [], changedTouches: [touchAt(10, 300)] });
+
+    expect((screen.getByLabelText('x owner') as HTMLSelectElement).value).toBe('1');
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('a touch swipe on an item scrolls instead of dragging', () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('scrollBy', vi.fn());
+  try {
+    render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);
+    const token = screen.getByRole('button', { name: /^x\./i });
+    document.elementFromPoint = vi.fn(() => null);
+
+    fireEvent.touchStart(token, { touches: [touchAt(10, 10)], changedTouches: [touchAt(10, 10)] });
+    const moved = fireEvent.touchMove(token, { cancelable: true, touches: [touchAt(10, 80)], changedTouches: [touchAt(10, 80)] });
+    vi.advanceTimersByTime(250);
+    fireEvent.touchEnd(token, { cancelable: true, touches: [], changedTouches: [touchAt(10, 80)] });
+
+    expect(moved).toBe(true);
+    expect(token.dataset.dragging).toBeUndefined();
+    expect((screen.getByLabelText('x owner') as HTMLSelectElement).value).toBe('-1');
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test('mouse drag moves an item to a person', () => {
+  render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);
+  const token = screen.getByRole('button', { name: /^x\./i });
+  const zone = screen.getByRole('button', { name: 'Place here: A' }).closest('[data-drop-agent]') as HTMLElement;
+  document.elementFromPoint = vi.fn(() => zone);
+
+  fireEvent.pointerDown(token, { pointerId: 1, pointerType: 'mouse', button: 0, clientX: 0, clientY: 0 });
+  fireEvent.pointerMove(window, { pointerId: 1, pointerType: 'mouse', clientX: 40, clientY: 120 });
+  fireEvent.pointerUp(window, { pointerId: 1, pointerType: 'mouse', clientX: 40, clientY: 120 });
+
+  expect((screen.getByLabelText('x owner') as HTMLSelectElement).value).toBe('0');
+});
+
 test('failed allocation submission keeps every assignment', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
   render(<AllocationEditor locale="en" caseId="c" caseData={sample} />);

@@ -89,9 +89,14 @@
 .allocation-dock h3{margin:0 0 .3rem;font-size:1.05rem}
 .allocation-dock p{max-width:28rem;margin:0;color:#e8f7f2;font-size:.9rem;line-height:1.55}
 .allocation-token-list,.agent-token-list{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem;min-width:0}
-.allocation-token{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.75rem;min-width:132px;max-width:100%;min-height:58px;padding:.55rem .65rem .55rem .85rem;border:1px solid rgba(12,48,43,.12);border-radius:14px;background:#fbfffd;color:var(--lab-ink);box-shadow:0 10px 25px rgba(0,0,0,.16);cursor:grab;touch-action:none;user-select:none;transition:box-shadow .18s ease,border-color .18s ease,background-color .18s ease}
+.allocation-token{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.75rem;min-width:132px;max-width:100%;min-height:58px;padding:.55rem .65rem .55rem .85rem;border:1px solid rgba(12,48,43,.12);border-radius:14px;background:#fbfffd;color:var(--lab-ink);box-shadow:0 10px 25px rgba(0,0,0,.16);cursor:grab;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;transition:box-shadow .18s ease,border-color .18s ease,background-color .18s ease}
 .allocation-token:hover{border-color:var(--lab-maya);box-shadow:0 14px 32px rgba(0,0,0,.22)}
 .allocation-token:active,.allocation-token[data-dragging="true"]{cursor:grabbing;transition:none;box-shadow:0 24px 55px rgba(0,0,0,.34)}
+.allocation-token[data-dragging="true"]{z-index:20;pointer-events:none;will-change:transform}
+.allocation-targets:has([data-dragging]){z-index:3}
+.allocation-dock:has([data-dragging]),.agent-drop-zone:has([data-dragging]){z-index:10}
+.allocation-dock[data-drop-hover],.agent-drop-zone[data-drop-hover]{border-color:var(--lab-maya);box-shadow:inset 0 0 0 2px var(--lab-maya)}
+.agent-drop-zone:nth-child(2)[data-drop-hover]{border-color:var(--lab-leo);box-shadow:inset 0 0 0 2px var(--lab-leo)}
 .allocation-token.is-selected{border-color:var(--lab-maya);background:#eafff7;box-shadow:0 0 0 3px rgba(69,210,173,.24),0 14px 32px rgba(0,0,0,.22)}
 .allocation-token__name{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:.9rem;font-weight:800;white-space:nowrap}
 .allocation-token__values{display:flex;gap:.25rem}

@@ -11,7 +11,9 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const t = copy[l];
 
   return (
-    <html lang={l}>
+    // Some mobile browsers (e.g. Chrome on iOS) inject attributes such as __gcrremoteframetoken
+    // into <html> before hydration; this only silences attribute mismatches on <html> itself.
+    <html lang={l} suppressHydrationWarning>
       <body>
         <MotionSystem />
         <a className="skip-link" href="#main-content">{t.skipToContent}</a>

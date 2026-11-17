@@ -15,6 +15,8 @@ export function MotionSystem() {
 
     document.documentElement.dataset.motion = 'full';
     gsap.registerPlugin(ScrollTrigger);
+    // iOS Safari resizes the viewport as the address bar collapses; refreshing on each resize causes jumps.
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
     const lenis = new Lenis({
       duration: 1.05,
